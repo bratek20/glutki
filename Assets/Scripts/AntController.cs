@@ -3,16 +3,6 @@ using Mirror;
 
 public class AntController : NetworkBehaviour
 {
-    public override void OnStartClient()
-    {
-        Debug.Log($"<color=cyan>[CLIENT SPAWN]</color> Mirror registered Ant on Client. NetID: {netId} | InstanceID: {gameObject.GetInstanceID()}");
-    }
-
-    private void Awake()
-    {
-        Debug.Log($"<color=yellow>[UNITY AWAKE]</color> GameObject created by Unity. InstanceID: {gameObject.GetInstanceID()}");
-    }
-    
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 3f;
     [SerializeField] private float stoppingDistance = 0.1f;
@@ -25,25 +15,28 @@ public class AntController : NetworkBehaviour
     // Called on the Host/Server as soon as this networked object spawns
     public override void OnStartServer()
     {
-        Debug.Log($"<color=green>[SERVER SPAWN]</color> Ant spawned on Server. NetID: {netId} | InstanceID: {gameObject.GetInstanceID()}");
         base.OnStartServer();
+        lastPosition = transform.position;
         PickRandomTarget();
     }
 
-    private void Start()
+    public override void OnStartClient()
     {
-        lastPosition = transform.position;
-        targetPosition = transform.position;
+        base.OnStartClient();
+        Debug.Log($"<color=cyan>[CLIENT SPAWN]</color> Ant registered on Client. NetID: {netId} | Pos: {transform.position}");
     }
 
     private void Update()
     {
-        // 1. HOST LOGIC: Move physical object on the server
-        if (isServer && hasTarget)
+        // Movement is server authoritative. NetworkTransform replicates the
+        // resulting position/rotation down to the clients.
+        if (!isServer) return;
+
+        if (hasTarget)
         {
             transform.position = Vector3.MoveTowards(
-                transform.position, 
-                targetPosition, 
+                transform.position,
+                targetPosition,
                 moveSpeed * Time.deltaTime
             );
 
@@ -51,12 +44,13 @@ public class AntController : NetworkBehaviour
             if (Vector3.Distance(transform.position, targetPosition) <= stoppingDistance)
             {
                 hasTarget = false;
-                PickRandomTarget(); 
+                PickRandomTarget();
             }
         }
 
-        // 2. HOST & CLIENT LOGIC: Rotate 2D sprite towards facing direction
-        // (Calculated frame-by-frame on both Host and Client using actual position change)
+        // Rotate the 2D sprite towards the facing direction. Server only:
+        // NetworkTransform syncs rotation, so doing this on the client too
+        // would fight the interpolated rotation it applies every frame.
         Vector3 moveDir = transform.position - lastPosition;
         if (moveDir.sqrMagnitude > 0.0001f)
         {

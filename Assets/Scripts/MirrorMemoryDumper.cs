@@ -6,16 +6,23 @@ public class MirrorMemoryDumper : MonoBehaviour
 {
     void Update()
     {
-        // Press 'P' on Computer B to dump Mirror's client memory
-        if (Keyboard.current.pKey.wasPressedThisFrame)
+        // Press 'P' on the client to dump Mirror's client state
+        if (Keyboard.current != null && Keyboard.current.pKey.wasPressedThisFrame)
         {
-            Debug.Log($"=== MIRROR CLIENT SPAWNED DICTIONARY (Total: {NetworkClient.spawned.Count}) ===");
-            
+            Debug.Log($"=== MIRROR CLIENT STATE === ready: {NetworkClient.ready} | connected: {NetworkClient.isConnected} | NetworkTime.time: {NetworkTime.time:F2} | spawned: {NetworkClient.spawned.Count}");
+
             foreach (var kvp in NetworkClient.spawned)
             {
-                uint netId = kvp.Key;
                 NetworkIdentity identity = kvp.Value;
-                Debug.Log($"-> Registered NetID: {netId} | Object Name: {identity.gameObject.name} | Pos: {identity.transform.position}");
+
+                // How many transform snapshots has this object actually received?
+                // 0 = the server's NetworkTransform updates are NOT arriving.
+                // >0 but position frozen = they arrive but interpolation isn't applying them.
+                string ntInfo = "no NetworkTransform";
+                if (identity.TryGetComponent(out NetworkTransformBase nt))
+                    ntInfo = $"{nt.GetType().Name} snapshots: {nt.clientSnapshots.Count} | syncDir: {nt.syncDirection} | syncPos: {nt.syncPosition}";
+
+                Debug.Log($"-> NetID: {kvp.Key} | {identity.gameObject.name} | Pos: {identity.transform.position} | isOwned: {identity.isOwned} | {ntInfo}");
             }
         }
     }
