@@ -12,21 +12,6 @@ public class AntController : NetworkBehaviour
     private Vector3 lastPosition;
     private bool hasTarget;
 
-    // DIAGNOSTIC ONLY - remove once sync works.
-    // A SyncVar travels in the same EntityStateMessage as the NetworkTransform
-    // data for this identity. If this hook fires on the client, delivery works
-    // and the problem is NetworkTransform specific. If it never fires, nothing
-    // is reaching this object at all.
-    [SyncVar(hook = nameof(OnHeartbeatChanged))]
-    private int heartbeat;
-
-    private double nextHeartbeat;
-
-    private void OnHeartbeatChanged(int oldValue, int newValue)
-    {
-        Debug.Log($"<color=lime>[SYNC RECEIVED]</color> heartbeat {newValue} | my pos: {transform.position}");
-    }
-
     // Called on the Host/Server as soon as this networked object spawns
     public override void OnStartServer()
     {
@@ -35,25 +20,11 @@ public class AntController : NetworkBehaviour
         PickRandomTarget();
     }
 
-    public override void OnStartClient()
-    {
-        base.OnStartClient();
-        Debug.Log($"<color=cyan>[CLIENT SPAWN]</color> Ant registered on Client. NetID: {netId} | Pos: {transform.position}");
-    }
-
     private void Update()
     {
         // Movement is server authoritative. NetworkTransform replicates the
         // resulting position/rotation down to the clients.
         if (!isServer) return;
-
-        // DIAGNOSTIC ONLY - tick a SyncVar once per second.
-        if (NetworkTime.localTime >= nextHeartbeat)
-        {
-            nextHeartbeat = NetworkTime.localTime + 1.0;
-            heartbeat++;
-            Debug.Log($"<color=orange>[SYNC SENT]</color> heartbeat {heartbeat} | server pos: {transform.position}");
-        }
 
         if (hasTarget)
         {
