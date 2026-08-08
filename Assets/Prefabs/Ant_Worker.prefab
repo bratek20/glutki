@@ -198,3 +198,5 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   moveSpeed: 3
+  stoppingDistance: 0.1
+  wanderRadius: 5
