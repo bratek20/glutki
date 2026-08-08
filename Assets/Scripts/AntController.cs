@@ -3,6 +3,16 @@ using Mirror;
 
 public class AntController : NetworkBehaviour
 {
+    public override void OnStartClient()
+    {
+        Debug.Log($"<color=cyan>[CLIENT SPAWN]</color> Mirror registered Ant on Client. NetID: {netId} | InstanceID: {gameObject.GetInstanceID()}");
+    }
+
+    private void Awake()
+    {
+        Debug.Log($"<color=yellow>[UNITY AWAKE]</color> GameObject created by Unity. InstanceID: {gameObject.GetInstanceID()}");
+    }
+    
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 3f;
     [SerializeField] private float stoppingDistance = 0.1f;
@@ -15,6 +25,7 @@ public class AntController : NetworkBehaviour
     // Called on the Host/Server as soon as this networked object spawns
     public override void OnStartServer()
     {
+        Debug.Log($"<color=green>[SERVER SPAWN]</color> Ant spawned on Server. NetID: {netId} | InstanceID: {gameObject.GetInstanceID()}");
         base.OnStartServer();
         PickRandomTarget();
     }
