@@ -307,6 +307,7 @@ MonoBehaviour:
   spawnPrefabs:
   - {fileID: 6014365302286197209, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
   - {fileID: 1489020118746187602, guid: 9916678023fe26c4f91c6cc77c492e39, type: 3}
+  - {fileID: 349329302747645024, guid: 9d77140559d17b7469e5be81d7faafd8, type: 3}
   exceptionsDisconnect: 1
   snapshotSettings:
     bufferTimeMultiplier: 2
@@ -358,6 +359,7 @@ MonoBehaviour:
   slimePrefabs:
   - {fileID: 6014365302286197209, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
   - {fileID: 1489020118746187602, guid: 9916678023fe26c4f91c6cc77c492e39, type: 3}
+  - {fileID: 349329302747645024, guid: 9d77140559d17b7469e5be81d7faafd8, type: 3}
 --- !u!4 &705819151
 Transform:
   m_ObjectHideFlags: 0

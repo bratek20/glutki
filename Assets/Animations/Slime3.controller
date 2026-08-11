@@ -46,7 +46,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 3cea6ae1fe0e7e14e883c18db8d71826, type: 2}
+  m_Motion: {fileID: 7400000, guid: 608bc1271ae156f4798199f5e5e11b8f, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -98,7 +98,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 61aeb38b1142b754bb1f9f5eb9956178, type: 2}
+  m_Motion: {fileID: 7400000, guid: 0cf8c6fb02e8d1a47a45060d2b974cf5, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -135,7 +135,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Slime
+  m_Name: Slime3
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: IsWalking
