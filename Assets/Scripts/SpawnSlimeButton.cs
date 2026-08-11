@@ -9,6 +9,7 @@ public class SpawnSlimeButton : MonoBehaviour
     [SerializeField] private Color normalColor = new Color(0.2f, 0.6f, 0.25f);
     [SerializeField] private Color highlightedColor = new Color(0.28f, 0.7f, 0.32f);
     [SerializeField] private Color pressedColor = new Color(0.15f, 0.45f, 0.18f);
+    [SerializeField] private Color selectedColor = new Color(0.2f, 0.6f, 0.25f);
     [SerializeField] private Color disabledColor = new Color(0.4f, 0.4f, 0.4f);
 
     private Button button;
@@ -56,9 +57,13 @@ public class SpawnSlimeButton : MonoBehaviour
         colors.normalColor = normalColor;
         colors.highlightedColor = highlightedColor;
         colors.pressedColor = pressedColor;
+        colors.selectedColor = selectedColor;
         colors.disabledColor = disabledColor;
         button.colors = colors;
         button.onClick.AddListener(OnClicked);
+
+        // Don't leave the button stuck in the keyboard/gamepad-navigation "selected" state after a click.
+        button.navigation = new Navigation { mode = Navigation.Mode.None };
 
         GameObject textObject = new GameObject("Label", typeof(RectTransform));
         textObject.transform.SetParent(buttonObject.transform, false);
