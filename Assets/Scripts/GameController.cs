@@ -5,7 +5,10 @@ using Mirror;
 public class GameController : NetworkBehaviour
 {
     [SerializeField] private GameObject[] slimePrefabs;
+    [SerializeField] private int spawnCost = 1;
     private int slimeIndex = 0;
+
+    public int SpawnCost => spawnCost;
 
     void Update()
     {
@@ -14,8 +17,23 @@ public class GameController : NetworkBehaviour
         // New Input System check for Spacebar
         if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
         {
-            SpawnAnt(Vector3.zero);
+            TrySpawn();
         }
+    }
+
+    // Any client can request a spawn - the server is the sole authority on whether it's affordable.
+    [Command(requiresAuthority = false)]
+    public void CmdRequestSpawn()
+    {
+        TrySpawn();
+    }
+
+    [Server]
+    private void TrySpawn()
+    {
+        if (ColonyBase.Instance == null || !ColonyBase.Instance.TrySpendResource(spawnCost)) return;
+
+        SpawnAnt(ColonyBase.Instance.transform.position);
     }
 
     [Server]
