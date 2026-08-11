@@ -5,7 +5,7 @@ public class ColonyBase : NetworkBehaviour
 {
     public static ColonyBase Instance { get; private set; }
 
-    [SyncVar] private int storedResources;
+    [SyncVar] private int storedResources = 5;
 
     public int StoredResources => storedResources;
 
@@ -24,5 +24,14 @@ public class ColonyBase : NetworkBehaviour
     {
         storedResources += resourceAmount;
         Debug.Log($"Base now holds {storedResources} resource(s).");
+    }
+
+    [Server]
+    public bool TrySpendResource(int amount)
+    {
+        if (storedResources < amount) return false;
+
+        storedResources -= amount;
+        return true;
     }
 }
