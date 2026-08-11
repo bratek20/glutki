@@ -2,7 +2,7 @@ using UnityEngine;
 using Mirror;
 
 [RequireComponent(typeof(Animator))]
-public class AntController : NetworkBehaviour
+public class SlimeController : NetworkBehaviour
 {
     private enum SlimeState
     {
@@ -26,6 +26,10 @@ public class AntController : NetworkBehaviour
     [SerializeField] private float resourceScanInterval = 0.2f;
     [SerializeField] private Color carryingTintColor = new Color(1f, 0.85f, 0.35f);
 
+    [Header("Debug")]
+    [Tooltip("Trigger-only collider kept in sync with resourceDetectionRadius, purely so the detection range is visible as a gizmo in the Scene view.")]
+    [SerializeField] private CircleCollider2D detectionRadiusGizmo;
+
     private Vector3 targetPosition;
     private bool hasTarget;
     private SlimeState state = SlimeState.Wandering;
@@ -38,6 +42,23 @@ public class AntController : NetworkBehaviour
 
     // Replicates whether this gatherer is currently carrying a resource, for the carry tint
     [SyncVar(hook = nameof(OnCarryingChanged))] private bool isCarryingResource;
+
+    private void Awake()
+    {
+        SyncDetectionRadiusGizmo();
+    }
+
+    private void OnValidate()
+    {
+        SyncDetectionRadiusGizmo();
+    }
+
+    private void SyncDetectionRadiusGizmo()
+    {
+        if (detectionRadiusGizmo == null) return;
+        detectionRadiusGizmo.radius = resourceDetectionRadius;
+        detectionRadiusGizmo.enabled = slimeType == SlimeType.Gatherer;
+    }
 
     public override void OnStartClient()
     {
