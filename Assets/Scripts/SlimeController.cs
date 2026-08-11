@@ -4,6 +4,15 @@ using Mirror;
 [RequireComponent(typeof(Animator))]
 public class SlimeController : NetworkBehaviour
 {
+    // Number of slimes currently spawned as seen by this peer (host/client). Used by the HUD.
+    public static int ActiveSlimeCount { get; private set; }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetActiveSlimeCount()
+    {
+        ActiveSlimeCount = 0;
+    }
+
     private enum SlimeState
     {
         Wandering,
@@ -63,8 +72,15 @@ public class SlimeController : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
+        ActiveSlimeCount++;
         if (animator == null) animator = GetComponent<Animator>();
         if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+    }
+
+    public override void OnStopClient()
+    {
+        base.OnStopClient();
+        ActiveSlimeCount--;
     }
 
     public override void OnStartServer()
