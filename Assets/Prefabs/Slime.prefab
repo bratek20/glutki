@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 680354959157110417}
   - component: {fileID: 8136976867981293379}
   m_Layer: 0
-  m_Name: Ant_Worker
+  m_Name: Slime
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -4,7 +4,8 @@ using Mirror;
 
 public class GameController : NetworkBehaviour
 {
-    [SerializeField] private GameObject antPrefab;
+    [SerializeField] private GameObject[] slimePrefabs;
+    private int slimeIndex = 0;
 
     void Update()
     {
@@ -20,7 +21,9 @@ public class GameController : NetworkBehaviour
     [Server]
     public void SpawnAnt(Vector3 position)
     {
-        GameObject ant = Instantiate(antPrefab, position, Quaternion.identity);
-        NetworkServer.Spawn(ant);
+        var slimePrefab = slimePrefabs[slimeIndex];
+        slimeIndex = (slimeIndex + 1) % slimePrefabs.Length;
+        GameObject slime = Instantiate(slimePrefab, position, Quaternion.identity);
+        NetworkServer.Spawn(slime);
     }
 }
