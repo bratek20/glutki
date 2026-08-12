@@ -1,0 +1,533 @@
+fileFormatVersion: 2
+guid: dc2f846a7d22f2e4b9bb96a74e9269f2
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -3058874908758313163
+    second: Queen_spritesheet_1_0
+  - first:
+      213: 4417541659022250598
+    second: Queen_spritesheet_1_1
+  - first:
+      213: -1413589684369447766
+    second: Queen_spritesheet_1_2
+  - first:
+      213: 6557867167171573878
+    second: Queen_spritesheet_1_3
+  - first:
+      213: -803658539991951175
+    second: Queen_spritesheet_1_4
+  - first:
+      213: 7531482864604952324
+    second: Queen_spritesheet_1_5
+  - first:
+      213: -368228318372699833
+    second: Queen_spritesheet_1_6
+  - first:
+      213: 4902494589966149148
+    second: Queen_spritesheet_1_7
+  - first:
+      213: 4822582604217589287
+    second: Queen_spritesheet_1_8
+  - first:
+      213: -4138178436265605907
+    second: Queen_spritesheet_1_9
+  - first:
+      213: 5665605988373689964
+    second: Queen_spritesheet_1_10
+  - first:
+      213: -3627302685786319725
+    second: Queen_spritesheet_1_11
+  - first:
+      213: 6932305334879692895
+    second: Queen_spritesheet_1_12
+  - first:
+      213: -6933084230644202623
+    second: Queen_spritesheet_1_13
+  - first:
+      213: 4365463959106543051
+    second: Queen_spritesheet_1_14
+  - first:
+      213: -4068752177732092548
+    second: Queen_spritesheet_1_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_0
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 221
+        width: 161
+        height: 119
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 537fa132a71bc85d0800000000000000
+      internalID: -3058874908758313163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_1
+      rect:
+        serializedVersion: 2
+        x: 222
+        y: 221
+        width: 156
+        height: 123
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 662d286dbb24e4d30800000000000000
+      internalID: 4417541659022250598
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_2
+      rect:
+        serializedVersion: 2
+        x: 425
+        y: 221
+        width: 150
+        height: 126
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa4a00debabe16ce0800000000000000
+      internalID: -1413589684369447766
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_3
+      rect:
+        serializedVersion: 2
+        x: 627
+        y: 221
+        width: 146
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 67875778179320b50800000000000000
+      internalID: 6557867167171573878
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_4
+      rect:
+        serializedVersion: 2
+        x: 827
+        y: 221
+        width: 146
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b8121bd0d4d8d4f0800000000000000
+      internalID: -803658539991951175
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_5
+      rect:
+        serializedVersion: 2
+        x: 1027
+        y: 221
+        width: 146
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 40738b803c3358860800000000000000
+      internalID: 7531482864604952324
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_6
+      rect:
+        serializedVersion: 2
+        x: 1225
+        y: 221
+        width: 150
+        height: 126
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 741e72f9b4ac3eaf0800000000000000
+      internalID: -368228318372699833
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_7
+      rect:
+        serializedVersion: 2
+        x: 1422
+        y: 221
+        width: 156
+        height: 123
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c16e434ead8290440800000000000000
+      internalID: 4902494589966149148
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_8
+      rect:
+        serializedVersion: 2
+        x: 20
+        y: 21
+        width: 161
+        height: 119
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 72e1e50d3514de240800000000000000
+      internalID: 4822582604217589287
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_9
+      rect:
+        serializedVersion: 2
+        x: 217
+        y: 21
+        width: 166
+        height: 116
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: de4053123ac3296c0800000000000000
+      internalID: -4138178436265605907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_10
+      rect:
+        serializedVersion: 2
+        x: 413
+        y: 21
+        width: 174
+        height: 112
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c66f656f0a640ae40800000000000000
+      internalID: 5665605988373689964
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_11
+      rect:
+        serializedVersion: 2
+        x: 612
+        y: 21
+        width: 176
+        height: 110
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 394d2e0fc6b39adc0800000000000000
+      internalID: -3627302685786319725
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_12
+      rect:
+        serializedVersion: 2
+        x: 812
+        y: 21
+        width: 177
+        height: 109
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f58ac0029fe743060800000000000000
+      internalID: 6932305334879692895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_13
+      rect:
+        serializedVersion: 2
+        x: 1012
+        y: 21
+        width: 176
+        height: 110
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 183079210acb8cf90800000000000000
+      internalID: -6933084230644202623
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_14
+      rect:
+        serializedVersion: 2
+        x: 1213
+        y: 21
+        width: 174
+        height: 112
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bcdd052775e359c30800000000000000
+      internalID: 4365463959106543051
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Queen_spritesheet_1_15
+      rect:
+        serializedVersion: 2
+        x: 1417
+        y: 21
+        width: 166
+        height: 116
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7d7e279373e887c0800000000000000
+      internalID: -4068752177732092548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Queen_spritesheet_1_0: -3058874908758313163
+      Queen_spritesheet_1_1: 4417541659022250598
+      Queen_spritesheet_1_10: 5665605988373689964
+      Queen_spritesheet_1_11: -3627302685786319725
+      Queen_spritesheet_1_12: 6932305334879692895
+      Queen_spritesheet_1_13: -6933084230644202623
+      Queen_spritesheet_1_14: 4365463959106543051
+      Queen_spritesheet_1_15: -4068752177732092548
+      Queen_spritesheet_1_2: -1413589684369447766
+      Queen_spritesheet_1_3: 6557867167171573878
+      Queen_spritesheet_1_4: -803658539991951175
+      Queen_spritesheet_1_5: 7531482864604952324
+      Queen_spritesheet_1_6: -368228318372699833
+      Queen_spritesheet_1_7: 4902494589966149148
+      Queen_spritesheet_1_8: 4822582604217589287
+      Queen_spritesheet_1_9: -4138178436265605907
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
