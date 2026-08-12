@@ -296,7 +296,7 @@ MonoBehaviour:
   onlineScene: 
   offlineSceneLoadDelay: 0
   transport: {fileID: 689123612}
-  networkAddress: localhost
+  networkAddress: 192.168.0.156
   maxConnections: 100
   disconnectInactiveConnections: 0
   disconnectInactiveTimeout: 60
@@ -362,6 +362,7 @@ MonoBehaviour:
   - {fileID: 1489020118746187602, guid: 9916678023fe26c4f91c6cc77c492e39, type: 3}
   - {fileID: 349329302747645024, guid: 9d77140559d17b7469e5be81d7faafd8, type: 3}
   - {fileID: 633893706922809094, guid: 1fe2a08b9c73bf244b148b24717f8c76, type: 3}
+  spawnCost: 1
 --- !u!4 &705819151
 Transform:
   m_ObjectHideFlags: 0
@@ -676,13 +677,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9817ec62fe754968b32e5ead08adf136, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnSlimeButton
   padding: {x: 16, y: 16}
   buttonSize: {x: 160, y: 48}
   normalColor: {r: 0.2, g: 0.6, b: 0.25, a: 1}
   highlightedColor: {r: 0.28, g: 0.7, b: 0.32, a: 1}
   pressedColor: {r: 0.15, g: 0.45, b: 0.18, a: 1}
+  selectedColor: {r: 0.2, g: 0.6, b: 0.25, a: 1}
   disabledColor: {r: 0.4, g: 0.4, b: 0.4, a: 1}
 --- !u!1 &2093747248
 GameObject:
