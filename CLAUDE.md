@@ -1,27 +1,40 @@
 # Glutki — Design Overview
 
 A small 2D multiplayer colony prototype in Unity, networked with Mirror (Host + one remote Client).
-Each side owns a **Base** that produces autonomous **units** (slimes) which gather resources and
-bring them home.
+Design inspiration: **Ant Colony: Wild Forest** — a shared world map dotted with bases, each with
+its own zoomed-in colony interior. Each side owns one or more **Base**s that produce autonomous
+**units** which gather resources and bring them home.
 
 ## Core concepts
 
 - **Base** (`Base.cs`) — a NetworkBehaviour placed in the scene. Holds `storedResources` and a
-  roster of unit prefabs it can spawn. Owned by either `Host` or `Client` (`BaseOwner` enum,
-  assigned per-instance in the Inspector — not negotiated at runtime). Many bases can exist.
+  roster of unit prefabs it can spawn, plus a `queenPrefab`. Owned by either `Host` or `Client`
+  (`BaseOwner` enum, assigned per-instance in the Inspector — not negotiated at runtime). Many
+  bases can exist.
 - **Ownership** — only the owning side can spend a base's resources / spawn from it
   (`Base.CmdRequestSpawn`, checked server-side via the command's sender connection vs
   `NetworkServer.localConnection`). Anyone can *select/inspect* any base (see its resource count,
-  highlight it) regardless of owner — inspection is unrestricted, only spawning is gated.
+  highlight it, enter its Base View) regardless of owner — inspection is unrestricted, only
+  spawning is gated.
 - **Selection** (`BaseSelectionManager.cs`) — a per-peer, **unsynced**, client-local concept: each
   peer tracks its own "currently selected base" and highlights it locally. Not networked by design
   — selection is a viewing concern, not game state.
-- **Units** (`SlimeController.cs`) — server-authoritative AI (`Wandering` /`SeekingResource` /
-  `ReturningToBase`). Each unit remembers the `Base` that spawned it (`HomeBase`) and returns
-  gathered resources there specifically, not to "a" base.
+- **World View / Base View** (`ViewManager.cs`) — another unsynced, per-peer concept: the camera is
+  either showing the shared world map, or "inside" one specific base. Clicking a base (or the
+  bottom-right toggle button) enters its Base View; the toggle button also leaves it. Every base's
+  interior is a real place in the shared world (offset far below the base itself via
+  `Base.InteriorOffset/InteriorHalfSize`), not a separate scene — so units physically occupy it and
+  every peer sees the same interior content when looking there.
+- **Units** (`UnitController.cs`) — server-authoritative AI. Each unit remembers the `Base` that
+  spawned it (`HomeBase`) and always returns gathered resources there specifically. State machine:
+  `ExitingBase` (walking from spawn/entry point to the base's interior exit, then warps onto the
+  world map) → `Wandering` → `SeekingResource` → `ReturningToBase` (world map, walking toward the
+  base) → warps into the interior → `EnteringBase` (walking to the Queen/depot point, deposits) →
+  back to `ExitingBase`. The **Queen** (`UnitType.Queen`) is a special stationary unit permanently
+  parked at each base's interior center — it never runs the state machine.
 - **Resources** (`Resource.cs`) — pickups consumed by gatherer units.
-- **UI** — `ResourceHud` and `SpawnSlimeButton` both read/act on `BaseSelectionManager.SelectedBase`,
-  never a global base reference.
+- **UI** — `ResourceHud`, `SpawnUnitButton`, and `ViewToggleButton` all read/act on
+  `BaseSelectionManager.SelectedBase` / `ViewManager`, never a global base reference.
 
 ## Networking model
 

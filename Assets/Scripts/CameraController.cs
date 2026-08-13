@@ -10,6 +10,7 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float scrollZoomSpeed = 0.01f;
     [SerializeField] private float minOrthographicSize = 2f;
     [SerializeField] private float maxOrthographicSize = 15f;
+    [SerializeField] private float baseViewOrthographicSize = 5f;
 
     private Camera cam;
 
@@ -21,6 +22,9 @@ public class CameraController : MonoBehaviour
     private float pinchStartOrthoSize;
     private Vector3 pinchAnchorWorld;
 
+    private Vector3 savedWorldPosition;
+    private float savedWorldOrthoSize;
+
     private void Awake()
     {
         cam = GetComponent<Camera>();
@@ -29,11 +33,30 @@ public class CameraController : MonoBehaviour
     private void OnEnable()
     {
         EnhancedTouchSupport.Enable();
+        ViewManager.ViewChanged += OnViewChanged;
     }
 
     private void OnDisable()
     {
         EnhancedTouchSupport.Disable();
+        ViewManager.ViewChanged -= OnViewChanged;
+    }
+
+    private void OnViewChanged()
+    {
+        if (ViewManager.CurrentView == ViewMode.Base)
+        {
+            savedWorldPosition = transform.position;
+            savedWorldOrthoSize = cam.orthographicSize;
+
+            transform.position = ViewManager.ViewedBase.InteriorCenter;
+            cam.orthographicSize = baseViewOrthographicSize;
+        }
+        else
+        {
+            transform.position = savedWorldPosition;
+            cam.orthographicSize = savedWorldOrthoSize;
+        }
     }
 
     private void Update()
@@ -44,21 +67,24 @@ public class CameraController : MonoBehaviour
         {
             isDragging = false;
             UpdatePinch(touches[0], touches[1]);
-            return;
-        }
-
-        isPinching = false;
-
-        if (touches.Count == 1)
-        {
-            Touch touch = touches[0];
-            bool released = touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled;
-            UpdateDrag(touch.screenPosition, touch.phase == TouchPhase.Began, released, held: true);
         }
         else
         {
-            UpdateMouse();
+            isPinching = false;
+
+            if (touches.Count == 1)
+            {
+                Touch touch = touches[0];
+                bool released = touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled;
+                UpdateDrag(touch.screenPosition, touch.phase == TouchPhase.Began, released, held: true);
+            }
+            else
+            {
+                UpdateMouse();
+            }
         }
+
+        ClampToBaseViewBounds();
     }
 
     private void UpdateMouse()
@@ -119,5 +145,27 @@ public class CameraController : MonoBehaviour
         cam.orthographicSize = Mathf.Clamp(cam.orthographicSize + sizeDelta, minOrthographicSize, maxOrthographicSize);
         Vector3 anchorWorldAfter = cam.ScreenToWorldPoint(screenPosition);
         transform.position += anchorWorldBefore - anchorWorldAfter;
+    }
+
+    // Base interiors have a fixed footprint (Base.InteriorHalfSize) - keep the camera's own
+    // viewport from panning past the room's edges while inspecting/managing that base.
+    private void ClampToBaseViewBounds()
+    {
+        if (ViewManager.CurrentView != ViewMode.Base) return;
+
+        Base viewedBase = ViewManager.ViewedBase;
+        if (viewedBase == null) return;
+
+        Vector2 viewportHalfSize = new Vector2(cam.orthographicSize * cam.aspect, cam.orthographicSize);
+        Vector2 interiorHalfSize = viewedBase.InteriorHalfSize;
+        Vector3 center = viewedBase.InteriorCenter;
+
+        float clampX = Mathf.Max(interiorHalfSize.x - viewportHalfSize.x, 0f);
+        float clampY = Mathf.Max(interiorHalfSize.y - viewportHalfSize.y, 0f);
+
+        Vector3 pos = transform.position;
+        pos.x = Mathf.Clamp(pos.x, center.x - clampX, center.x + clampX);
+        pos.y = Mathf.Clamp(pos.y, center.y - clampY, center.y + clampY);
+        transform.position = pos;
     }
 }

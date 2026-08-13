@@ -129,12 +129,14 @@ MonoBehaviour:
   unitPrefabs:
   - {fileID: 6014365302286197209, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
   - {fileID: 3447786934808800565, guid: 7c2cc5c9951e71a42bab8e1547b1cee8, type: 3}
-  - {fileID: 5032928327115468467, guid: ee3dac4ef8791fd49ab68cc15d1cf4c2, type: 3}
   - {fileID: 8480537066866195548, guid: 3a2be394fc4596646974ffb1d39f8c0f, type: 3}
   - {fileID: 1388244362970297067, guid: f34044d7f68e33a47aae255e3c0da37b, type: 3}
+  queenPrefab: {fileID: 5032928327115468467, guid: ee3dac4ef8791fd49ab68cc15d1cf4c2, type: 3}
   spawnCost: 1
   highlightColor: {r: 1, g: 0.9, b: 0.3, a: 1}
   owner: 0
+  interiorOffset: {x: 0, y: -100, z: 0}
+  interiorHalfSize: {x: 18, y: 10}
 --- !u!61 &200005
 BoxCollider2D:
   m_ObjectHideFlags: 0

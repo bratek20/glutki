@@ -5,9 +5,16 @@ using UnityEngine.InputSystem;
 public class Base : NetworkBehaviour
 {
     [SerializeField] private GameObject[] unitPrefabs;
+    [SerializeField] private GameObject queenPrefab;
     [SerializeField] private int spawnCost = 1;
     [SerializeField] private Color highlightColor = new Color(1f, 0.9f, 0.3f);
     [SerializeField] private BaseOwner owner = BaseOwner.Host;
+
+    [Header("Base View interior")]
+    [Tooltip("Where this base's interior (Queen, exit point, wandering-in units) sits in world space, relative to the base itself. Offset far away so interiors never overlap the map or each other.")]
+    [SerializeField] private Vector3 interiorOffset = new Vector3(0f, -100f, 0f);
+    [Tooltip("Half-size of the interior room, roughly 2x a screen's worth of view. Also used to clamp camera panning while inside this base.")]
+    [SerializeField] private Vector2 interiorHalfSize = new Vector2(18f, 10f);
 
     [SyncVar] private int storedResources = 5;
 
@@ -19,6 +26,10 @@ public class Base : NetworkBehaviour
     public int StoredResources => storedResources;
     public int SpawnCost => spawnCost;
     public BaseOwner Owner => owner;
+
+    public Vector3 InteriorCenter => transform.position + interiorOffset;
+    public Vector2 InteriorHalfSize => interiorHalfSize;
+    public Vector3 InteriorExitPoint => InteriorCenter + new Vector3(0f, interiorHalfSize.y, 0f);
 
     // Every peer loads the same scene data, so the Host/Client split of "am I the owner"
     // can be read straight off NetworkServer.active - true only for the host's own process.
@@ -51,7 +62,7 @@ public class Base : NetworkBehaviour
         Vector2 worldPoint = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         if (selectionCollider.OverlapPoint(worldPoint))
         {
-            BaseSelectionManager.Select(this);
+            ViewManager.EnterBaseView(this);
         }
     }
 
@@ -59,6 +70,24 @@ public class Base : NetworkBehaviour
     {
         if (spriteRenderer == null) return;
         spriteRenderer.color = highlighted ? highlightColor : normalColor;
+    }
+
+    public override void OnStartServer()
+    {
+        base.OnStartServer();
+        SpawnQueen();
+    }
+
+    [Server]
+    private void SpawnQueen()
+    {
+        if (queenPrefab == null) return;
+
+        GameObject queen = Instantiate(queenPrefab, InteriorCenter, Quaternion.identity);
+        UnitController controller = queen.GetComponent<UnitController>();
+        if (controller != null) controller.HomeBase = this;
+
+        NetworkServer.Spawn(queen);
     }
 
     [Server]
@@ -105,8 +134,10 @@ public class Base : NetworkBehaviour
         GameObject unitPrefab = unitPrefabs[unitIndex];
         unitIndex = (unitIndex + 1) % unitPrefabs.Length;
 
-        GameObject unit = Instantiate(unitPrefab, transform.position, Quaternion.identity);
-        SlimeController controller = unit.GetComponent<SlimeController>();
+        // Units spawn inside the base interior and have to walk out to the exit before they
+        // appear on the world map - see UnitController's ExitingBase state.
+        GameObject unit = Instantiate(unitPrefab, InteriorCenter, Quaternion.identity);
+        UnitController controller = unit.GetComponent<UnitController>();
         if (controller != null) controller.HomeBase = this;
 
         NetworkServer.Spawn(unit);

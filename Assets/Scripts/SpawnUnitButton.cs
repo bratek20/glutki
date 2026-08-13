@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Canvas))]
-public class SpawnSlimeButton : MonoBehaviour
+public class SpawnUnitButton : MonoBehaviour
 {
     [SerializeField] private Vector2 padding = new Vector2(16f, 16f);
     [SerializeField] private Vector2 buttonSize = new Vector2(160f, 48f);
@@ -28,7 +28,7 @@ public class SpawnSlimeButton : MonoBehaviour
         int resources = selectedBase != null ? selectedBase.StoredResources : 0;
 
         button.interactable = canManage && resources >= cost;
-        label.text = canManage ? $"Spawn Slime ({cost})" : "Not your base";
+        label.text = canManage ? $"Spawn Unit ({cost})" : "Not your base";
     }
 
     private void OnClicked()
@@ -38,7 +38,7 @@ public class SpawnSlimeButton : MonoBehaviour
 
     private void BuildButton()
     {
-        GameObject buttonObject = new GameObject("SpawnSlimeButton", typeof(RectTransform));
+        GameObject buttonObject = new GameObject("SpawnUnitButton", typeof(RectTransform));
         buttonObject.transform.SetParent(transform, false);
 
         RectTransform rect = buttonObject.GetComponent<RectTransform>();

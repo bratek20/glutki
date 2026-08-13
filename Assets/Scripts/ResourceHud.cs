@@ -19,7 +19,7 @@ public class ResourceHud : MonoBehaviour
     {
         Base selectedBase = BaseSelectionManager.SelectedBase;
         int resources = selectedBase != null ? selectedBase.StoredResources : 0;
-        hudText.text = $"Resources: {resources}\nSlimes: {SlimeController.ActiveSlimeCount}";
+        hudText.text = $"Resources: {resources}\nUnits: {UnitController.ActiveUnitCount}";
     }
 
     private Text BuildHudText()

@@ -2,25 +2,27 @@ using UnityEngine;
 using Mirror;
 
 [RequireComponent(typeof(Animator))]
-public class SlimeController : NetworkBehaviour
+public class UnitController : NetworkBehaviour
 {
-    // Number of slimes currently spawned as seen by this peer (host/client). Used by the HUD.
-    public static int ActiveSlimeCount { get; private set; }
+    // Number of units currently spawned as seen by this peer (host/client). Used by the HUD.
+    public static int ActiveUnitCount { get; private set; }
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    private static void ResetActiveSlimeCount()
+    private static void ResetActiveUnitCount()
     {
-        ActiveSlimeCount = 0;
+        ActiveUnitCount = 0;
     }
 
-    private enum SlimeState
+    private enum UnitState
     {
+        ExitingBase,
         Wandering,
         SeekingResource,
-        ReturningToBase
+        ReturningToBase,
+        EnteringBase
     }
 
-    [SerializeField] private SlimeType slimeType = SlimeType.Gatherer;
+    [SerializeField] private UnitType unitType = UnitType.Gatherer;
     [SerializeField] private float moveSpeed = 2f;
     [SerializeField] private float stoppingDistance = 0.05f;
     [SerializeField] private Animator animator;
@@ -43,7 +45,7 @@ public class SlimeController : NetworkBehaviour
 
     private Vector3 targetPosition;
     private bool hasTarget;
-    private SlimeState state = SlimeState.Wandering;
+    private UnitState state = UnitState.ExitingBase;
     private Resource targetResource;
     private float resourceScanTimer;
     private int carriedAmount;
@@ -72,13 +74,13 @@ public class SlimeController : NetworkBehaviour
     {
         if (detectionRadiusGizmo == null) return;
         detectionRadiusGizmo.radius = resourceDetectionRadius;
-        detectionRadiusGizmo.enabled = slimeType == SlimeType.Gatherer;
+        detectionRadiusGizmo.enabled = unitType == UnitType.Gatherer;
     }
 
     public override void OnStartClient()
     {
         base.OnStartClient();
-        ActiveSlimeCount++;
+        ActiveUnitCount++;
         if (animator == null) animator = GetComponent<Animator>();
         if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
     }
@@ -86,13 +88,20 @@ public class SlimeController : NetworkBehaviour
     public override void OnStopClient()
     {
         base.OnStopClient();
-        ActiveSlimeCount--;
+        ActiveUnitCount--;
     }
 
     public override void OnStartServer()
     {
         base.OnStartServer();
-        StartWandering();
+
+        // The Queen is a permanent fixture at the center of the base interior - it never moves.
+        if (unitType == UnitType.Queen) return;
+
+        // Every other unit is spawned inside its home base's interior and has to walk out to the
+        // exit before it can be seen on the world map.
+        state = UnitState.ExitingBase;
+        SetTarget(HomeBase != null ? HomeBase.InteriorExitPoint : transform.position);
     }
 
     private void Update()
@@ -109,8 +118,9 @@ public class SlimeController : NetworkBehaviour
 
         // 2. Server-only position and state evaluation
         if (!isServer) return;
+        if (unitType == UnitType.Queen) return;
 
-        if (slimeType == SlimeType.Gatherer && state != SlimeState.ReturningToBase)
+        if (unitType == UnitType.Gatherer && (state == UnitState.Wandering || state == UnitState.SeekingResource))
         {
             ScanForResource();
         }
@@ -122,7 +132,7 @@ public class SlimeController : NetworkBehaviour
     private void ScanForResource()
     {
         // Already chasing a still-valid resource - no need to rescan yet.
-        if (state == SlimeState.SeekingResource && targetResource != null) return;
+        if (state == UnitState.SeekingResource && targetResource != null) return;
 
         resourceScanTimer -= Time.deltaTime;
         if (resourceScanTimer > 0f) return;
@@ -133,7 +143,7 @@ public class SlimeController : NetworkBehaviour
 
         targetResource = nearest;
         SetTarget(nearest.transform.position);
-        state = SlimeState.SeekingResource;
+        state = UnitState.SeekingResource;
     }
 
     [Server]
@@ -183,16 +193,30 @@ public class SlimeController : NetworkBehaviour
     {
         switch (state)
         {
-            case SlimeState.SeekingResource:
+            case UnitState.ExitingBase:
+                OnExitReached();
+                break;
+            case UnitState.SeekingResource:
                 OnResourceReached();
                 break;
-            case SlimeState.ReturningToBase:
+            case UnitState.ReturningToBase:
                 OnBaseReached();
+                break;
+            case UnitState.EnteringBase:
+                OnEntryReached();
                 break;
             default:
                 Invoke(nameof(StartWandering), Random.Range(1f, 3f));
                 break;
         }
+    }
+
+    [Server]
+    private void OnExitReached()
+    {
+        // Warp from the base interior out onto the world map, at the base's actual position.
+        transform.position = HomeBase != null ? HomeBase.transform.position : transform.position;
+        StartWandering();
     }
 
     [Server]
@@ -210,13 +234,25 @@ public class SlimeController : NetworkBehaviour
         targetResource = null;
         isCarryingResource = true;
 
-        state = SlimeState.ReturningToBase;
+        state = UnitState.ReturningToBase;
         SetTarget(HomeBase != null ? HomeBase.transform.position : transform.position);
     }
 
     [Server]
     private void OnBaseReached()
     {
+        // Warp from the world map into the base interior, entering through the same opening units exit from.
+        Vector3 entryPoint = HomeBase != null ? HomeBase.InteriorExitPoint : transform.position;
+        transform.position = entryPoint;
+
+        state = UnitState.EnteringBase;
+        SetTarget(HomeBase != null ? HomeBase.InteriorCenter : entryPoint);
+    }
+
+    [Server]
+    private void OnEntryReached()
+    {
+        // Reached the queen/depot point inside the base - deposit, then head back out.
         if (HomeBase != null)
         {
             HomeBase.DepositResource(carriedAmount);
@@ -224,13 +260,15 @@ public class SlimeController : NetworkBehaviour
 
         carriedAmount = 0;
         isCarryingResource = false;
-        StartWandering();
+
+        state = UnitState.ExitingBase;
+        SetTarget(HomeBase != null ? HomeBase.InteriorExitPoint : transform.position);
     }
 
     [Server]
     private void StartWandering()
     {
-        state = SlimeState.Wandering;
+        state = UnitState.Wandering;
 
         float angle = Random.Range(0f, Mathf.PI * 2f);
         Vector2 direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));

@@ -3,7 +3,12 @@
     "allow": [
       "Bash(python3 -)",
       "Bash(python3 *)",
-      "Bash(echo \"exit: $?\")"
+      "Bash(echo \"exit: $?\")",
+      "Bash(grep -n -B2 -A40 'm_SourcePrefab: {fileID: 200000, guid: a56d029a8ad044d18c629178ae811d8d' /mnt/d/Coding/glutki/Assets/Prefabs/Map.prefab)",
+      "Bash(grep -c 'm_SourcePrefab: {fileID: 200000, guid: a56d029a8ad044d18c629178ae811d8d' /mnt/d/Coding/glutki/Assets/Prefabs/Map.prefab)",
+      "Bash(grep -c 'm_SourcePrefab: {fileID: .*, guid: 0c43e2891ec942b498925bd32113d71a' /mnt/d/Coding/glutki/Assets/Prefabs/Map.prefab)",
+      "Bash(awk '/PrefabInstance:/{blk=1; buf=\"\"} blk{buf=buf $0 \"\\\\n\"} /m_SourcePrefab: {fileID: 200000, guid: a56d029a8ad044d18c629178ae811d8d/{print buf; exit}' /mnt/d/Coding/glutki/Assets/Prefabs/Map.prefab)",
+      "Bash(git mv *)"
     ]
   }
 }
