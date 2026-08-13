@@ -121,23 +121,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f470b4d240a542d1adde262ebf89b28a, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Base
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
   unitPrefabs:
   - {fileID: 6014365302286197209, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
-  - {fileID: 1489020118746187602, guid: 9916678023fe26c4f91c6cc77c492e39, type: 3}
-  - {fileID: 349329302747645024, guid: 9d77140559d17b7469e5be81d7faafd8, type: 3}
-  - {fileID: 633893706922809094, guid: 1fe2a08b9c73bf244b148b24717f8c76, type: 3}
   - {fileID: 3447786934808800565, guid: 7c2cc5c9951e71a42bab8e1547b1cee8, type: 3}
   - {fileID: 5032928327115468467, guid: ee3dac4ef8791fd49ab68cc15d1cf4c2, type: 3}
-  - {fileID: 3710697984304351932, guid: 45c870d60f71ec6419289ab4c59c7650, type: 3}
   - {fileID: 8480537066866195548, guid: 3a2be394fc4596646974ffb1d39f8c0f, type: 3}
-  - {fileID: 7661442596909684321, guid: 2035dedf4275d6f47975974067891073, type: 3}
+  - {fileID: 1388244362970297067, guid: f34044d7f68e33a47aae255e3c0da37b, type: 3}
   spawnCost: 1
   highlightColor: {r: 1, g: 0.9, b: 0.3, a: 1}
+  owner: 0
 --- !u!61 &200005
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -146,6 +143,7 @@ BoxCollider2D:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 200000}
   m_Enabled: 1
+  serializedVersion: 3
   m_Density: 1
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -175,9 +173,9 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0
+    oldSize: {x: 1.73, y: 1.77}
+    newSize: {x: 2.56, y: 1.95}
+    adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
