@@ -173,8 +173,8 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   enemyUnitPrefabs:
-  - {fileID: 8480537066866195548, guid: 3a2be394fc4596646974ffb1d39f8c0f, type: 3}
-  waveIntervalMin: 30
-  waveIntervalMax: 60
+  - {fileID: 8480537066866195548, guid: a390b8bf71c3f4c41b67fd9e42a59bd0, type: 3}
+  waveIntervalMin: 1
+  waveIntervalMax: 5
   waveSizeMin: 1
   waveSizeMax: 1
