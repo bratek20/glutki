@@ -14,7 +14,6 @@ public class SpawnSlimeButton : MonoBehaviour
 
     private Button button;
     private Text label;
-    private GameController gameController;
 
     private void Awake()
     {
@@ -23,18 +22,18 @@ public class SpawnSlimeButton : MonoBehaviour
 
     private void Update()
     {
-        if (gameController == null) gameController = FindAnyObjectByType<GameController>();
+        Base selectedBase = BaseSelectionManager.SelectedBase;
+        bool canManage = selectedBase != null && selectedBase.IsOwnedByLocalPlayer;
+        int cost = selectedBase != null ? selectedBase.SpawnCost : 1;
+        int resources = selectedBase != null ? selectedBase.StoredResources : 0;
 
-        int cost = gameController != null ? gameController.SpawnCost : 1;
-        int resources = ColonyBase.Instance != null ? ColonyBase.Instance.StoredResources : 0;
-
-        button.interactable = resources >= cost;
-        label.text = $"Spawn Slime ({cost})";
+        button.interactable = canManage && resources >= cost;
+        label.text = canManage ? $"Spawn Slime ({cost})" : "Not your base";
     }
 
     private void OnClicked()
     {
-        gameController?.CmdRequestSpawn();
+        BaseSelectionManager.SelectedBase?.CmdRequestSpawn();
     }
 
     private void BuildButton()

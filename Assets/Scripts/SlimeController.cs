@@ -39,6 +39,8 @@ public class SlimeController : NetworkBehaviour
     [Tooltip("Trigger-only collider kept in sync with resourceDetectionRadius, purely so the detection range is visible as a gizmo in the Scene view.")]
     [SerializeField] private CircleCollider2D detectionRadiusGizmo;
 
+    public Base HomeBase { get; set; }
+
     private Vector3 targetPosition;
     private bool hasTarget;
     private SlimeState state = SlimeState.Wandering;
@@ -48,6 +50,10 @@ public class SlimeController : NetworkBehaviour
 
     // Replicates movement state from Server to all connected Clients
     [SyncVar] private bool isWalkingServer;
+
+    // Replicates facing direction from Server to all connected Clients. The base sprite/animation
+    // faces right, so this flips the renderer horizontally while moving left.
+    [SyncVar] private bool facingLeftServer;
 
     // Replicates whether this gatherer is currently carrying a resource, for the carry tint
     [SyncVar(hook = nameof(OnCarryingChanged))] private bool isCarryingResource;
@@ -91,10 +97,14 @@ public class SlimeController : NetworkBehaviour
 
     private void Update()
     {
-        // 1. Visually update local Animator on Host & Clients
+        // 1. Visually update local Animator/SpriteRenderer on Host & Clients
         if (animator != null)
         {
             animator.SetBool("IsWalking", isWalkingServer);
+        }
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.flipX = facingLeftServer;
         }
 
         // 2. Server-only position and state evaluation
@@ -122,8 +132,7 @@ public class SlimeController : NetworkBehaviour
         if (nearest == null) return;
 
         targetResource = nearest;
-        targetPosition = nearest.transform.position;
-        hasTarget = true;
+        SetTarget(nearest.transform.position);
         state = SlimeState.SeekingResource;
     }
 
@@ -202,16 +211,15 @@ public class SlimeController : NetworkBehaviour
         isCarryingResource = true;
 
         state = SlimeState.ReturningToBase;
-        targetPosition = ColonyBase.Instance != null ? ColonyBase.Instance.transform.position : transform.position;
-        hasTarget = true;
+        SetTarget(HomeBase != null ? HomeBase.transform.position : transform.position);
     }
 
     [Server]
     private void OnBaseReached()
     {
-        if (ColonyBase.Instance != null)
+        if (HomeBase != null)
         {
-            ColonyBase.Instance.DepositResource(carriedAmount);
+            HomeBase.DepositResource(carriedAmount);
         }
 
         carriedAmount = 0;
@@ -228,8 +236,20 @@ public class SlimeController : NetworkBehaviour
         Vector2 direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
         float distance = Random.Range(wanderMinDistance, wanderMaxDistance);
 
-        targetPosition = transform.position + new Vector3(direction.x, direction.y, 0f) * distance;
+        SetTarget(transform.position + new Vector3(direction.x, direction.y, 0f) * distance);
+    }
+
+    [Server]
+    private void SetTarget(Vector3 position)
+    {
+        targetPosition = position;
         hasTarget = true;
+
+        float deltaX = targetPosition.x - transform.position.x;
+        if (!Mathf.Approximately(deltaX, 0f))
+        {
+            facingLeftServer = deltaX < 0f;
+        }
     }
 
     private void OnCarryingChanged(bool oldValue, bool newValue)
