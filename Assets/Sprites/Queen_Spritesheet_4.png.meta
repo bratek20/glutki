@@ -176,7 +176,7 @@ TextureImporter:
         serializedVersion: 2
         x: 52
         y: 1170
-        width: 602
+        width: 601
         height: 254
       alignment: 7
       pivot: {x: 0.5, y: 0}
@@ -200,8 +200,8 @@ TextureImporter:
         y: 1170
         width: 602
         height: 269
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -218,12 +218,12 @@ TextureImporter:
       name: Queen_Spritesheet_4_2
       rect:
         serializedVersion: 2
-        x: 1459
+        x: 1460
         y: 1170
-        width: 603
+        width: 601
         height: 299
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -244,8 +244,8 @@ TextureImporter:
         y: 1169
         width: 604
         height: 325
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -263,11 +263,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 50
-        y: 786
+        y: 787
         width: 605
-        height: 314
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        height: 312
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -284,12 +284,12 @@ TextureImporter:
       name: Queen_Spritesheet_4_5
       rect:
         serializedVersion: 2
-        x: 753
-        y: 786
-        width: 605
-        height: 331
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        x: 754
+        y: 787
+        width: 604
+        height: 330
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -310,8 +310,8 @@ TextureImporter:
         y: 785
         width: 605
         height: 345
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -330,10 +330,10 @@ TextureImporter:
         serializedVersion: 2
         x: 2161
         y: 786
-        width: 605
+        width: 606
         height: 363
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -352,10 +352,10 @@ TextureImporter:
         serializedVersion: 2
         x: 49
         y: 400
-        width: 608
+        width: 607
         height: 351
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -374,10 +374,10 @@ TextureImporter:
         serializedVersion: 2
         x: 753
         y: 400
-        width: 605
+        width: 606
         height: 368
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -396,10 +396,10 @@ TextureImporter:
         serializedVersion: 2
         x: 1454
         y: 400
-        width: 608
+        width: 609
         height: 381
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -418,10 +418,10 @@ TextureImporter:
         serializedVersion: 2
         x: 2159
         y: 408
-        width: 607
+        width: 608
         height: 275
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -440,10 +440,10 @@ TextureImporter:
         serializedVersion: 2
         x: 49
         y: 19
-        width: 608
-        height: 275
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        width: 607
+        height: 276
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -461,11 +461,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 753
-        y: 27
-        width: 608
-        height: 251
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        y: 28
+        width: 607
+        height: 250
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -486,8 +486,8 @@ TextureImporter:
         y: 29
         width: 608
         height: 214
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -505,11 +505,11 @@ TextureImporter:
       rect:
         serializedVersion: 2
         x: 2159
-        y: 18
+        y: 19
         width: 608
-        height: 279
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+        height: 278
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -534,7 +534,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       Queen_Spritesheet_4_0: -7013068417612415128
       Queen_Spritesheet_4_1: 529319295397239921

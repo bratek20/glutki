@@ -842,7 +842,6 @@ MonoBehaviour:
   spawnPrefabs:
   - {fileID: 3570043664090693166, guid: b3163b12cfb623b4f88d0df9bdb50ab8, type: 3}
   - {fileID: 8480537066866195548, guid: a390b8bf71c3f4c41b67fd9e42a59bd0, type: 3}
-  - {fileID: 7100000000000000001, guid: 5e8d2c1b7a934f60b8c3d5e7f1a2b4c6, type: 3}
   - {fileID: 200000, guid: a56d029a8ad044d18c629178ae811d8d, type: 3}
   - {fileID: 5032928327115468467, guid: ee3dac4ef8791fd49ab68cc15d1cf4c2, type: 3}
   - {fileID: 2987455192824275693, guid: 3a2be394fc4596646974ffb1d39f8c0f, type: 3}

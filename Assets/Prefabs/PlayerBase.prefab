@@ -127,7 +127,6 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   unitPrefabs:
-  - {fileID: 6014365302286197209, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
   - {fileID: 3447786934808800565, guid: 7c2cc5c9951e71a42bab8e1547b1cee8, type: 3}
   - {fileID: 1388244362970297067, guid: f34044d7f68e33a47aae255e3c0da37b, type: 3}
   - {fileID: 5095609539908576617, guid: dbb39e47a26b9d34380d9c666c88315d, type: 3}
