@@ -22,9 +22,11 @@ its own zoomed-in colony interior. Each side owns one or more **Base**s that pro
 - **World View / Base View** (`ViewManager.cs`) — another unsynced, per-peer concept: the camera is
   either showing the shared world map, or "inside" one specific base. Clicking a base (or the
   bottom-right toggle button) enters its Base View; the toggle button also leaves it. Every base's
-  interior is a real place in the shared world (offset far below the base itself via
-  `Base.InteriorOffset/InteriorHalfSize`), not a separate scene — so units physically occupy it and
-  every peer sees the same interior content when looking there.
+  interior is a real place in the shared world, not a separate scene, so units physically occupy
+  it and every peer sees the same interior content when looking there. Interiors are placed by
+  `netId` rather than map position (`Base.InteriorCenter`) — each base gets its own far-apart slot
+  in a dedicated row, so bases sitting close together on the map never bleed into each other's
+  interior view.
 - **Units** (`UnitController.cs`) — server-authoritative AI. Each unit remembers the `Base` that
   spawned it (`HomeBase`) and always returns gathered resources there specifically. State machine:
   `ExitingBase` (walking from spawn/entry point to the base's interior exit, then warps onto the

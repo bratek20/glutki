@@ -44,12 +44,19 @@ public class CameraController : MonoBehaviour
 
     private void OnViewChanged()
     {
+        // Whatever click/touch triggered this view switch may still be held down on the next
+        // frame. Without this, a stale drag/pinch anchor computed under the OLD camera framing
+        // gets compared against the NEW one, producing a huge bogus delta that yanks the camera
+        // away from center the instant the switch happens.
+        isDragging = false;
+        isPinching = false;
+
         if (ViewManager.CurrentView == ViewMode.Base)
         {
             savedWorldPosition = transform.position;
             savedWorldOrthoSize = cam.orthographicSize;
 
-            transform.position = ViewManager.ViewedBase.InteriorCenter;
+            CenterOnQueen(ViewManager.ViewedBase);
             cam.orthographicSize = baseViewOrthographicSize;
         }
         else
@@ -145,6 +152,15 @@ public class CameraController : MonoBehaviour
         cam.orthographicSize = Mathf.Clamp(cam.orthographicSize + sizeDelta, minOrthographicSize, maxOrthographicSize);
         Vector3 anchorWorldAfter = cam.ScreenToWorldPoint(screenPosition);
         transform.position += anchorWorldBefore - anchorWorldAfter;
+    }
+
+    // Center on the Queen's actual position rather than the InteriorCenter formula, so this stays
+    // correct even if a base's interior layout ever changes. Only X/Y move - the camera's own Z
+    // depth must be preserved, since the interior sits at world Z 0 same as every sprite.
+    private void CenterOnQueen(Base viewedBase)
+    {
+        Vector3 center = viewedBase.Queen != null ? viewedBase.Queen.transform.position : viewedBase.InteriorCenter;
+        transform.position = new Vector3(center.x, center.y, transform.position.z);
     }
 
     // Base interiors have a fixed footprint (Base.InteriorHalfSize) - keep the camera's own

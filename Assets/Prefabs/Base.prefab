@@ -135,8 +135,9 @@ MonoBehaviour:
   spawnCost: 1
   highlightColor: {r: 1, g: 0.9, b: 0.3, a: 1}
   owner: 0
-  interiorOffset: {x: 0, y: -100, z: 0}
   interiorHalfSize: {x: 18, y: 10}
+  interiorSlotSpacing: 500
+  interiorRowY: -1000
 --- !u!61 &200005
 BoxCollider2D:
   m_ObjectHideFlags: 0

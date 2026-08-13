@@ -1,5 +1,6 @@
 using Mirror;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
 public class Base : NetworkBehaviour
@@ -11,12 +12,15 @@ public class Base : NetworkBehaviour
     [SerializeField] private BaseOwner owner = BaseOwner.Host;
 
     [Header("Base View interior")]
-    [Tooltip("Where this base's interior (Queen, exit point, wandering-in units) sits in world space, relative to the base itself. Offset far away so interiors never overlap the map or each other.")]
-    [SerializeField] private Vector3 interiorOffset = new Vector3(0f, -100f, 0f);
     [Tooltip("Half-size of the interior room, roughly 2x a screen's worth of view. Also used to clamp camera panning while inside this base.")]
     [SerializeField] private Vector2 interiorHalfSize = new Vector2(18f, 10f);
+    [Tooltip("Distance between one base's interior slot and the next. Must comfortably exceed interiorHalfSize.x * 2 so no two interiors are ever visible at once, regardless of how close the bases are on the map.")]
+    [SerializeField] private float interiorSlotSpacing = 500f;
+    [Tooltip("How far below the map the whole row of interiors sits.")]
+    [SerializeField] private float interiorRowY = -1000f;
 
     [SyncVar] private int storedResources = 5;
+    [SyncVar] private UnitController queen;
 
     private SpriteRenderer spriteRenderer;
     private Collider2D selectionCollider;
@@ -26,8 +30,12 @@ public class Base : NetworkBehaviour
     public int StoredResources => storedResources;
     public int SpawnCost => spawnCost;
     public BaseOwner Owner => owner;
+    public UnitController Queen => queen;
 
-    public Vector3 InteriorCenter => transform.position + interiorOffset;
+    // Placed by netId rather than map position - every base gets its own far-apart slot in a
+    // dedicated interior row, regardless of how close together bases happen to be on the map.
+    // netId is server-assigned and identical on every peer, so this stays consistent for everyone.
+    public Vector3 InteriorCenter => new Vector3(netId * interiorSlotSpacing, interiorRowY, 0f);
     public Vector2 InteriorHalfSize => interiorHalfSize;
     public Vector3 InteriorExitPoint => InteriorCenter + new Vector3(0f, interiorHalfSize.y, 0f);
 
@@ -58,6 +66,7 @@ public class Base : NetworkBehaviour
     {
         if (selectionCollider == null || Camera.main == null || Mouse.current == null) return;
         if (!Mouse.current.leftButton.wasPressedThisFrame) return;
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
         Vector2 worldPoint = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         if (selectionCollider.OverlapPoint(worldPoint))
@@ -83,11 +92,12 @@ public class Base : NetworkBehaviour
     {
         if (queenPrefab == null) return;
 
-        GameObject queen = Instantiate(queenPrefab, InteriorCenter, Quaternion.identity);
-        UnitController controller = queen.GetComponent<UnitController>();
+        GameObject queenObject = Instantiate(queenPrefab, InteriorCenter, Quaternion.identity);
+        UnitController controller = queenObject.GetComponent<UnitController>();
         if (controller != null) controller.HomeBase = this;
 
-        NetworkServer.Spawn(queen);
+        NetworkServer.Spawn(queenObject);
+        queen = controller;
     }
 
     [Server]
