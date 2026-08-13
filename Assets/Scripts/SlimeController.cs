@@ -39,6 +39,8 @@ public class SlimeController : NetworkBehaviour
     [Tooltip("Trigger-only collider kept in sync with resourceDetectionRadius, purely so the detection range is visible as a gizmo in the Scene view.")]
     [SerializeField] private CircleCollider2D detectionRadiusGizmo;
 
+    public Base HomeBase { get; set; }
+
     private Vector3 targetPosition;
     private bool hasTarget;
     private SlimeState state = SlimeState.Wandering;
@@ -202,16 +204,16 @@ public class SlimeController : NetworkBehaviour
         isCarryingResource = true;
 
         state = SlimeState.ReturningToBase;
-        targetPosition = ColonyBase.Instance != null ? ColonyBase.Instance.transform.position : transform.position;
+        targetPosition = HomeBase != null ? HomeBase.transform.position : transform.position;
         hasTarget = true;
     }
 
     [Server]
     private void OnBaseReached()
     {
-        if (ColonyBase.Instance != null)
+        if (HomeBase != null)
         {
-            ColonyBase.Instance.DepositResource(carriedAmount);
+            HomeBase.DepositResource(carriedAmount);
         }
 
         carriedAmount = 0;

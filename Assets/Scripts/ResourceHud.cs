@@ -17,7 +17,8 @@ public class ResourceHud : MonoBehaviour
 
     private void Update()
     {
-        int resources = ColonyBase.Instance != null ? ColonyBase.Instance.StoredResources : 0;
+        Base selectedBase = BaseSelectionManager.SelectedBase;
+        int resources = selectedBase != null ? selectedBase.StoredResources : 0;
         hudText.text = $"Resources: {resources}\nSlimes: {SlimeController.ActiveSlimeCount}";
     }
 
