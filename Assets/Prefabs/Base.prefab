@@ -132,6 +132,7 @@ MonoBehaviour:
   - {fileID: 5032928327115468467, guid: ee3dac4ef8791fd49ab68cc15d1cf4c2, type: 3}
   - {fileID: 8480537066866195548, guid: 3a2be394fc4596646974ffb1d39f8c0f, type: 3}
   - {fileID: 1388244362970297067, guid: f34044d7f68e33a47aae255e3c0da37b, type: 3}
+  - {fileID: 5095609539908576617, guid: dbb39e47a26b9d34380d9c666c88315d, type: 3}
   spawnCost: 1
   highlightColor: {r: 1, g: 0.9, b: 0.3, a: 1}
   owner: 0
