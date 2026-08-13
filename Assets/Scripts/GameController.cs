@@ -10,7 +10,7 @@ public class GameController : NetworkBehaviour
 
         // New Input System check for Spacebar. This is a host-only debug shortcut, so it can
         // only ever spawn from a base the host owns - same rule CmdRequestSpawn enforces for clients.
-        Base selectedBase = BaseSelectionManager.SelectedBase;
+        PlayerBase selectedBase = BaseSelectionManager.SelectedBase;
         if (Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame
             && selectedBase != null && selectedBase.Owner == BaseOwner.Host)
         {

@@ -12,11 +12,11 @@ public enum ViewMode
 public static class ViewManager
 {
     public static ViewMode CurrentView { get; private set; } = ViewMode.World;
-    public static Base ViewedBase { get; private set; }
+    public static PlayerBase ViewedBase { get; private set; }
 
     public static event Action ViewChanged;
 
-    public static void EnterBaseView(Base b)
+    public static void EnterBaseView(PlayerBase b)
     {
         if (b == null) return;
 

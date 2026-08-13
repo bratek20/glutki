@@ -17,7 +17,7 @@ public class ResourceHud : MonoBehaviour
 
     private void Update()
     {
-        Base selectedBase = BaseSelectionManager.SelectedBase;
+        PlayerBase selectedBase = BaseSelectionManager.SelectedBase;
         int resources = selectedBase != null ? selectedBase.StoredResources : 0;
         hudText.text = $"Resources: {resources}\nUnits: {UnitController.ActiveUnitCount}";
     }

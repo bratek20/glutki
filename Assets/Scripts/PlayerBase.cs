@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
-public class Base : NetworkBehaviour
+public class PlayerBase : NetworkBehaviour
 {
     [SerializeField] private GameObject[] unitPrefabs;
     [SerializeField] private GameObject queenPrefab;
@@ -21,6 +21,7 @@ public class Base : NetworkBehaviour
 
     [SyncVar] private int storedResources = 5;
     [SyncVar] private UnitController queen;
+    [SyncVar] private bool queenAlive = true;
 
     private SpriteRenderer spriteRenderer;
     private Collider2D selectionCollider;
@@ -31,6 +32,12 @@ public class Base : NetworkBehaviour
     public int SpawnCost => spawnCost;
     public BaseOwner Owner => owner;
     public UnitController Queen => queen;
+
+    // Once the Queen dies, this base can no longer spawn units and its gatherers give up
+    // gathering entirely - see UnitController's queen-alive checks.
+    public bool IsQueenAlive => queenAlive;
+
+    private Faction UnitFaction => owner == BaseOwner.Host ? Faction.Host : Faction.Client;
 
     // Placed by netId rather than map position - every base gets its own far-apart slot in a
     // dedicated interior row, regardless of how close together bases happen to be on the map.
@@ -94,10 +101,21 @@ public class Base : NetworkBehaviour
 
         GameObject queenObject = Instantiate(queenPrefab, InteriorCenter, Quaternion.identity);
         UnitController controller = queenObject.GetComponent<UnitController>();
-        if (controller != null) controller.HomeBase = this;
+        if (controller != null)
+        {
+            controller.HomeBase = this;
+            controller.Faction = UnitFaction;
+        }
 
         NetworkServer.Spawn(queenObject);
         queen = controller;
+    }
+
+    // Called by our own Queen's UnitController when its HP reaches 0.
+    [Server]
+    public void OnQueenKilled()
+    {
+        queenAlive = false;
     }
 
     [Server]
@@ -131,6 +149,7 @@ public class Base : NetworkBehaviour
     [Server]
     public void ServerTrySpawn()
     {
+        if (!queenAlive) return;
         if (!TrySpendResource(spawnCost)) return;
 
         SpawnUnit();
@@ -148,7 +167,11 @@ public class Base : NetworkBehaviour
         // appear on the world map - see UnitController's ExitingBase state.
         GameObject unit = Instantiate(unitPrefab, InteriorCenter, Quaternion.identity);
         UnitController controller = unit.GetComponent<UnitController>();
-        if (controller != null) controller.HomeBase = this;
+        if (controller != null)
+        {
+            controller.HomeBase = this;
+            controller.Faction = UnitFaction;
+        }
 
         NetworkServer.Spawn(unit);
     }

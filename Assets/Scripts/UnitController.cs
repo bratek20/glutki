@@ -19,7 +19,9 @@ public class UnitController : NetworkBehaviour
         Wandering,
         SeekingResource,
         ReturningToBase,
-        EnteringBase
+        EnteringBase,
+        MarchingToBase,
+        MarchingToQueen
     }
 
     [SerializeField] private UnitType unitType = UnitType.Gatherer;
@@ -37,11 +39,28 @@ public class UnitController : NetworkBehaviour
     [SerializeField] private float resourceScanInterval = 0.2f;
     [SerializeField] private Color carryingTintColor = new Color(1f, 0.85f, 0.35f);
 
+    [Header("Combat")]
+    [Tooltip("Aggressive units actively hunt down enemies within aggroRadius and chase them. Non-aggressive units only fight back if something attacks them, and won't chase.")]
+    [SerializeField] private bool isAggressive;
+    [SerializeField] private int maxHealth = 10;
+    [SerializeField] private int attackDamage = 1;
+    [SerializeField] private float attackInterval = 1f;
+    [SerializeField] private float attackRange = 0.6f;
+    [SerializeField] private float aggroRadius = 3f;
+    [SerializeField] private float combatScanInterval = 0.2f;
+
     [Header("Debug")]
     [Tooltip("Trigger-only collider kept in sync with resourceDetectionRadius, purely so the detection range is visible as a gizmo in the Scene view.")]
     [SerializeField] private CircleCollider2D detectionRadiusGizmo;
 
-    public Base HomeBase { get; set; }
+    public PlayerBase HomeBase { get; set; }
+
+    // Set by BotBase when spawning a wave unit - marches on this base's Queen instead of wandering.
+    public PlayerBase AttackTargetBase { get; set; }
+
+    public Faction Faction { get; set; }
+
+    public bool IsAlive => currentHealth > 0;
 
     private Vector3 targetPosition;
     private bool hasTarget;
@@ -49,6 +68,10 @@ public class UnitController : NetworkBehaviour
     private Resource targetResource;
     private float resourceScanTimer;
     private int carriedAmount;
+
+    private UnitController combatTarget;
+    private float combatScanTimer;
+    private float attackTimer;
 
     // Replicates movement state from Server to all connected Clients
     [SyncVar] private bool isWalkingServer;
@@ -60,9 +83,15 @@ public class UnitController : NetworkBehaviour
     // Replicates whether this gatherer is currently carrying a resource, for the carry tint
     [SyncVar(hook = nameof(OnCarryingChanged))] private bool isCarryingResource;
 
+    [SyncVar] private int currentHealth;
+
+    // Drives the "IsAttacking" animator bool on all clients.
+    [SyncVar] private bool isAttackingServer;
+
     private void Awake()
     {
         SyncDetectionRadiusGizmo();
+        currentHealth = maxHealth;
     }
 
     private void OnValidate()
@@ -95,8 +124,18 @@ public class UnitController : NetworkBehaviour
     {
         base.OnStartServer();
 
-        // The Queen is a permanent fixture at the center of the base interior - it never moves.
+        // The Queen is a permanent fixture at the center of the base interior - it never moves,
+        // it only fights back if something reaches her.
         if (unitType == UnitType.Queen) return;
+
+        // Wave units spawned by a BotBase march straight for their assigned target base instead
+        // of wandering out of a home base.
+        if (AttackTargetBase != null)
+        {
+            state = UnitState.MarchingToBase;
+            SetTarget(AttackTargetBase.transform.position);
+            return;
+        }
 
         // Every other unit is spawned inside its home base's interior and has to walk out to the
         // exit before it can be seen on the world map.
@@ -110,6 +149,7 @@ public class UnitController : NetworkBehaviour
         if (animator != null)
         {
             animator.SetBool("IsWalking", isWalkingServer);
+            animator.SetBool("IsAttacking", isAttackingServer);
         }
         if (spriteRenderer != null)
         {
@@ -118,9 +158,41 @@ public class UnitController : NetworkBehaviour
 
         // 2. Server-only position and state evaluation
         if (!isServer) return;
+        if (!IsAlive) return;
+
+        if (isAggressive)
+        {
+            TryAcquireAggroTarget();
+        }
+
+        // Combat takes priority over whatever else this unit was doing.
+        if (combatTarget != null)
+        {
+            UpdateCombat();
+            return;
+        }
+
         if (unitType == UnitType.Queen) return;
 
-        if (unitType == UnitType.Gatherer && (state == UnitState.Wandering || state == UnitState.SeekingResource))
+        UpdateTask();
+    }
+
+    [Server]
+    private void UpdateTask()
+    {
+        bool canGather = unitType == UnitType.Gatherer && HomeBase != null && HomeBase.IsQueenAlive;
+
+        if (unitType == UnitType.Gatherer && !canGather)
+        {
+            // Home base lost its Queen - abandon gathering for good, just wander from here on.
+            if (state != UnitState.ExitingBase && state != UnitState.Wandering)
+            {
+                targetResource = null;
+                isCarryingResource = false;
+                StartWandering();
+            }
+        }
+        else if (canGather && (state == UnitState.Wandering || state == UnitState.SeekingResource))
         {
             ScanForResource();
         }
@@ -205,6 +277,13 @@ public class UnitController : NetworkBehaviour
             case UnitState.EnteringBase:
                 OnEntryReached();
                 break;
+            case UnitState.MarchingToBase:
+                OnArrivedAtTargetBase();
+                break;
+            case UnitState.MarchingToQueen:
+                // The Queen is gone (dead, or never there) - nothing left to march on.
+                StartWandering();
+                break;
             default:
                 Invoke(nameof(StartWandering), Random.Range(1f, 3f));
                 break;
@@ -266,6 +345,23 @@ public class UnitController : NetworkBehaviour
     }
 
     [Server]
+    private void OnArrivedAtTargetBase()
+    {
+        if (AttackTargetBase == null)
+        {
+            StartWandering();
+            return;
+        }
+
+        // Warp into the target base's interior through the same opening its own units use, then
+        // head for the Queen at the center.
+        transform.position = AttackTargetBase.InteriorExitPoint;
+
+        state = UnitState.MarchingToQueen;
+        SetTarget(AttackTargetBase.InteriorCenter);
+    }
+
+    [Server]
     private void StartWandering()
     {
         state = UnitState.Wandering;
@@ -283,11 +379,126 @@ public class UnitController : NetworkBehaviour
         targetPosition = position;
         hasTarget = true;
 
-        float deltaX = targetPosition.x - transform.position.x;
+        UpdateFacing(position);
+    }
+
+    [Server]
+    private void UpdateFacing(Vector3 towards)
+    {
+        float deltaX = towards.x - transform.position.x;
         if (!Mathf.Approximately(deltaX, 0f))
         {
             facingLeftServer = deltaX < 0f;
         }
+    }
+
+    [Server]
+    private void TryAcquireAggroTarget()
+    {
+        if (combatTarget != null && combatTarget.IsAlive) return;
+
+        combatScanTimer -= Time.deltaTime;
+        if (combatScanTimer > 0f) return;
+        combatScanTimer = combatScanInterval;
+
+        combatTarget = FindNearestEnemy(aggroRadius);
+    }
+
+    [Server]
+    private UnitController FindNearestEnemy(float radius)
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, radius);
+        UnitController nearest = null;
+        float nearestDistance = float.MaxValue;
+
+        foreach (Collider2D hit in hits)
+        {
+            UnitController other = hit.GetComponent<UnitController>();
+            if (other == null || other == this || !other.IsAlive) continue;
+            if (other.Faction == Faction) continue;
+
+            float distance = Vector3.Distance(transform.position, other.transform.position);
+            if (distance < nearestDistance)
+            {
+                nearestDistance = distance;
+                nearest = other;
+            }
+        }
+
+        return nearest;
+    }
+
+    [Server]
+    private void UpdateCombat()
+    {
+        if (combatTarget == null || !combatTarget.IsAlive)
+        {
+            combatTarget = null;
+            isAttackingServer = false;
+            return;
+        }
+
+        float distance = Vector3.Distance(transform.position, combatTarget.transform.position);
+
+        if (distance > attackRange)
+        {
+            // Non-aggressive units only defend themselves - they don't chase a target that backs off.
+            if (!isAggressive)
+            {
+                combatTarget = null;
+                isAttackingServer = false;
+                return;
+            }
+
+            isAttackingServer = false;
+            isWalkingServer = true;
+            transform.position = Vector3.MoveTowards(transform.position, combatTarget.transform.position, moveSpeed * Time.deltaTime);
+            UpdateFacing(combatTarget.transform.position);
+        }
+        else
+        {
+            isWalkingServer = false;
+            isAttackingServer = true;
+            UpdateFacing(combatTarget.transform.position);
+
+            attackTimer -= Time.deltaTime;
+            if (attackTimer <= 0f)
+            {
+                attackTimer = attackInterval;
+                combatTarget.TakeDamage(attackDamage, this);
+            }
+        }
+    }
+
+    [Server]
+    public void TakeDamage(int amount, UnitController attacker)
+    {
+        if (!IsAlive) return;
+
+        currentHealth = Mathf.Max(0, currentHealth - amount);
+
+        if (currentHealth == 0)
+        {
+            Die();
+            return;
+        }
+
+        // Not already fighting something else - retaliate against whoever just hit us.
+        if (combatTarget == null)
+        {
+            combatTarget = attacker;
+        }
+    }
+
+    [Server]
+    private void Die()
+    {
+        if (unitType == UnitType.Queen && HomeBase != null)
+        {
+            HomeBase.OnQueenKilled();
+        }
+
+        NetworkServer.Destroy(gameObject);
     }
 
     private void OnCarryingChanged(bool oldValue, bool newValue)

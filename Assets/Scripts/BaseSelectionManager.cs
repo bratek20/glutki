@@ -4,23 +4,25 @@ using System.Collections.Generic;
 // client (and the host) tracks its own selection independently.
 public static class BaseSelectionManager
 {
-    private static readonly List<Base> allBases = new List<Base>();
+    private static readonly List<PlayerBase> allBases = new List<PlayerBase>();
 
-    public static Base SelectedBase { get; private set; }
+    public static IReadOnlyList<PlayerBase> AllBases => allBases;
 
-    public static void Register(Base b)
+    public static PlayerBase SelectedBase { get; private set; }
+
+    public static void Register(PlayerBase b)
     {
         allBases.Add(b);
         if (SelectedBase == null) Select(b);
     }
 
-    public static void Unregister(Base b)
+    public static void Unregister(PlayerBase b)
     {
         allBases.Remove(b);
         if (SelectedBase == b) Select(allBases.Count > 0 ? allBases[0] : null);
     }
 
-    public static void Select(Base b)
+    public static void Select(PlayerBase b)
     {
         if (SelectedBase == b) return;
 

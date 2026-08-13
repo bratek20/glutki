@@ -122,7 +122,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f470b4d240a542d1adde262ebf89b28a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Base
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerBase
   syncDirection: 0
   syncMode: 0
   syncInterval: 0

@@ -22,7 +22,7 @@ public class SpawnUnitButton : MonoBehaviour
 
     private void Update()
     {
-        Base selectedBase = BaseSelectionManager.SelectedBase;
+        PlayerBase selectedBase = BaseSelectionManager.SelectedBase;
         bool canManage = selectedBase != null && selectedBase.IsOwnedByLocalPlayer;
         int cost = selectedBase != null ? selectedBase.SpawnCost : 1;
         int resources = selectedBase != null ? selectedBase.StoredResources : 0;

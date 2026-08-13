@@ -157,7 +157,7 @@ public class CameraController : MonoBehaviour
     // Center on the Queen's actual position rather than the InteriorCenter formula, so this stays
     // correct even if a base's interior layout ever changes. Only X/Y move - the camera's own Z
     // depth must be preserved, since the interior sits at world Z 0 same as every sprite.
-    private void CenterOnQueen(Base viewedBase)
+    private void CenterOnQueen(PlayerBase viewedBase)
     {
         Vector3 center = viewedBase.Queen != null ? viewedBase.Queen.transform.position : viewedBase.InteriorCenter;
         transform.position = new Vector3(center.x, center.y, transform.position.z);
@@ -169,7 +169,7 @@ public class CameraController : MonoBehaviour
     {
         if (ViewManager.CurrentView != ViewMode.Base) return;
 
-        Base viewedBase = ViewManager.ViewedBase;
+        PlayerBase viewedBase = ViewManager.ViewedBase;
         if (viewedBase == null) return;
 
         Vector2 viewportHalfSize = new Vector2(cam.orthographicSize * cam.aspect, cam.orthographicSize);
