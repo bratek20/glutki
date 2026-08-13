@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &6609977583440852703
+--- !u!1001 &4626139666053878578
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -8,6 +8,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 4299230178549845892, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4299230178549845892, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 4299230178549845892, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -50,20 +58,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5204329978016109118, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: _assetId
-      value: 4072757186
+      value: 3848409375
       objectReference: {fileID: 0}
     - target: {fileID: 6014365302286197209, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_Name
-      value: Slime4
+      value: Slime7
       objectReference: {fileID: 0}
     - target: {fileID: 6417617058562059431, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -9118922959339785341, guid: 6bd782d6652110f46998b4c89fc53116, type: 3}
+      objectReference: {fileID: 515953890230247726, guid: 381cc48021b634e47a5ae142701196a7, type: 3}
     - target: {fileID: 8136976867981293379, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 07e7536c8f54b6b428bd5196f94592db, type: 2}
+      objectReference: {fileID: 9100000, guid: e46f8d1bb99a0fc4aa9694c8af62a799, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
