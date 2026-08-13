@@ -23,11 +23,12 @@ public class SpawnSlimeButton : MonoBehaviour
     private void Update()
     {
         Base selectedBase = BaseSelectionManager.SelectedBase;
+        bool canManage = selectedBase != null && selectedBase.IsOwnedByLocalPlayer;
         int cost = selectedBase != null ? selectedBase.SpawnCost : 1;
         int resources = selectedBase != null ? selectedBase.StoredResources : 0;
 
-        button.interactable = selectedBase != null && resources >= cost;
-        label.text = $"Spawn Slime ({cost})";
+        button.interactable = canManage && resources >= cost;
+        label.text = canManage ? $"Spawn Slime ({cost})" : "Not your base";
     }
 
     private void OnClicked()

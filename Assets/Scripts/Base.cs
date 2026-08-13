@@ -7,6 +7,7 @@ public class Base : NetworkBehaviour
     [SerializeField] private GameObject[] unitPrefabs;
     [SerializeField] private int spawnCost = 1;
     [SerializeField] private Color highlightColor = new Color(1f, 0.9f, 0.3f);
+    [SerializeField] private BaseOwner owner = BaseOwner.Host;
 
     [SyncVar] private int storedResources = 5;
 
@@ -17,6 +18,13 @@ public class Base : NetworkBehaviour
 
     public int StoredResources => storedResources;
     public int SpawnCost => spawnCost;
+    public BaseOwner Owner => owner;
+
+    // Every peer loads the same scene data, so the Host/Client split of "am I the owner"
+    // can be read straight off NetworkServer.active - true only for the host's own process.
+    public bool IsOwnedByLocalPlayer => NetworkServer.active
+        ? owner == BaseOwner.Host
+        : owner == BaseOwner.Client;
 
     private void Awake()
     {
@@ -69,10 +77,15 @@ public class Base : NetworkBehaviour
         return true;
     }
 
-    // Any client can request a spawn from this base - the server is the sole authority on whether it's affordable.
+    // Any client can call this, but the server only honors it for whichever side (Host or the
+    // remote Client) actually owns this base - the sender can't spawn units for the other side.
     [Command(requiresAuthority = false)]
-    public void CmdRequestSpawn()
+    public void CmdRequestSpawn(NetworkConnectionToClient sender = null)
     {
+        bool senderIsHost = sender != null && sender == NetworkServer.localConnection;
+        bool authorized = senderIsHost ? owner == BaseOwner.Host : owner == BaseOwner.Client;
+        if (!authorized) return;
+
         ServerTrySpawn();
     }
 
