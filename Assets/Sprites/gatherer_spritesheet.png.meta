@@ -1,0 +1,533 @@
+fileFormatVersion: 2
+guid: e2fcebb82d8bdc948931ae551314eb12
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4633620812745657198
+    second: gatherer_spritesheet_0
+  - first:
+      213: 8959340830672266116
+    second: gatherer_spritesheet_1
+  - first:
+      213: 9019874689395089392
+    second: gatherer_spritesheet_2
+  - first:
+      213: 4315873547857193221
+    second: gatherer_spritesheet_3
+  - first:
+      213: -6423729439994449501
+    second: gatherer_spritesheet_4
+  - first:
+      213: 8656389118078231754
+    second: gatherer_spritesheet_5
+  - first:
+      213: -7105693769406525481
+    second: gatherer_spritesheet_6
+  - first:
+      213: -8132095108775080421
+    second: gatherer_spritesheet_7
+  - first:
+      213: -6127716227427555510
+    second: gatherer_spritesheet_8
+  - first:
+      213: 5737080430893196233
+    second: gatherer_spritesheet_9
+  - first:
+      213: 3470426534882985703
+    second: gatherer_spritesheet_10
+  - first:
+      213: -4087779483966556042
+    second: gatherer_spritesheet_11
+  - first:
+      213: -7049916862285384204
+    second: gatherer_spritesheet_12
+  - first:
+      213: 5747408587521101675
+    second: gatherer_spritesheet_13
+  - first:
+      213: 5123647189973941888
+    second: gatherer_spritesheet_14
+  - first:
+      213: 2155789725688648123
+    second: gatherer_spritesheet_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: gatherer_spritesheet_0
+      rect:
+        serializedVersion: 2
+        x: 157
+        y: 1125
+        width: 411
+        height: 231
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e6bcf87449ded4040800000000000000
+      internalID: 4633620812745657198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 878
+        y: 1125
+        width: 461
+        height: 253
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 483afd15409f55c70800000000000000
+      internalID: 8959340830672266116
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 1582
+        y: 1126
+        width: 348
+        height: 363
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0ff5eeb9d380d2d70800000000000000
+      internalID: 9019874689395089392
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 2258
+        y: 1125
+        width: 386
+        height: 313
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5096883102015eb30800000000000000
+      internalID: 4315873547857193221
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 155
+        y: 735
+        width: 445
+        height: 295
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a179e3db145ad6a0800000000000000
+      internalID: -6423729439994449501
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 819
+        y: 744
+        width: 531
+        height: 280
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ac42c941a0ca12870800000000000000
+      internalID: 8656389118078231754
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 1485
+        y: 753
+        width: 601
+        height: 247
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7df41df0a21836d90800000000000000
+      internalID: -7105693769406525481
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 2172
+        y: 739
+        width: 550
+        height: 274
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1e05c1959ef42f80800000000000000
+      internalID: -8132095108775080421
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 381
+        width: 543
+        height: 278
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a47a8c3ae8af5faa0800000000000000
+      internalID: -6127716227427555510
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 830
+        y: 378
+        width: 473
+        height: 282
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c3eb3b61443e9f40800000000000000
+      internalID: 5737080430893196233
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 1552
+        y: 369
+        width: 443
+        height: 276
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e64acedb8e692030800000000000000
+      internalID: 3470426534882985703
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 2207
+        y: 378
+        width: 453
+        height: 275
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6783b02a73a4547c0800000000000000
+      internalID: -4087779483966556042
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_12
+      rect:
+        serializedVersion: 2
+        x: 150
+        y: 24
+        width: 446
+        height: 266
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f5717f37f9a92e90800000000000000
+      internalID: -7049916862285384204
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_13
+      rect:
+        serializedVersion: 2
+        x: 901
+        y: 26
+        width: 401
+        height: 266
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b6f8936c8a5e2cf40800000000000000
+      internalID: 5747408587521101675
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_14
+      rect:
+        serializedVersion: 2
+        x: 1582
+        y: 25
+        width: 275
+        height: 243
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 08e33d819f9da1740800000000000000
+      internalID: 5123647189973941888
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gatherer_spritesheet_15
+      rect:
+        serializedVersion: 2
+        x: 2258
+        y: 25
+        width: 256
+        height: 238
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb1db1a6557eaed10800000000000000
+      internalID: 2155789725688648123
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      gatherer_spritesheet_0: 4633620812745657198
+      gatherer_spritesheet_1: 8959340830672266116
+      gatherer_spritesheet_10: 3470426534882985703
+      gatherer_spritesheet_11: -4087779483966556042
+      gatherer_spritesheet_12: -7049916862285384204
+      gatherer_spritesheet_13: 5747408587521101675
+      gatherer_spritesheet_14: 5123647189973941888
+      gatherer_spritesheet_15: 2155789725688648123
+      gatherer_spritesheet_2: 9019874689395089392
+      gatherer_spritesheet_3: 4315873547857193221
+      gatherer_spritesheet_4: -6423729439994449501
+      gatherer_spritesheet_5: 8656389118078231754
+      gatherer_spritesheet_6: -7105693769406525481
+      gatherer_spritesheet_7: -8132095108775080421
+      gatherer_spritesheet_8: -6127716227427555510
+      gatherer_spritesheet_9: 5737080430893196233
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
