@@ -25,6 +25,31 @@ public class UnitController : NetworkBehaviour
         return count;
     }
 
+    // Attackers belonging to homeBase that haven't already been sent to attack a BotBase.
+    public static int CountAvailableAttackers(PlayerBase homeBase)
+    {
+        int count = 0;
+        foreach (UnitController unit in activeUnits)
+        {
+            if (unit.HomeBase == homeBase && unit.unitType == UnitType.Attacker && unit.AttackTargetBotBase == null) count++;
+        }
+        return count;
+    }
+
+    // Orders up to count available Attackers belonging to homeBase to march on target.
+    public static void SendAttackers(PlayerBase homeBase, BotBase target, int count)
+    {
+        int sent = 0;
+        foreach (UnitController unit in activeUnits)
+        {
+            if (sent >= count) break;
+            if (unit.HomeBase != homeBase || unit.unitType != UnitType.Attacker || unit.AttackTargetBotBase != null) continue;
+
+            unit.OrderAttack(target);
+            sent++;
+        }
+    }
+
     private enum UnitState
     {
         ExitingBase,
@@ -33,7 +58,10 @@ public class UnitController : NetworkBehaviour
         ReturningToBase,
         EnteringBase,
         MarchingToBase,
-        MarchingToQueen
+        MarchingToQueen,
+        Guarding,
+        MarchingToBotBase,
+        AttackingBotBase
     }
 
     [SerializeField] private UnitType unitType = UnitType.Gatherer;
@@ -50,6 +78,10 @@ public class UnitController : NetworkBehaviour
     [SerializeField] private float resourceDetectionRadius = 3f;
     [SerializeField] private float resourceScanInterval = 0.2f;
     [SerializeField] private Color carryingTintColor = new Color(1f, 0.85f, 0.35f);
+
+    [Header("Attacker Guard")]
+    [Tooltip("How far from the home base's interior center a freshly spawned Attacker parks itself while waiting for an attack order.")]
+    [SerializeField] private float guardRadius = 1.5f;
 
     [Header("Combat")]
     [Tooltip("Aggressive units actively hunt down enemies within aggroRadius and chase them. Non-aggressive units only fight back if something attacks them, and won't chase.")]
@@ -69,6 +101,10 @@ public class UnitController : NetworkBehaviour
 
     // Set by BotBase when spawning a wave unit - marches on this base's Queen instead of wandering.
     public PlayerBase AttackTargetBase { get; set; }
+
+    // Set by OrderAttack when a player sends this Attacker out - marches on this BotBase instead
+    // of staying put on guard.
+    public BotBase AttackTargetBotBase { get; set; }
 
     public Faction Faction { get; set; }
 
@@ -149,6 +185,15 @@ public class UnitController : NetworkBehaviour
             return;
         }
 
+        // Player-spawned Attackers park themselves near their Queen and wait for an attack order
+        // instead of wandering out onto the world map.
+        if (unitType == UnitType.Attacker)
+        {
+            state = UnitState.Guarding;
+            SetTarget(GuardPosition());
+            return;
+        }
+
         // Every other unit is spawned inside its home base's interior and has to walk out to the
         // exit before it can be seen on the world map.
         state = UnitState.ExitingBase;
@@ -192,6 +237,12 @@ public class UnitController : NetworkBehaviour
     [Server]
     private void UpdateTask()
     {
+        if (state == UnitState.AttackingBotBase)
+        {
+            UpdateBotBaseAttack();
+            return;
+        }
+
         bool canGather = unitType == UnitType.Gatherer && HomeBase != null && HomeBase.IsQueenAlive;
 
         if (unitType == UnitType.Gatherer && !canGather)
@@ -296,6 +347,12 @@ public class UnitController : NetworkBehaviour
                 // The Queen is gone (dead, or never there) - nothing left to march on.
                 StartWandering();
                 break;
+            case UnitState.MarchingToBotBase:
+                OnArrivedAtBotBase();
+                break;
+            case UnitState.Guarding:
+                // Reached its guard spot near the Queen - stay put indefinitely until OrderAttack.
+                break;
             default:
                 Invoke(nameof(StartWandering), Random.Range(1f, 3f));
                 break;
@@ -307,6 +364,15 @@ public class UnitController : NetworkBehaviour
     {
         // Warp from the base interior out onto the world map, at the base's actual position.
         transform.position = HomeBase != null ? HomeBase.transform.position : transform.position;
+
+        // An Attacker that was just ordered out marches on its target instead of wandering.
+        if (AttackTargetBotBase != null)
+        {
+            state = UnitState.MarchingToBotBase;
+            SetTarget(AttackTargetBotBase.transform.position);
+            return;
+        }
+
         StartWandering();
     }
 
@@ -371,6 +437,66 @@ public class UnitController : NetworkBehaviour
 
         state = UnitState.MarchingToQueen;
         SetTarget(AttackTargetBase.InteriorCenter);
+    }
+
+    [Server]
+    private void OnArrivedAtBotBase()
+    {
+        if (AttackTargetBotBase == null)
+        {
+            StartWandering();
+            return;
+        }
+
+        // Stand in place and start dealing damage - see UpdateBotBaseAttack.
+        state = UnitState.AttackingBotBase;
+        hasTarget = false;
+        UpdateFacing(AttackTargetBotBase.transform.position);
+    }
+
+    [Server]
+    private void UpdateBotBaseAttack()
+    {
+        if (AttackTargetBotBase == null)
+        {
+            isAttackingServer = false;
+            StartWandering();
+            return;
+        }
+
+        isWalkingServer = false;
+        isAttackingServer = true;
+
+        attackTimer -= Time.deltaTime;
+        if (attackTimer <= 0f)
+        {
+            attackTimer = attackInterval;
+            AttackTargetBotBase.TakeDamage(attackDamage);
+        }
+    }
+
+    // Sends this Attacker out from wherever it currently is (normally guarding near its Queen) to
+    // march on and attack the given BotBase.
+    [Server]
+    public void OrderAttack(BotBase target)
+    {
+        if (unitType != UnitType.Attacker || target == null) return;
+
+        AttackTargetBotBase = target;
+        state = UnitState.ExitingBase;
+        SetTarget(HomeBase != null ? HomeBase.InteriorExitPoint : transform.position);
+    }
+
+    [Server]
+    private Vector3 GuardPosition()
+    {
+        if (HomeBase == null) return transform.position;
+
+        float angle = Random.Range(0f, Mathf.PI * 2f);
+        Vector2 direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+        float distance = Random.Range(0f, guardRadius);
+
+        return HomeBase.InteriorCenter + new Vector3(direction.x, direction.y, 0f) * distance;
     }
 
     [Server]
