@@ -296,7 +296,6 @@ GameObject:
   - component: {fileID: 230904765}
   - component: {fileID: 230904764}
   - component: {fileID: 126855092}
-  - component: {fileID: 230904767}
   m_Layer: 5
   m_Name: SpawnUnit_Button
   m_TagString: Untagged
@@ -406,29 +405,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 230904762}
   m_CullTransparentMesh: 1
---- !u!223 &230904767
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 230904762}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 2
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 0
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 25
-  m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
-  m_TargetDisplay: 0
 --- !u!1 &307617599
 GameObject:
   m_ObjectHideFlags: 0
@@ -818,7 +794,6 @@ GameObject:
   - component: {fileID: 726203314}
   - component: {fileID: 726203313}
   - component: {fileID: 896233790}
-  - component: {fileID: 896233791}
   m_Layer: 5
   m_Name: ViewToggle_Button
   m_TagString: Untagged
@@ -978,29 +953,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   button: {fileID: 726203313}
   label: {fileID: 1602088432}
---- !u!223 &896233791
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 726203311}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 2
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 0
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 25
-  m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
-  m_TargetDisplay: 0
 --- !u!1 &954185587
 GameObject:
   m_ObjectHideFlags: 0
