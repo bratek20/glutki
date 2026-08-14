@@ -1,16 +1,28 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
 
 [RequireComponent(typeof(Animator))]
 public class UnitController : NetworkBehaviour
 {
-    // Number of units currently spawned as seen by this peer (host/client). Used by the HUD.
-    public static int ActiveUnitCount { get; private set; }
+    // Units currently spawned as seen by this peer (host/client). Used by the HUD to count
+    // gatherers/attackers per base.
+    private static readonly List<UnitController> activeUnits = new List<UnitController>();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-    private static void ResetActiveUnitCount()
+    private static void ResetActiveUnits()
     {
-        ActiveUnitCount = 0;
+        activeUnits.Clear();
+    }
+
+    public static int CountActive(PlayerBase homeBase, UnitType type)
+    {
+        int count = 0;
+        foreach (UnitController unit in activeUnits)
+        {
+            if (unit.HomeBase == homeBase && unit.unitType == type) count++;
+        }
+        return count;
     }
 
     private enum UnitState
@@ -109,7 +121,7 @@ public class UnitController : NetworkBehaviour
     public override void OnStartClient()
     {
         base.OnStartClient();
-        ActiveUnitCount++;
+        activeUnits.Add(this);
         if (animator == null) animator = GetComponent<Animator>();
         if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
     }
@@ -117,7 +129,7 @@ public class UnitController : NetworkBehaviour
     public override void OnStopClient()
     {
         base.OnStopClient();
-        ActiveUnitCount--;
+        activeUnits.Remove(this);
     }
 
     public override void OnStartServer()

@@ -52,8 +52,13 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   (`NetworkServer.Destroy`) is immediate at 0 HP; a dying Queen calls back into its `PlayerBase` to
   flip `IsQueenAlive` off.
 - **Resources** (`Resource.cs`) — pickups consumed by gatherer units.
-- **UI** — `ResourceHud`, `SpawnUnitButton`, and `ViewToggleButton` all read/act on
-  `BaseSelectionManager.SelectedBase` / `ViewManager`, never a global base reference.
+- **UI** — `ResourceHud`, `UnitsHud`, `SpawnUnitButton`, and `ViewToggleButton` all read/act on
+  `BaseSelectionManager.SelectedBase` / `ViewManager`, never a global base reference. Each is a
+  plain `MonoBehaviour` added to its corresponding pre-built GameObject in `GameScene`
+  (`Resource_Hud`, `Units_Hud`, `SpawnUnit_Button`, `ViewToggle_Button`) with its `TMP_Text`/`Button`
+  references wired in the Inspector — UI is laid out by hand in the scene, never built at runtime.
+  `UnitsHud` counts gatherers/attackers via `UnitController.CountActive`, scoped to the selected
+  base's `HomeBase` (bot-wave units have no `HomeBase`, so they never count toward any base).
 
 ## Networking model
 
