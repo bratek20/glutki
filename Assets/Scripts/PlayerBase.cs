@@ -7,6 +7,7 @@ public class PlayerBase : NetworkBehaviour
 {
     [SerializeField] private GameObject[] unitPrefabs;
     [SerializeField] private GameObject queenPrefab;
+    [SerializeField] private GameObject attackerPrefab;
     [SerializeField] private int spawnCost = 1;
     [SerializeField] private Color highlightColor = new Color(1f, 0.9f, 0.3f);
     [SerializeField] private BaseOwner owner = BaseOwner.Host;
@@ -36,6 +37,10 @@ public class PlayerBase : NetworkBehaviour
     // Once the Queen dies, this base can no longer spawn units and its gatherers give up
     // gathering entirely - see UnitController's queen-alive checks.
     public bool IsQueenAlive => queenAlive;
+
+    // Attackers belonging to this base that haven't already been sent to attack a BotBase - what
+    // AttackOrderPopup's slider maxes out at.
+    public int AvailableAttackers => UnitController.CountAvailableAttackers(this);
 
     private Faction UnitFaction => owner == BaseOwner.Host ? Faction.Host : Faction.Client;
 
@@ -174,5 +179,59 @@ public class PlayerBase : NetworkBehaviour
         }
 
         NetworkServer.Spawn(unit);
+    }
+
+    // Same authorization rules as CmdRequestSpawn - see its comment.
+    [Command(requiresAuthority = false)]
+    public void CmdRequestSpawnAttacker(NetworkConnectionToClient sender = null)
+    {
+        bool senderIsHost = sender != null && sender == NetworkServer.localConnection;
+        bool authorized = senderIsHost ? owner == BaseOwner.Host : owner == BaseOwner.Client;
+        if (!authorized) return;
+
+        ServerTrySpawnAttacker();
+    }
+
+    [Server]
+    public void ServerTrySpawnAttacker()
+    {
+        if (!queenAlive) return;
+        if (attackerPrefab == null) return;
+        if (!TrySpendResource(spawnCost)) return;
+
+        SpawnAttacker();
+    }
+
+    [Server]
+    private void SpawnAttacker()
+    {
+        GameObject unit = Instantiate(attackerPrefab, InteriorCenter, Quaternion.identity);
+        UnitController controller = unit.GetComponent<UnitController>();
+        if (controller != null)
+        {
+            controller.HomeBase = this;
+            controller.Faction = UnitFaction;
+        }
+
+        NetworkServer.Spawn(unit);
+    }
+
+    // Same authorization rules as CmdRequestSpawn - see its comment.
+    [Command(requiresAuthority = false)]
+    public void CmdOrderAttack(BotBase target, int count, NetworkConnectionToClient sender = null)
+    {
+        bool senderIsHost = sender != null && sender == NetworkServer.localConnection;
+        bool authorized = senderIsHost ? owner == BaseOwner.Host : owner == BaseOwner.Client;
+        if (!authorized || target == null) return;
+
+        ServerOrderAttack(target, count);
+    }
+
+    [Server]
+    public void ServerOrderAttack(BotBase target, int count)
+    {
+        if (target == null || count <= 0) return;
+
+        UnitController.SendAttackers(this, target, count);
     }
 }

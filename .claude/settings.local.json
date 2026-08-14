@@ -6,7 +6,8 @@
       "Bash(echo *)",
       "Bash(grep *)",
       "Bash(awk *)",
-      "Bash(git mv *)"
+      "Bash(git mv *)",
+      "Bash(grep *)"
     ]
   }
 }
