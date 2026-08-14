@@ -56,6 +56,7 @@ public class BotBase : NetworkBehaviour
     [Server]
     private void Die()
     {
+        Debug.Log($"{name}: destroyed", this);
         CancelInvoke();
         NetworkServer.Destroy(gameObject);
     }

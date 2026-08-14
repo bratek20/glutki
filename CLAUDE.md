@@ -17,12 +17,17 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
 - **BotBase** (`BotBase.cs`) — a separate, ownerless NetworkBehaviour with no Base View. Purely a
   server-side timer that periodically spawns a wave of bot units, all assigned (via
   `UnitController.AttackTargetBase`) to march on one randomly-picked `PlayerBase`. Has its own HP
-  (`maxHealth`/`TakeDamage`) independent of any unit's Queen-style HP — reaching 0 destroys it
-  (`NetworkServer.Destroy`), but every wave unit it already spawned is an independent
+  (`maxHealth`/`TakeDamage`) independent of any unit's Queen-style HP — reaching 0 calls
+  `NetworkServer.Destroy`, but every wave unit it already spawned is an independent
   `NetworkIdentity` with no back-reference to it, so they're unaffected and keep acting normally.
   Clicking it (same `Collider2D`-overlap pattern as `PlayerBase`) opens `AttackOrderPopup` instead
   of entering a Base View — it never touches `BaseSelectionManager`/`ViewManager`, since the
   player's own selected base must stay selected as the source of Attackers to send.
+  **Gotcha:** `BotBase` (like `PlayerBase`) is a *scene-placed* `NetworkIdentity` (nested in
+  `Map.prefab`, not `Instantiate`d at runtime) — Mirror never actually destroys those,
+  `NetworkServer.Destroy` just deactivates them so they stay respawnable. A reference to a "dead"
+  `BotBase` therefore never becomes null; code that needs to know whether one is gone must check
+  `!botBase.IsAlive` (see `UnitController.IsBotBaseGone`), not `== null`.
 - **Ownership** — only the owning side can spend a base's resources / spawn from it
   (`PlayerBase.CmdRequestSpawn`, checked server-side via the command's sender connection vs
   `NetworkServer.localConnection`). Anyone can *select/inspect* any base (see its resource count,

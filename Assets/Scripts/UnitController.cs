@@ -98,27 +98,29 @@ public class UnitController : NetworkBehaviour
     [Tooltip("Trigger-only collider kept in sync with resourceDetectionRadius, purely so the detection range is visible as a gizmo in the Scene view.")]
     [SerializeField] private CircleCollider2D detectionRadiusGizmo;
 
-    public PlayerBase HomeBase { get; set; }
+    [field: SerializeField] public PlayerBase HomeBase { get; set; }
 
     // Set by BotBase when spawning a wave unit - marches on this base's Queen instead of wandering.
-    public PlayerBase AttackTargetBase { get; set; }
+    [field: SerializeField] public PlayerBase AttackTargetBase { get; set; }
 
     // Set by OrderAttack when a player sends this Attacker out - marches on this BotBase instead
     // of staying put on guard.
-    public BotBase AttackTargetBotBase { get; set; }
+    [field: SerializeField] public BotBase AttackTargetBotBase { get; set; }
 
-    public Faction Faction { get; set; }
+    [field: SerializeField] public Faction Faction { get; set; }
 
     public bool IsAlive => currentHealth > 0;
 
-    private Vector3 targetPosition;
-    private bool hasTarget;
-    private UnitState state = UnitState.ExitingBase;
+    [Header("Debug (runtime, read-only - select this unit in Play mode to inspect)")]
+    [SerializeField] private UnitState state = UnitState.ExitingBase;
+    [SerializeField] private bool hasTarget;
+    [SerializeField] private Vector3 targetPosition;
+    [SerializeField] private UnitController combatTarget;
+
     private Resource targetResource;
     private float resourceScanTimer;
     private int carriedAmount;
 
-    private UnitController combatTarget;
     private float combatScanTimer;
     private float attackTimer;
 
@@ -443,19 +445,32 @@ public class UnitController : NetworkBehaviour
         SetTarget(AttackTargetBase.InteriorCenter);
     }
 
+    // True once the target is gone - either actually destroyed (a runtime-spawned BotBase) or, far
+    // more commonly, deactivated: BotBase is a scene-placed NetworkIdentity, so NetworkServer.Destroy
+    // never truly destroys it (Mirror only deactivates scene objects so they stay respawnable) - the
+    // component reference stays valid, just with currentHealth stuck at 0. A plain null check alone
+    // never trips for a scene object, so health has to be checked too.
+    private static bool IsBotBaseGone(BotBase target)
+    {
+        return target == null || !target.IsAlive;
+    }
+
     [Server]
     private void OnArrivedAtBotBase()
     {
-        if (AttackTargetBotBase == null)
+        if (IsBotBaseGone(AttackTargetBotBase))
         {
-            // Destroyed by someone else while we were still marching there - head back and
-            // resume guarding the Queen instead of attacking nothing.
+            // Gone by someone else while we were still marching there - head back and resume
+            // guarding the Queen instead of attacking nothing.
+            Debug.Log($"{name}: target BotBase gone before arrival, returning to guard", this);
+            AttackTargetBotBase = null;
             state = UnitState.ReturningToGuard;
             SetTarget(HomeBase != null ? HomeBase.transform.position : transform.position);
             return;
         }
 
         // Stand in place and start dealing damage - see UpdateBotBaseAttack.
+        Debug.Log($"{name}: arrived at {AttackTargetBotBase.name}, attacking", this);
         state = UnitState.AttackingBotBase;
         hasTarget = false;
         UpdateFacing(AttackTargetBotBase.transform.position);
@@ -464,10 +479,11 @@ public class UnitController : NetworkBehaviour
     [Server]
     private void UpdateBotBaseAttack()
     {
-        if (AttackTargetBotBase == null)
+        if (IsBotBaseGone(AttackTargetBotBase))
         {
-            // The target is gone (destroyed) - head back and resume guarding the Queen, the same
-            // way this Attacker did right after it was spawned.
+            // The target is gone - head back and resume guarding the Queen, the same way this
+            // Attacker did right after it was spawned.
+            Debug.Log($"{name}: target BotBase destroyed, returning to guard (HomeBase={HomeBase})", this);
             AttackTargetBotBase = null;
             isAttackingServer = false;
             state = UnitState.ReturningToGuard;
@@ -491,8 +507,9 @@ public class UnitController : NetworkBehaviour
     [Server]
     public void OrderAttack(BotBase target)
     {
-        if (unitType != UnitType.Attacker || target == null) return;
+        if (unitType != UnitType.Attacker || IsBotBaseGone(target)) return;
 
+        Debug.Log($"{name}: ordered to attack {target.name}", this);
         AttackTargetBotBase = target;
         state = UnitState.ExitingBase;
         SetTarget(HomeBase != null ? HomeBase.InteriorExitPoint : transform.position);
@@ -504,6 +521,7 @@ public class UnitController : NetworkBehaviour
         // Warp from the world map into the home base interior, entering through the same opening
         // units exit from, then walk to a guard spot near the Queen - exactly like a freshly
         // spawned Attacker does in OnStartServer.
+        Debug.Log($"{name}: back home, resuming guard (HomeBase={HomeBase})", this);
         transform.position = HomeBase != null ? HomeBase.InteriorExitPoint : transform.position;
 
         state = UnitState.Guarding;
