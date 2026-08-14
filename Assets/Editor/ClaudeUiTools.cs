@@ -104,9 +104,9 @@ public static class ClaudeUiTools
         so.FindProperty("cancelButton").objectReferenceValue = cancelButton;
         so.ApplyModifiedPropertiesWithoutUndo();
 
-        // Starts hidden - only AttackOrderPopup.Show() (triggered by clicking a BotBase) turns it on.
-        blocker.SetActive(false);
-        popup.SetActive(false);
+        // Both stay active - AttackOrderPopup.Awake() needs to run at scene load to register
+        // itself, so visibility is driven by a CanvasGroup (added in Awake) instead of
+        // SetActive. Deactivating the GameObject here would silently break that registration.
 
         Undo.RegisterCreatedObjectUndo(blocker, "Create Attack Order Popup");
         FinishCreation(popup, "Create Attack Order Popup");

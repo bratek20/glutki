@@ -61,7 +61,8 @@ public class UnitController : NetworkBehaviour
         MarchingToQueen,
         Guarding,
         MarchingToBotBase,
-        AttackingBotBase
+        AttackingBotBase,
+        ReturningToGuard
     }
 
     [SerializeField] private UnitType unitType = UnitType.Gatherer;
@@ -350,6 +351,9 @@ public class UnitController : NetworkBehaviour
             case UnitState.MarchingToBotBase:
                 OnArrivedAtBotBase();
                 break;
+            case UnitState.ReturningToGuard:
+                OnReturnedToGuard();
+                break;
             case UnitState.Guarding:
                 // Reached its guard spot near the Queen - stay put indefinitely until OrderAttack.
                 break;
@@ -444,7 +448,10 @@ public class UnitController : NetworkBehaviour
     {
         if (AttackTargetBotBase == null)
         {
-            StartWandering();
+            // Destroyed by someone else while we were still marching there - head back and
+            // resume guarding the Queen instead of attacking nothing.
+            state = UnitState.ReturningToGuard;
+            SetTarget(HomeBase != null ? HomeBase.transform.position : transform.position);
             return;
         }
 
@@ -459,8 +466,12 @@ public class UnitController : NetworkBehaviour
     {
         if (AttackTargetBotBase == null)
         {
+            // The target is gone (destroyed) - head back and resume guarding the Queen, the same
+            // way this Attacker did right after it was spawned.
+            AttackTargetBotBase = null;
             isAttackingServer = false;
-            StartWandering();
+            state = UnitState.ReturningToGuard;
+            SetTarget(HomeBase != null ? HomeBase.transform.position : transform.position);
             return;
         }
 
@@ -485,6 +496,18 @@ public class UnitController : NetworkBehaviour
         AttackTargetBotBase = target;
         state = UnitState.ExitingBase;
         SetTarget(HomeBase != null ? HomeBase.InteriorExitPoint : transform.position);
+    }
+
+    [Server]
+    private void OnReturnedToGuard()
+    {
+        // Warp from the world map into the home base interior, entering through the same opening
+        // units exit from, then walk to a guard spot near the Queen - exactly like a freshly
+        // spawned Attacker does in OnStartServer.
+        transform.position = HomeBase != null ? HomeBase.InteriorExitPoint : transform.position;
+
+        state = UnitState.Guarding;
+        SetTarget(GuardPosition());
     }
 
     [Server]

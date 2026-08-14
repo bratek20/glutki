@@ -19,6 +19,9 @@ public class AttackOrderPopup : MonoBehaviour
     private static AttackOrderPopup instance;
 
     private BotBase target;
+    private CanvasGroup canvasGroup;
+    private GameObject blocker;
+    private bool isOpen;
 
     public static void Open(BotBase target)
     {
@@ -29,14 +32,27 @@ public class AttackOrderPopup : MonoBehaviour
     {
         instance = this;
 
+        // panel must stay active (never SetActive(false)) so Awake keeps firing on scene load -
+        // visibility is driven by a CanvasGroup instead. Grabbed rather than serialized so this
+        // works even on a popup built before this fix, with no rewiring needed.
+        canvasGroup = panel.GetComponent<CanvasGroup>();
+        if (canvasGroup == null) canvasGroup = panel.AddComponent<CanvasGroup>();
+
+        // The dimmer sibling the Editor menu action creates alongside the popup - looked up by
+        // name rather than a serialized field for the same already-built-popup reason.
+        Transform blockerTransform = transform.parent != null ? transform.parent.Find("AttackOrder_Blocker") : null;
+        blocker = blockerTransform != null ? blockerTransform.gameObject : null;
+
         attackButton.onClick.AddListener(OnAttackClicked);
         cancelButton.onClick.AddListener(Hide);
         slider.onValueChanged.AddListener(_ => RefreshCountLabel());
+
+        SetVisible(false);
     }
 
     private void Update()
     {
-        if (target == null || !panel.activeSelf) return;
+        if (target == null || !isOpen) return;
 
         if (!target.IsAlive)
         {
@@ -61,13 +77,22 @@ public class AttackOrderPopup : MonoBehaviour
         RefreshHpText();
         RefreshCountLabel();
 
-        panel.SetActive(true);
+        SetVisible(true);
     }
 
     private void Hide()
     {
         target = null;
-        panel.SetActive(false);
+        SetVisible(false);
+    }
+
+    private void SetVisible(bool visible)
+    {
+        isOpen = visible;
+        canvasGroup.alpha = visible ? 1f : 0f;
+        canvasGroup.interactable = visible;
+        canvasGroup.blocksRaycasts = visible;
+        if (blocker != null) blocker.SetActive(visible);
     }
 
     private void RefreshAvailableAttackers()

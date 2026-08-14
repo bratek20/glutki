@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.EnhancedTouch;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
@@ -102,18 +103,28 @@ public class CameraController : MonoBehaviour
         UpdateDrag(mouse.position.ReadValue(), mouse.leftButton.wasPressedThisFrame, mouse.leftButton.wasReleasedThisFrame, mouse.leftButton.isPressed);
 
         float scroll = mouse.scroll.ReadValue().y;
-        if (!Mathf.Approximately(scroll, 0f))
+        if (!Mathf.Approximately(scroll, 0f) && !IsPointerOverUi())
         {
             ZoomAroundScreenPoint(-scroll * scrollZoomSpeed, mouse.position.ReadValue());
         }
+    }
+
+    // Same guard PlayerBase/BotBase use before acting on a click - without it, starting a drag on
+    // a UI element (e.g. dragging AttackOrderPopup's Slider) also pans the camera underneath it.
+    private static bool IsPointerOverUi()
+    {
+        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
     }
 
     private void UpdateDrag(Vector2 screenPosition, bool pressed, bool released, bool held)
     {
         if (pressed)
         {
-            isDragging = true;
-            dragAnchorWorld = cam.ScreenToWorldPoint(screenPosition);
+            if (!IsPointerOverUi())
+            {
+                isDragging = true;
+                dragAnchorWorld = cam.ScreenToWorldPoint(screenPosition);
+            }
         }
         else if (isDragging && held)
         {
