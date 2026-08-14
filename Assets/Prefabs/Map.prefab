@@ -1406,18 +1406,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: BotBase
       objectReference: {fileID: 0}
-    - target: {fileID: 4720564920361794349, guid: b3163b12cfb623b4f88d0df9bdb50ab8, type: 3}
-      propertyPath: waveIntervalMax
-      value: 1000
-      objectReference: {fileID: 0}
-    - target: {fileID: 4720564920361794349, guid: b3163b12cfb623b4f88d0df9bdb50ab8, type: 3}
-      propertyPath: waveIntervalMin
-      value: 1000
-      objectReference: {fileID: 0}
-    - target: {fileID: 6004861872596791393, guid: b3163b12cfb623b4f88d0df9bdb50ab8, type: 3}
-      propertyPath: sceneId
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 6004861872596791393, guid: b3163b12cfb623b4f88d0df9bdb50ab8, type: 3}
       propertyPath: _assetId
       value: 2606563295

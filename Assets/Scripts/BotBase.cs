@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -89,11 +90,18 @@ public class BotBase : NetworkBehaviour
         ScheduleNextWave();
     }
 
+    // Only ever targets a base whose Queen is still alive - once one falls, wave units stop being
+    // wasted marching into an empty interior and instead pile onto whichever bases are left.
     [Server]
     private PlayerBase PickRandomTarget()
     {
-        var bases = BaseSelectionManager.AllBases;
-        return bases.Count > 0 ? bases[Random.Range(0, bases.Count)] : null;
+        List<PlayerBase> aliveBases = new List<PlayerBase>();
+        foreach (PlayerBase b in BaseSelectionManager.AllBases)
+        {
+            if (b.IsQueenAlive) aliveBases.Add(b);
+        }
+
+        return aliveBases.Count > 0 ? aliveBases[Random.Range(0, aliveBases.Count)] : null;
     }
 
     [Server]

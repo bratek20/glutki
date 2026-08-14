@@ -16,7 +16,9 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   `BotBase` don't share code.
 - **BotBase** (`BotBase.cs`) — a separate, ownerless NetworkBehaviour with no Base View. Purely a
   server-side timer that periodically spawns a wave of bot units, all assigned (via
-  `UnitController.AttackTargetBase`) to march on one randomly-picked `PlayerBase`. Has its own HP
+  `UnitController.AttackTargetBase`) to march on one randomly-picked *still-Queen-alive*
+  `PlayerBase` (`PickRandomTarget` filters out any base whose Queen has already fallen, so wave
+  units stop getting wasted marching into an empty interior once one player's out). Has its own HP
   (`maxHealth`/`TakeDamage`) independent of any unit's Queen-style HP — reaching 0 calls
   `NetworkServer.Destroy`, but every wave unit it already spawned is an independent
   `NetworkIdentity` with no back-reference to it, so they're unaffected and keep acting normally.
@@ -80,6 +82,14 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   click and lets the player choose how many of `BaseSelectionManager.SelectedBase`'s available
   Attackers (`PlayerBase.AvailableAttackers`) to send via a slider, then confirms with
   `PlayerBase.CmdOrderAttack`.
+- **Game end** (`GameController.cs`) — server-only, checked once a second via `InvokeRepeating`:
+  players win once every `BotBase` is dead (`IsAlive` false, not `== null` — see the `BotBase`
+  gotcha above), bots win once every `PlayerBase.IsQueenAlive` is false. The outcome is a
+  `[SyncVar] GameResult` with a hook, so it reaches every peer the same instant the server decides
+  it and pops up `GameResultPopup` there too — same local, unsynced popup pattern as
+  `AttackOrderPopup`. Its Confirm button calls `GameUI.Disconnect()` (shared with the Leave
+  button), which relies on Mirror auto-loading `offlineScene` (`MainMenu`) once disconnected to
+  return the player there — no explicit scene-load code needed.
 
 ## Networking model
 

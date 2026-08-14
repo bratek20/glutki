@@ -112,6 +112,57 @@ public static class ClaudeUiTools
         FinishCreation(popup, "Create Attack Order Popup");
     }
 
+    [MenuItem("Claude/Create Game Result Popup")]
+    public static void CreateGameResultPopup()
+    {
+        Transform canvas = FindCanvas();
+        if (canvas == null) return;
+
+        Transform existing = canvas.Find("GameResult_Popup");
+        if (existing != null)
+        {
+            EditorUtility.DisplayDialog("Claude", "GameResult_Popup already exists in this scene.", "OK");
+            Selection.activeGameObject = existing.gameObject;
+            return;
+        }
+
+        // Full-screen blocker so clicks outside the popup don't reach the world underneath it.
+        GameObject blocker = CreateUiObject("GameResult_Blocker", canvas);
+        RectTransform blockerRect = blocker.GetComponent<RectTransform>();
+        SetRect(blockerRect, Vector2.zero, Vector2.one, new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+        Image blockerImage = blocker.AddComponent<Image>();
+        blockerImage.color = new Color(0f, 0f, 0f, 0.6f);
+        blockerImage.raycastTarget = true;
+
+        GameObject popup = CreateUiObject("GameResult_Popup", canvas);
+        RectTransform popupRect = popup.GetComponent<RectTransform>();
+        SetRect(popupRect, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(520f, 240f));
+        Image popupImage = popup.AddComponent<Image>();
+        popupImage.sprite = LoadSprite(PanelSpritePath);
+        popupImage.type = Image.Type.Sliced;
+        popupImage.color = new Color(0.1f, 0.1f, 0.1f, 0.95f);
+
+        TMP_Text titleText = CreateTmpText("Title (TMP)", popup.transform, "Game Over",
+            new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -60f), new Vector2(480f, 90f), 28f, FontStyles.Bold);
+
+        CreateButton("Confirm_Button", popup.transform, "Confirm",
+            new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(220f, 50f),
+            out Button confirmButton, out TMP_Text _);
+
+        GameResultPopup behaviour = Undo.AddComponent<GameResultPopup>(popup);
+        SerializedObject so = new SerializedObject(behaviour);
+        so.FindProperty("panel").objectReferenceValue = popup;
+        so.FindProperty("titleText").objectReferenceValue = titleText;
+        so.FindProperty("confirmButton").objectReferenceValue = confirmButton;
+        so.ApplyModifiedPropertiesWithoutUndo();
+
+        // Both stay active - GameResultPopup.Awake() needs to run at scene load to register
+        // itself, so visibility is driven by a CanvasGroup (added in Awake) instead of SetActive.
+
+        Undo.RegisterCreatedObjectUndo(blocker, "Create Game Result Popup");
+        FinishCreation(popup, "Create Game Result Popup");
+    }
+
     private static Transform FindCanvas()
     {
         GameObject canvasObject = GameObject.Find("UI Canvas");
@@ -155,6 +206,10 @@ public static class ClaudeUiTools
         return AssetDatabase.GetBuiltinExtraResource<Sprite>(builtinPath);
     }
 
+    // Unity's default UI text color - the stock button/panel sprites are light, so white text
+    // would be invisible against them.
+    private static readonly Color DefaultTextColor = new Color32(0x38, 0x38, 0x38, 0xFF);
+
     private static TMP_Text CreateTmpText(string name, Transform parent, string text,
         Vector2 anchorMin, Vector2 anchorMax, Vector2 pivot, Vector2 anchoredPosition, Vector2 sizeDelta,
         float fontSize, FontStyles fontStyle)
@@ -167,7 +222,7 @@ public static class ClaudeUiTools
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.fontSize = fontSize;
         tmp.fontStyle = fontStyle;
-        tmp.color = Color.white;
+        tmp.color = DefaultTextColor;
         tmp.enableAutoSizing = true;
         tmp.fontSizeMin = 12f;
         tmp.fontSizeMax = fontSize;

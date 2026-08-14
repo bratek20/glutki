@@ -28,7 +28,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3570043664090693166}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -16.57, y: 0.06, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -107,7 +107,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Mirror::Mirror.NetworkIdentity
   sceneId: 0
-  _assetId: 3517304033
+  _assetId: 2606563295
   serverOnly: 0
   visibility: 0
   hasSpawned: 0
@@ -174,8 +174,8 @@ MonoBehaviour:
   syncInterval: 0
   enemyUnitPrefabs:
   - {fileID: 8480537066866195548, guid: a390b8bf71c3f4c41b67fd9e42a59bd0, type: 3}
-  waveIntervalMin: 1000
-  waveIntervalMax: 1000
+  waveIntervalMin: 1
+  waveIntervalMax: 5
   waveSizeMin: 1
   waveSizeMax: 1
   maxHealth: 30
