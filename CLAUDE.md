@@ -89,6 +89,14 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
 - Client → server requests go through `[Command(requiresAuthority = false)]` since bases aren't
   player-owned NetworkIdentities; authorization is checked manually inside the command instead of
   relying on Mirror's built-in ownership.
+- The `NetworkManager` normally only exists as a `dontDestroyOnLoad` scene object in `MainMenu`
+  (created before `MainMenuUI`'s Host/Client buttons ever run); `GameScene` itself has none. To let
+  `GameScene` be opened and played directly (skipping `MainMenu`) — e.g. for faster iteration in the
+  Editor — `NetworkBootstrap.cs` sits in `GameScene` and auto-starts a Host, from a prefab
+  (`Assets/Prefabs/NetworkManager.prefab`, kept config-identical to `MainMenu`'s instance) if
+  `NetworkManager.singleton` is still null by the time `GameScene` loads. Going through `MainMenu`
+  normally is unaffected — the bootstrap only ever acts when nothing has created a NetworkManager
+  yet.
 
 ## Input & platform notes
 
