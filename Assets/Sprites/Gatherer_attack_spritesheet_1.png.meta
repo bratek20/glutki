@@ -1,0 +1,561 @@
+fileFormatVersion: 2
+guid: e2fcebb82d8bdc948931ae551314eb12
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 4633620812745657198
+    second: gatherer_spritesheet_0
+  - first:
+      213: 8959340830672266116
+    second: gatherer_spritesheet_1
+  - first:
+      213: 9019874689395089392
+    second: gatherer_spritesheet_2
+  - first:
+      213: 4315873547857193221
+    second: gatherer_spritesheet_3
+  - first:
+      213: -6423729439994449501
+    second: gatherer_spritesheet_4
+  - first:
+      213: 8656389118078231754
+    second: gatherer_spritesheet_5
+  - first:
+      213: -7105693769406525481
+    second: gatherer_spritesheet_6
+  - first:
+      213: -8132095108775080421
+    second: gatherer_spritesheet_7
+  - first:
+      213: -6127716227427555510
+    second: gatherer_spritesheet_8
+  - first:
+      213: 5737080430893196233
+    second: gatherer_spritesheet_9
+  - first:
+      213: 3470426534882985703
+    second: gatherer_spritesheet_10
+  - first:
+      213: -4087779483966556042
+    second: gatherer_spritesheet_11
+  - first:
+      213: -7049916862285384204
+    second: gatherer_spritesheet_12
+  - first:
+      213: 5747408587521101675
+    second: gatherer_spritesheet_13
+  - first:
+      213: 5123647189973941888
+    second: gatherer_spritesheet_14
+  - first:
+      213: 2155789725688648123
+    second: gatherer_spritesheet_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_0
+      rect:
+        serializedVersion: 2
+        x: 158
+        y: 1127
+        width: 410
+        height: 228
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8359baf6c2dd17d48b17135133772854
+      internalID: -989873889
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_1
+      rect:
+        serializedVersion: 2
+        x: 879
+        y: 1127
+        width: 460
+        height: 251
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: df73c5fc432d79746acc5e5218d76656
+      internalID: 493141218
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_2
+      rect:
+        serializedVersion: 2
+        x: 1583
+        y: 1127
+        width: 347
+        height: 361
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 092def4a812d5554aaa065d7f8a58ef6
+      internalID: 487124373
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_3
+      rect:
+        serializedVersion: 2
+        x: 2259
+        y: 1127
+        width: 384
+        height: 310
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e3bff24abddc4324d9a720d08dc72df3
+      internalID: -1184945364
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_4
+      rect:
+        serializedVersion: 2
+        x: 157
+        y: 735
+        width: 442
+        height: 295
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 74d0e1be6415d0c4abc4aff8f1b0fd07
+      internalID: 709197368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_5
+      rect:
+        serializedVersion: 2
+        x: 821
+        y: 746
+        width: 529
+        height: 279
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6e81674c0c2554444aaeb2823643a8e8
+      internalID: 898481129
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_6
+      rect:
+        serializedVersion: 2
+        x: 1485
+        y: 754
+        width: 601
+        height: 244
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b0b4ceb7cd620224e8b0cda7bc3f999c
+      internalID: -710961362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_7
+      rect:
+        serializedVersion: 2
+        x: 2172
+        y: 740
+        width: 550
+        height: 271
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3b33e521b81d5f34b82e3364304bced7
+      internalID: 868687928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_8
+      rect:
+        serializedVersion: 2
+        x: 111
+        y: 381
+        width: 543
+        height: 277
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a7cb59949b183c4408e8bcc2f001a968
+      internalID: -1372044212
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_9
+      rect:
+        serializedVersion: 2
+        x: 831
+        y: 380
+        width: 471
+        height: 279
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 370628d8e349a5949b7044ab8c0d35c5
+      internalID: 116810420
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_10
+      rect:
+        serializedVersion: 2
+        x: 1555
+        y: 370
+        width: 440
+        height: 273
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4615dca0ea8995342b2a884efa202c82
+      internalID: 1330159983
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_11
+      rect:
+        serializedVersion: 2
+        x: 2208
+        y: 379
+        width: 451
+        height: 274
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f10d4cf99ad3bc646918ac1c123cfa3c
+      internalID: 2049325749
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_12
+      rect:
+        serializedVersion: 2
+        x: 151
+        y: 26
+        width: 445
+        height: 263
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9a446d883504cbc479234583fe9fa600
+      internalID: 233003818
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_13
+      rect:
+        serializedVersion: 2
+        x: 902
+        y: 28
+        width: 399
+        height: 261
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4257779f992da2149a65d4e73fa90bd5
+      internalID: 1392903731
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_14
+      rect:
+        serializedVersion: 2
+        x: 1583
+        y: 26
+        width: 274
+        height: 240
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9f7df9396ac99254bba94f8beffdb142
+      internalID: -637238254
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_attack_spritesheet_1_15
+      rect:
+        serializedVersion: 2
+        x: 2259
+        y: 26
+        width: 255
+        height: 236
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2851c02256d92684c95b703252467f9c
+      internalID: -1687417466
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 0da7bbab697ba0d41b78807a68bc4ebf
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      Gatherer_attack_spritesheet_1_0: -989873889
+      Gatherer_attack_spritesheet_1_1: 493141218
+      Gatherer_attack_spritesheet_1_10: 1330159983
+      Gatherer_attack_spritesheet_1_11: 2049325749
+      Gatherer_attack_spritesheet_1_12: 233003818
+      Gatherer_attack_spritesheet_1_13: 1392903731
+      Gatherer_attack_spritesheet_1_14: -637238254
+      Gatherer_attack_spritesheet_1_15: -1687417466
+      Gatherer_attack_spritesheet_1_2: 487124373
+      Gatherer_attack_spritesheet_1_3: -1184945364
+      Gatherer_attack_spritesheet_1_4: 709197368
+      Gatherer_attack_spritesheet_1_5: 898481129
+      Gatherer_attack_spritesheet_1_6: -710961362
+      Gatherer_attack_spritesheet_1_7: 868687928
+      Gatherer_attack_spritesheet_1_8: -1372044212
+      Gatherer_attack_spritesheet_1_9: 116810420
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
