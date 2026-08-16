@@ -78,22 +78,31 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   `NetworkServer.Destroy` only deactivates a consumed one, it's never truly destroyed. Code that
   needs to know whether a resource is still up for grabs must check `Resource.IsAvailable`, not
   `== null` — a held reference to a consumed `Resource` never becomes null.
-- **ResourceStock** (`ResourceStock.cs`) — the first player-built "building" in a base's interior.
-  Purely a deposit point in the world plus a thin forward to `PlayerBase.DepositResource` — the
-  resource count itself still lives on `PlayerBase`. Only one per base for now
-  (`PlayerBase.CanBuildResourceStock` goes false once `resourceStock` is set). If a base has none
-  built yet (or has no `resourceStockPrefab` assigned), gatherers fall back to depositing at the
-  Queen's spot instead.
+- **ResourceStock** (`ResourceStock.cs`) — a player-built "building" in a base's interior; a base
+  can have many, built up over time. Purely a deposit point in the world plus a thin forward to
+  `PlayerBase.DepositResource` — the resource count itself still lives on `PlayerBase`. Registers
+  itself into a static `allStocks` list on `OnStartClient`/`OnStopClient` (same pattern as
+  `UnitController.activeUnits`) so *any* peer, not just the server, can enumerate a base's stocks -
+  used both for `PlayerBase.IsTileBuildable`'s occupied-tile check and for picking the nearest
+  stock to deposit at (`PlayerBase.NearestResourceStock`). `HomeBase` is a `[SyncVar]`, not a bare
+  serialized field - it has to reach every peer, not just the server that sets it, since clients
+  read it directly (e.g. for the occupied-tile check). If a base has no stock built yet (or no
+  `resourceStockPrefab` assigned), gatherers fall back to depositing at the Queen's spot instead.
 - **Build grid / Build mode** — each base's interior is tiled by a simple N x M grid of same-size
   tiles (`PlayerBase.tileSize`/`GridColumns`/`GridRows`/`GridOrigin`, fully covering the interior
   room, centered on `InteriorCenter`; `WorldToTile`/`TileCenter` convert between a world position
   and a tile), used to place buildings on. `NewBuildButton` drives client-local "build mode" for
   the viewed base: while active it draws the grid and a green/red hover-tile highlight straight to
-  the screen via `GL` calls in `OnRenderObject` (no scene art needed), and a left-click on a
-  buildable tile calls `PlayerBase.CmdBuildResourceStock`; right-click, Escape, or clicking the
-  button again cancel instead. `PlayerBase.IsTileBuildable` is the single source of truth for
-  whether a tile can be built on — called client-side for the preview and server-side (again) as
-  the actual authorization check, so they can never disagree.
+  the screen via `GL` calls, and a left-click on a buildable tile calls
+  `PlayerBase.CmdBuildResourceStock`; right-click, Escape, or clicking the button again cancel
+  instead. `PlayerBase.IsTileBuildable` is the single source of truth for whether a tile can be
+  built on (in bounds, not the Queen's tile, not already occupied by one of this base's own
+  stocks) — called client-side for the preview and server-side (again) as the actual authorization
+  check, so they can never disagree. **Gotcha:** the project renders via URP (see
+  `ProjectSettings/QualitySettings.asset`'s `customRenderPipeline`), which never invokes the
+  legacy `OnRenderObject` callback — GL-based overlays like this one have to hook
+  `RenderPipelineManager.endCameraRendering` instead and set up `GL.LoadProjectionMatrix`/
+  `GL.modelview` by hand, since URP doesn't do that implicitly the way the built-in pipeline does.
 - **UI** — `ResourceHud`, `UnitsHud`, `SpawnUnitButton`, `SpawnAttackerButton`, `ViewToggleButton`,
   `NewBuildButton`, and `AttackOrderPopup` all read/act on `BaseSelectionManager.SelectedBase` /
   `ViewManager`, never a global base reference. Each is a plain `MonoBehaviour` added to its

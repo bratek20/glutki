@@ -28,7 +28,6 @@ public class PlayerBase : NetworkBehaviour
     [SyncVar] private int storedResources = 5;
     [SyncVar] private UnitController queen;
     [SyncVar] private bool queenAlive = true;
-    [SyncVar] private ResourceStock resourceStock;
 
     private SpriteRenderer spriteRenderer;
     private Collider2D selectionCollider;
@@ -39,7 +38,10 @@ public class PlayerBase : NetworkBehaviour
     public int SpawnCost => spawnCost;
     public BaseOwner Owner => owner;
     public UnitController Queen => queen;
-    public ResourceStock ResourceStock => resourceStock;
+    public bool HasResourceStockPrefab => resourceStockPrefab != null;
+
+    // Closest of this base's built ResourceStocks to position, or null if it has none built yet.
+    public ResourceStock NearestResourceStock(Vector3 position) => ResourceStock.Nearest(this, position);
 
     // Once the Queen dies, this base can no longer spawn units and its gatherers give up
     // gathering entirely - see UnitController's queen-alive checks.
@@ -65,10 +67,6 @@ public class PlayerBase : NetworkBehaviour
     public int GridRows => Mathf.Max(1, Mathf.FloorToInt((interiorHalfSize.y * 2f) / tileSize));
     public Vector3 GridOrigin => InteriorCenter - new Vector3(GridColumns * tileSize * 0.5f, GridRows * tileSize * 0.5f, 0f);
 
-    // Only one resource stock per base for now - true once that one's been built (or is still
-    // being built server-side), false once resourceStockPrefab has nothing to build in the first place.
-    public bool CanBuildResourceStock => resourceStockPrefab != null && resourceStock == null;
-
     public Vector2Int WorldToTile(Vector3 worldPosition)
     {
         Vector3 local = worldPosition - GridOrigin;
@@ -86,11 +84,13 @@ public class PlayerBase : NetworkBehaviour
     // before actually building) - both need exactly the same rule.
     public bool IsTileBuildable(Vector2Int tile)
     {
-        if (!CanBuildResourceStock) return false;
+        if (!HasResourceStockPrefab) return false;
         if (tile.x < 0 || tile.x >= GridColumns || tile.y < 0 || tile.y >= GridRows) return false;
 
         // Don't let a build sit right on top of the Queen parked at InteriorCenter.
         if (queen != null && Vector3.Distance(TileCenter(tile), queen.transform.position) < tileSize * 0.5f) return false;
+
+        if (ResourceStock.AnyOccupiesTile(this, tile)) return false;
 
         return true;
     }
@@ -181,7 +181,6 @@ public class PlayerBase : NetworkBehaviour
         if (stock != null) stock.HomeBase = this;
 
         NetworkServer.Spawn(stockObject);
-        resourceStock = stock;
     }
 
     // Called by our own Queen's UnitController when its HP reaches 0.

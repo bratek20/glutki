@@ -461,26 +461,26 @@ public class UnitController : NetworkBehaviour
         SetTarget(DepositPoint(entryPoint));
     }
 
-    // Where a Gatherer walks to inside the base to deposit - the resource stock building once it's
-    // been spawned, falling back to the Queen's spot if the base has no stock yet (or none assigned).
+    // Where a Gatherer walks to inside the base to deposit - whichever of its stock buildings is
+    // closest to the entry point, falling back to the Queen's spot if none are built yet.
     private Vector3 DepositPoint(Vector3 fallback)
     {
         if (HomeBase == null) return fallback;
-        return HomeBase.ResourceStock != null ? HomeBase.ResourceStock.transform.position : HomeBase.InteriorCenter;
+
+        ResourceStock stock = HomeBase.NearestResourceStock(transform.position);
+        return stock != null ? stock.transform.position : HomeBase.InteriorCenter;
     }
 
     [Server]
     private void OnEntryReached()
     {
-        // Reached the resource stock (or the Queen's spot, if this base has no stock) - deposit,
-        // then head back out.
-        if (HomeBase != null && HomeBase.ResourceStock != null)
+        // Reached whichever stock (or the Queen's spot, if this base has none built) it was
+        // heading for - deposit there, then head back out.
+        if (HomeBase != null)
         {
-            HomeBase.ResourceStock.Deposit(carriedAmount);
-        }
-        else if (HomeBase != null)
-        {
-            HomeBase.DepositResource(carriedAmount);
+            ResourceStock stock = HomeBase.NearestResourceStock(transform.position);
+            if (stock != null) stock.Deposit(carriedAmount);
+            else HomeBase.DepositResource(carriedAmount);
         }
 
         carriedAmount = 0;

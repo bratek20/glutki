@@ -2,6 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 // Lets the player enter "build mode" for their selected base: draws its buildable tile grid on
@@ -22,10 +23,22 @@ public class NewBuildButton : MonoBehaviour
         button.onClick.AddListener(OnClicked);
     }
 
+    // The project renders via URP, which never calls the legacy OnRenderObject callback - this
+    // event is URP's equivalent hook for issuing GL calls after a camera's done rendering.
+    private void OnEnable()
+    {
+        RenderPipelineManager.endCameraRendering += OnEndCameraRendering;
+    }
+
+    private void OnDisable()
+    {
+        RenderPipelineManager.endCameraRendering -= OnEndCameraRendering;
+    }
+
     private void Update()
     {
         PlayerBase viewedBase = ViewManager.CurrentView == ViewMode.Base ? ViewManager.ViewedBase : null;
-        bool canBuildHere = viewedBase != null && viewedBase.IsOwnedByLocalPlayer && viewedBase.CanBuildResourceStock;
+        bool canBuildHere = viewedBase != null && viewedBase.IsOwnedByLocalPlayer && viewedBase.HasResourceStockPrefab;
 
         if (buildModeActive && !canBuildHere) buildModeActive = false;
 
@@ -66,23 +79,31 @@ public class NewBuildButton : MonoBehaviour
     private void OnClicked()
     {
         PlayerBase viewedBase = ViewManager.CurrentView == ViewMode.Base ? ViewManager.ViewedBase : null;
-        if (viewedBase == null || !viewedBase.IsOwnedByLocalPlayer || !viewedBase.CanBuildResourceStock) return;
+        if (viewedBase == null || !viewedBase.IsOwnedByLocalPlayer || !viewedBase.HasResourceStockPrefab) return;
 
         buildModeActive = !buildModeActive;
     }
 
-    private void OnRenderObject()
+    private void OnEndCameraRendering(ScriptableRenderContext context, Camera camera)
     {
-        if (!buildModeActive || ViewManager.CurrentView != ViewMode.Base) return;
+        if (!buildModeActive || camera != Camera.main || ViewManager.CurrentView != ViewMode.Base) return;
 
         PlayerBase viewedBase = ViewManager.ViewedBase;
         if (viewedBase == null) return;
 
         EnsureGridMaterial();
+
+        // OnRenderObject sets these up implicitly for the rendering camera; hooking in via URP's
+        // callback instead means doing it by hand so the GL calls land in the right place.
+        GL.PushMatrix();
+        GL.LoadProjectionMatrix(camera.projectionMatrix);
+        GL.modelview = camera.worldToCameraMatrix;
         gridMaterial.SetPass(0);
 
         DrawGridLines(viewedBase);
         DrawHoverHighlight(viewedBase);
+
+        GL.PopMatrix();
     }
 
     private static void EnsureGridMaterial()
