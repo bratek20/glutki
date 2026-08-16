@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 680354959157110417}
   - component: {fileID: 8136976867981293379}
   - component: {fileID: 555000111222333444}
+  - component: {fileID: 4815947138182015336}
   m_Layer: 0
   m_Name: Slime
   m_TagString: Untagged
@@ -199,7 +200,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  slimeType: 0
+  unitType: 0
   moveSpeed: 2
   stoppingDistance: 0.1
   animator: {fileID: 8136976867981293379}
@@ -209,7 +210,23 @@ MonoBehaviour:
   resourceDetectionRadius: 1.5
   resourceScanInterval: 0.2
   carryingTintColor: {r: 1, g: 0.85, b: 0.35, a: 1}
+  guardRadius: 1.5
+  isAggressive: 0
+  maxHealth: 10
+  attackDamage: 1
+  attackInterval: 1
+  attackRange: 0.6
+  aggroRadius: 3
+  combatScanInterval: 0.2
   detectionRadiusGizmo: {fileID: 555000111222333444}
+  <HomeBase>k__BackingField: {fileID: 0}
+  <AttackTargetBase>k__BackingField: {fileID: 0}
+  <AttackTargetBotBase>k__BackingField: {fileID: 0}
+  <Faction>k__BackingField: 0
+  state: 0
+  hasTarget: 0
+  targetPosition: {x: 0, y: 0, z: 0}
+  combatTarget: {fileID: 0}
 --- !u!95 &8136976867981293379
 Animator:
   serializedVersion: 7
@@ -268,3 +285,25 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 1.5
+--- !u!114 &4815947138182015336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6014365302286197209}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 614074dff8ec24f4c9519b438295ed87, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UnitAnimationTester
+  animator: {fileID: 8136976867981293379}
+  spriteRenderer: {fileID: 6417617058562059431}
+  boolParams:
+  - parameterName: IsWalking
+    value: 0
+  - parameterName: IsAttacking
+    value: 0
+  facingLeft: 0
+  tinted: 0
+  tintColor: {r: 1, g: 0.85, b: 0.35, a: 1}

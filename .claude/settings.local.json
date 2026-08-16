@@ -7,7 +7,9 @@
       "Bash(grep *)",
       "Bash(awk *)",
       "Bash(git mv *)",
-      "Bash(grep *)"
+      "Bash(grep *)",
+      "Bash(sort *)",
+      "Bash(xargs *)"
     ]
   }
 }
