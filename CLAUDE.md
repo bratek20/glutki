@@ -9,11 +9,11 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
 ## Core concepts
 
 - **PlayerBase** (`PlayerBase.cs`) — a NetworkBehaviour placed in the scene. Holds `storedResources`
-  and a roster of unit prefabs it can spawn, plus a `queenPrefab` and an `attackerPrefab`. Owned by
-  either `Host` or `Client` (`BaseOwner` enum, assigned per-instance in the Inspector — not
-  negotiated at runtime). Many bases can exist. `Base` the class name is intentionally free for a
-  future common player/bot base if one ever turns out to be needed — right now `PlayerBase` and
-  `BotBase` don't share code.
+  and a roster of unit prefabs it can spawn, plus a `queenPrefab`, an `attackerPrefab`, and a
+  `resourceStockPrefab`. Owned by either `Host` or `Client` (`BaseOwner` enum, assigned per-instance
+  in the Inspector — not negotiated at runtime). Many bases can exist. `Base` the class name is
+  intentionally free for a future common player/bot base if one ever turns out to be needed — right
+  now `PlayerBase` and `BotBase` don't share code.
 - **BotBase** (`BotBase.cs`) — a separate, ownerless NetworkBehaviour with no Base View. Purely a
   server-side timer that periodically spawns a wave of bot units, all assigned (via
   `UnitController.AttackTargetBase`) to march on one randomly-picked *still-Queen-alive*
@@ -50,9 +50,11 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
 - **Units** (`UnitController.cs`) — server-authoritative AI. Each unit remembers the `PlayerBase`
   that spawned it (`HomeBase`) and always returns gathered resources there specifically. Task state
   machine: `ExitingBase` (walking from spawn/entry point to the base's interior exit, then warps
-  onto the world map) → `Wandering` → `SeekingResource` → `ReturningToBase` (world map, walking
-  toward the base) → warps into the interior → `EnteringBase` (walking to the Queen/depot point,
-  deposits) → back to `ExitingBase`. Bot wave units instead run `MarchingToBase` →
+  onto the world map) → `Wandering` → `SeekingResource` → `Gathering` (stands at the resource for
+  `gatherDuration`, playing the attack animation, before it's actually consumed via
+  `Resource.TryConsume`) → `ReturningToBase` (world map, walking toward the base) → warps into the
+  interior → `EnteringBase` (walking to the resource stock building, or the Queen's spot if the base
+  has none, and depositing there) → back to `ExitingBase`. Bot wave units instead run `MarchingToBase` →
   `MarchingToQueen`, following the same interior-warp mechanic to reach their target's Queen. The
   **Queen** (`UnitType.Queen`) is a special stationary unit permanently parked at each base's
   interior center — it never runs the task state machine, only combat. Player-owned
@@ -69,7 +71,19 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   whatever task a unit was otherwise doing - it resumes that task afterward. Death
   (`NetworkServer.Destroy`) is immediate at 0 HP; a dying Queen calls back into its `PlayerBase` to
   flip `IsQueenAlive` off.
-- **Resources** (`Resource.cs`) — pickups consumed by gatherer units.
+- **Resources** (`Resource.cs`) — pickups consumed by gatherer units, via `TryConsume` (not a bare
+  `Consume`): it returns false if the resource was already consumed, so two gatherers racing for the
+  same one can't both be credited its `amount`. **Gotcha:** same scene-placed-`NetworkIdentity`
+  situation as `BotBase` — `Resource` instances are nested in `Map.prefab`, so
+  `NetworkServer.Destroy` only deactivates a consumed one, it's never truly destroyed. Code that
+  needs to know whether a resource is still up for grabs must check `Resource.IsAvailable`, not
+  `== null` — a held reference to a consumed `Resource` never becomes null.
+- **ResourceStock** (`ResourceStock.cs`) — the first "building" in a base's interior, alongside the
+  Queen: spawned by `PlayerBase.SpawnResourceStock` the same way the Queen is (own prefab, own
+  `[SyncVar]` reference), at `InteriorCenter + resourceStockOffset` so it doesn't sit on top of her.
+  Purely a deposit point in the world plus a thin forward to `PlayerBase.DepositResource` — the
+  resource count itself still lives on `PlayerBase`. If a base has no `resourceStockPrefab`
+  assigned, gatherers fall back to depositing at the Queen's spot, same as before this existed.
 - **UI** — `ResourceHud`, `UnitsHud`, `SpawnUnitButton`, `SpawnAttackerButton`, `ViewToggleButton`,
   and `AttackOrderPopup` all read/act on `BaseSelectionManager.SelectedBase` / `ViewManager`, never
   a global base reference. Each is a plain `MonoBehaviour` added to its corresponding pre-built

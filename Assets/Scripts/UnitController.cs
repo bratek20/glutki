@@ -55,6 +55,7 @@ public class UnitController : NetworkBehaviour
         ExitingBase,
         Wandering,
         SeekingResource,
+        Gathering,
         ReturningToBase,
         EnteringBase,
         MarchingToBase,
@@ -78,6 +79,8 @@ public class UnitController : NetworkBehaviour
     [Header("Gathering (Gatherer only)")]
     [SerializeField] private float resourceDetectionRadius = 3f;
     [SerializeField] private float resourceScanInterval = 0.2f;
+    [Tooltip("How long a Gatherer stands at a resource (playing the attack animation) before it's actually consumed.")]
+    [SerializeField] private float gatherDuration = 1.5f;
     [SerializeField] private Color carryingTintColor = new Color(1f, 0.85f, 0.35f);
 
     [Header("Attacker Guard")]
@@ -119,6 +122,7 @@ public class UnitController : NetworkBehaviour
 
     private Resource targetResource;
     private float resourceScanTimer;
+    private float gatherTimer;
     private int carriedAmount;
 
     private float combatScanTimer;
@@ -246,6 +250,12 @@ public class UnitController : NetworkBehaviour
             return;
         }
 
+        if (state == UnitState.Gathering)
+        {
+            UpdateGathering();
+            return;
+        }
+
         bool canGather = unitType == UnitType.Gatherer && HomeBase != null && HomeBase.IsQueenAlive;
 
         if (unitType == UnitType.Gatherer && !canGather)
@@ -294,7 +304,7 @@ public class UnitController : NetworkBehaviour
         foreach (Collider2D hit in hits)
         {
             Resource resource = hit.GetComponent<Resource>();
-            if (resource == null) continue;
+            if (resource == null || !resource.IsAvailable) continue;
 
             float distance = Vector3.Distance(transform.position, resource.transform.position);
             if (distance < nearestDistance)
@@ -385,15 +395,54 @@ public class UnitController : NetworkBehaviour
     [Server]
     private void OnResourceReached()
     {
-        // The resource may have been consumed by another gatherer while we were en route.
-        if (targetResource == null)
+        // The resource may have been claimed by another gatherer while we were en route. Resource
+        // is a scene-placed NetworkIdentity, so a consumed one is never actually destroyed - only
+        // deactivated (see the gotcha on Resource.IsAvailable) - so targetResource itself never
+        // goes null just because someone else got there first; IsAvailable is the real check.
+        if (targetResource == null || !targetResource.IsAvailable)
         {
+            targetResource = null;
             StartWandering();
             return;
         }
 
-        carriedAmount = targetResource.Amount;
-        targetResource.Consume();
+        // Stand and "attack" the resource for a bit before it's actually gathered.
+        state = UnitState.Gathering;
+        hasTarget = false;
+        gatherTimer = gatherDuration;
+        UpdateFacing(targetResource.transform.position);
+    }
+
+    [Server]
+    private void UpdateGathering()
+    {
+        isWalkingServer = false;
+
+        bool stillValid = HomeBase != null && HomeBase.IsQueenAlive && targetResource != null && targetResource.IsAvailable;
+        if (!stillValid)
+        {
+            isAttackingServer = false;
+            targetResource = null;
+            StartWandering();
+            return;
+        }
+
+        isAttackingServer = true;
+
+        gatherTimer -= Time.deltaTime;
+        if (gatherTimer > 0f) return;
+
+        isAttackingServer = false;
+
+        // Someone else may have grabbed it in the same instant our timer ran out.
+        if (!targetResource.TryConsume(out int amount))
+        {
+            targetResource = null;
+            StartWandering();
+            return;
+        }
+
+        carriedAmount = amount;
         targetResource = null;
         isCarryingResource = true;
 
@@ -409,14 +458,27 @@ public class UnitController : NetworkBehaviour
         transform.position = entryPoint;
 
         state = UnitState.EnteringBase;
-        SetTarget(HomeBase != null ? HomeBase.InteriorCenter : entryPoint);
+        SetTarget(DepositPoint(entryPoint));
+    }
+
+    // Where a Gatherer walks to inside the base to deposit - the resource stock building once it's
+    // been spawned, falling back to the Queen's spot if the base has no stock yet (or none assigned).
+    private Vector3 DepositPoint(Vector3 fallback)
+    {
+        if (HomeBase == null) return fallback;
+        return HomeBase.ResourceStock != null ? HomeBase.ResourceStock.transform.position : HomeBase.InteriorCenter;
     }
 
     [Server]
     private void OnEntryReached()
     {
-        // Reached the queen/depot point inside the base - deposit, then head back out.
-        if (HomeBase != null)
+        // Reached the resource stock (or the Queen's spot, if this base has no stock) - deposit,
+        // then head back out.
+        if (HomeBase != null && HomeBase.ResourceStock != null)
+        {
+            HomeBase.ResourceStock.Deposit(carriedAmount);
+        }
+        else if (HomeBase != null)
         {
             HomeBase.DepositResource(carriedAmount);
         }

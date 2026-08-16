@@ -8,6 +8,9 @@ public class PlayerBase : NetworkBehaviour
     [SerializeField] private GameObject[] unitPrefabs;
     [SerializeField] private GameObject queenPrefab;
     [SerializeField] private GameObject attackerPrefab;
+    [SerializeField] private GameObject resourceStockPrefab;
+    [Tooltip("Where the resource stock building sits, relative to InteriorCenter - offset so it doesn't overlap the Queen parked right on InteriorCenter.")]
+    [SerializeField] private Vector3 resourceStockOffset = new Vector3(-2f, 0f, 0f);
     [SerializeField] private int spawnCost = 1;
     [SerializeField] private Color highlightColor = new Color(1f, 0.9f, 0.3f);
     [SerializeField] private BaseOwner owner = BaseOwner.Host;
@@ -23,6 +26,7 @@ public class PlayerBase : NetworkBehaviour
     [SyncVar] private int storedResources = 5;
     [SyncVar] private UnitController queen;
     [SyncVar] private bool queenAlive = true;
+    [SyncVar] private ResourceStock resourceStock;
 
     private SpriteRenderer spriteRenderer;
     private Collider2D selectionCollider;
@@ -33,6 +37,7 @@ public class PlayerBase : NetworkBehaviour
     public int SpawnCost => spawnCost;
     public BaseOwner Owner => owner;
     public UnitController Queen => queen;
+    public ResourceStock ResourceStock => resourceStock;
 
     // Once the Queen dies, this base can no longer spawn units and its gatherers give up
     // gathering entirely - see UnitController's queen-alive checks.
@@ -97,6 +102,7 @@ public class PlayerBase : NetworkBehaviour
     {
         base.OnStartServer();
         SpawnQueen();
+        SpawnResourceStock();
     }
 
     [Server]
@@ -114,6 +120,19 @@ public class PlayerBase : NetworkBehaviour
 
         NetworkServer.Spawn(queenObject);
         queen = controller;
+    }
+
+    [Server]
+    private void SpawnResourceStock()
+    {
+        if (resourceStockPrefab == null) return;
+
+        GameObject stockObject = Instantiate(resourceStockPrefab, InteriorCenter + resourceStockOffset, Quaternion.identity);
+        ResourceStock stock = stockObject.GetComponent<ResourceStock>();
+        if (stock != null) stock.HomeBase = this;
+
+        NetworkServer.Spawn(stockObject);
+        resourceStock = stock;
     }
 
     // Called by our own Queen's UnitController when its HP reaches 0.
