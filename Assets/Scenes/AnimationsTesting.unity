@@ -440,7 +440,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1388244362970297067, guid: f34044d7f68e33a47aae255e3c0da37b, type: 3}
       propertyPath: m_Name
-      value: Gatherer-attack
+      value: Gatherer-Attack
       objectReference: {fileID: 0}
     - target: {fileID: 5278855101769872803, guid: f34044d7f68e33a47aae255e3c0da37b, type: 3}
       propertyPath: m_Enabled
