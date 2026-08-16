@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &2794407596434627973
+--- !u!1001 &4285713386010788789
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -19,6 +19,14 @@ PrefabInstance:
     - target: {fileID: 680354959157110417, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: isAggressive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4299230178549845892, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4299230178549845892, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 4299230178549845892, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_LocalPosition.x
@@ -62,20 +70,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5204329978016109118, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: _assetId
-      value: 422710053
+      value: 648167777
       objectReference: {fileID: 0}
     - target: {fileID: 6014365302286197209, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_Name
-      value: BotSlime
+      value: Attacker
       objectReference: {fileID: 0}
     - target: {fileID: 6417617058562059431, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -4398727733377123942, guid: 7df965004e9d932449746cd15e5036ba, type: 3}
+      objectReference: {fileID: -1005602517836624203, guid: 656d983fdf324314986dcdd7260d7cb3, type: 3}
     - target: {fileID: 8136976867981293379, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: f826a64d54c78eb4ab144ee436bad41f, type: 2}
+      objectReference: {fileID: 9100000, guid: 9efff45b57b5e62498f5f45aacfdf672, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
