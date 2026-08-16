@@ -78,17 +78,27 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   `NetworkServer.Destroy` only deactivates a consumed one, it's never truly destroyed. Code that
   needs to know whether a resource is still up for grabs must check `Resource.IsAvailable`, not
   `== null` — a held reference to a consumed `Resource` never becomes null.
-- **ResourceStock** (`ResourceStock.cs`) — the first "building" in a base's interior, alongside the
-  Queen: spawned by `PlayerBase.SpawnResourceStock` the same way the Queen is (own prefab, own
-  `[SyncVar]` reference), at `InteriorCenter + resourceStockOffset` so it doesn't sit on top of her.
+- **ResourceStock** (`ResourceStock.cs`) — the first player-built "building" in a base's interior.
   Purely a deposit point in the world plus a thin forward to `PlayerBase.DepositResource` — the
-  resource count itself still lives on `PlayerBase`. If a base has no `resourceStockPrefab`
-  assigned, gatherers fall back to depositing at the Queen's spot, same as before this existed.
+  resource count itself still lives on `PlayerBase`. Only one per base for now
+  (`PlayerBase.CanBuildResourceStock` goes false once `resourceStock` is set). If a base has none
+  built yet (or has no `resourceStockPrefab` assigned), gatherers fall back to depositing at the
+  Queen's spot instead.
+- **Build grid / Build mode** — each base's interior is tiled by a simple N x M grid of same-size
+  tiles (`PlayerBase.tileSize`/`GridColumns`/`GridRows`/`GridOrigin`, fully covering the interior
+  room, centered on `InteriorCenter`; `WorldToTile`/`TileCenter` convert between a world position
+  and a tile), used to place buildings on. `NewBuildButton` drives client-local "build mode" for
+  the viewed base: while active it draws the grid and a green/red hover-tile highlight straight to
+  the screen via `GL` calls in `OnRenderObject` (no scene art needed), and a left-click on a
+  buildable tile calls `PlayerBase.CmdBuildResourceStock`; right-click, Escape, or clicking the
+  button again cancel instead. `PlayerBase.IsTileBuildable` is the single source of truth for
+  whether a tile can be built on — called client-side for the preview and server-side (again) as
+  the actual authorization check, so they can never disagree.
 - **UI** — `ResourceHud`, `UnitsHud`, `SpawnUnitButton`, `SpawnAttackerButton`, `ViewToggleButton`,
-  and `AttackOrderPopup` all read/act on `BaseSelectionManager.SelectedBase` / `ViewManager`, never
-  a global base reference. Each is a plain `MonoBehaviour` added to its corresponding pre-built
-  GameObject in `GameScene` (`Resource_Hud`, `Units_Hud`, `SpawnUnit_Button`,
-  `SpawnAttacker_Button`, `ViewToggle_Button`, `AttackOrder_Popup`) with its
+  `NewBuildButton`, and `AttackOrderPopup` all read/act on `BaseSelectionManager.SelectedBase` /
+  `ViewManager`, never a global base reference. Each is a plain `MonoBehaviour` added to its
+  corresponding pre-built GameObject in `GameScene` (`Resource_Hud`, `Units_Hud`, `SpawnUnit_Button`,
+  `SpawnAttacker_Button`, `ViewToggle_Button`, `NewBuild_Button`, `AttackOrder_Popup`) with its
   `TMP_Text`/`Button`/`Slider` references wired in the Inspector — UI is laid out by hand in the
   scene, never built at runtime. `UnitsHud` counts gatherers/attackers via
   `UnitController.CountActive`, scoped to the selected base's `HomeBase` (bot-wave units have no

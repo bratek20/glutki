@@ -9,8 +9,6 @@ public class PlayerBase : NetworkBehaviour
     [SerializeField] private GameObject queenPrefab;
     [SerializeField] private GameObject attackerPrefab;
     [SerializeField] private GameObject resourceStockPrefab;
-    [Tooltip("Where the resource stock building sits, relative to InteriorCenter - offset so it doesn't overlap the Queen parked right on InteriorCenter.")]
-    [SerializeField] private Vector3 resourceStockOffset = new Vector3(-2f, 0f, 0f);
     [SerializeField] private int spawnCost = 1;
     [SerializeField] private Color highlightColor = new Color(1f, 0.9f, 0.3f);
     [SerializeField] private BaseOwner owner = BaseOwner.Host;
@@ -22,6 +20,10 @@ public class PlayerBase : NetworkBehaviour
     [SerializeField] private float interiorSlotSpacing = 500f;
     [Tooltip("How far below the map the whole row of interiors sits.")]
     [SerializeField] private float interiorRowY = -1000f;
+
+    [Header("Build Grid")]
+    [Tooltip("Size (world units) of one buildable tile inside this base's interior.")]
+    [SerializeField] private float tileSize = 1f;
 
     [SyncVar] private int storedResources = 5;
     [SyncVar] private UnitController queen;
@@ -55,6 +57,43 @@ public class PlayerBase : NetworkBehaviour
     public Vector3 InteriorCenter => new Vector3(netId * interiorSlotSpacing, interiorRowY, 0f);
     public Vector2 InteriorHalfSize => interiorHalfSize;
     public Vector3 InteriorExitPoint => InteriorCenter + new Vector3(0f, interiorHalfSize.y, 0f);
+
+    // The base's interior is tiled by a simple N x M grid of buildable tiles, all the same size,
+    // fully covering the interior room and centered on InteriorCenter.
+    public float TileSize => tileSize;
+    public int GridColumns => Mathf.Max(1, Mathf.FloorToInt((interiorHalfSize.x * 2f) / tileSize));
+    public int GridRows => Mathf.Max(1, Mathf.FloorToInt((interiorHalfSize.y * 2f) / tileSize));
+    public Vector3 GridOrigin => InteriorCenter - new Vector3(GridColumns * tileSize * 0.5f, GridRows * tileSize * 0.5f, 0f);
+
+    // Only one resource stock per base for now - true once that one's been built (or is still
+    // being built server-side), false once resourceStockPrefab has nothing to build in the first place.
+    public bool CanBuildResourceStock => resourceStockPrefab != null && resourceStock == null;
+
+    public Vector2Int WorldToTile(Vector3 worldPosition)
+    {
+        Vector3 local = worldPosition - GridOrigin;
+        int x = Mathf.Clamp(Mathf.FloorToInt(local.x / tileSize), 0, GridColumns - 1);
+        int y = Mathf.Clamp(Mathf.FloorToInt(local.y / tileSize), 0, GridRows - 1);
+        return new Vector2Int(x, y);
+    }
+
+    public Vector3 TileCenter(Vector2Int tile)
+    {
+        return GridOrigin + new Vector3((tile.x + 0.5f) * tileSize, (tile.y + 0.5f) * tileSize, 0f);
+    }
+
+    // Safe to call on any peer (build-mode preview) as well as the server (authoritative check
+    // before actually building) - both need exactly the same rule.
+    public bool IsTileBuildable(Vector2Int tile)
+    {
+        if (!CanBuildResourceStock) return false;
+        if (tile.x < 0 || tile.x >= GridColumns || tile.y < 0 || tile.y >= GridRows) return false;
+
+        // Don't let a build sit right on top of the Queen parked at InteriorCenter.
+        if (queen != null && Vector3.Distance(TileCenter(tile), queen.transform.position) < tileSize * 0.5f) return false;
+
+        return true;
+    }
 
     // Every peer loads the same scene data, so the Host/Client split of "am I the owner"
     // can be read straight off NetworkServer.active - true only for the host's own process.
@@ -102,7 +141,6 @@ public class PlayerBase : NetworkBehaviour
     {
         base.OnStartServer();
         SpawnQueen();
-        SpawnResourceStock();
     }
 
     [Server]
@@ -122,12 +160,23 @@ public class PlayerBase : NetworkBehaviour
         queen = controller;
     }
 
-    [Server]
-    private void SpawnResourceStock()
+    // Same authorization rules as CmdRequestSpawn - see its comment.
+    [Command(requiresAuthority = false)]
+    public void CmdBuildResourceStock(Vector2Int tile, NetworkConnectionToClient sender = null)
     {
-        if (resourceStockPrefab == null) return;
+        bool senderIsHost = sender != null && sender == NetworkServer.localConnection;
+        bool authorized = senderIsHost ? owner == BaseOwner.Host : owner == BaseOwner.Client;
+        if (!authorized) return;
 
-        GameObject stockObject = Instantiate(resourceStockPrefab, InteriorCenter + resourceStockOffset, Quaternion.identity);
+        ServerBuildResourceStock(tile);
+    }
+
+    [Server]
+    public void ServerBuildResourceStock(Vector2Int tile)
+    {
+        if (!IsTileBuildable(tile)) return;
+
+        GameObject stockObject = Instantiate(resourceStockPrefab, TileCenter(tile), Quaternion.identity);
         ResourceStock stock = stockObject.GetComponent<ResourceStock>();
         if (stock != null) stock.HomeBase = this;
 
