@@ -1,55 +1,55 @@
 fileFormatVersion: 2
-guid: 5ef48357e3ef90841960f698a8be7d74
+guid: 4ef0aa684bceca942835d770db0494a9
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7013068417612415128
-    second: Queen_Spritesheet_4_0
+      213: -9030044441853363119
+    second: Queen_Birth_Spritesheet_0
   - first:
-      213: 529319295397239921
-    second: Queen_Spritesheet_4_1
+      213: -3875763399307292918
+    second: Queen_Birth_Spritesheet_1
   - first:
-      213: 3891759453213644995
-    second: Queen_Spritesheet_4_2
+      213: -1840833811945117083
+    second: Queen_Birth_Spritesheet_2
   - first:
-      213: -7773979960589341394
-    second: Queen_Spritesheet_4_3
+      213: -1985355798107433832
+    second: Queen_Birth_Spritesheet_3
   - first:
-      213: -8751868651638226263
-    second: Queen_Spritesheet_4_4
+      213: -6732940201855053761
+    second: Queen_Birth_Spritesheet_4
   - first:
-      213: -5208485245729703751
-    second: Queen_Spritesheet_4_5
+      213: 7170457438833968658
+    second: Queen_Birth_Spritesheet_5
   - first:
-      213: -7655260519670039438
-    second: Queen_Spritesheet_4_6
+      213: 6587433517085402202
+    second: Queen_Birth_Spritesheet_6
   - first:
-      213: 1389517318800601647
-    second: Queen_Spritesheet_4_7
+      213: 5659357966899250821
+    second: Queen_Birth_Spritesheet_7
   - first:
-      213: -6790257084329097796
-    second: Queen_Spritesheet_4_8
+      213: -3628801877973787750
+    second: Queen_Birth_Spritesheet_8
   - first:
-      213: -7976039414450324009
-    second: Queen_Spritesheet_4_9
+      213: -6701257503056595145
+    second: Queen_Birth_Spritesheet_9
   - first:
-      213: 6636984265535603491
-    second: Queen_Spritesheet_4_10
+      213: 1806564345420784780
+    second: Queen_Birth_Spritesheet_10
   - first:
-      213: 8182320600341004922
-    second: Queen_Spritesheet_4_11
+      213: 8097465748119331393
+    second: Queen_Birth_Spritesheet_11
   - first:
-      213: 5914793284838200433
-    second: Queen_Spritesheet_4_12
+      213: -8135391424299135994
+    second: Queen_Birth_Spritesheet_12
   - first:
-      213: -1439224113117371158
-    second: Queen_Spritesheet_4_13
+      213: -7123538181237198920
+    second: Queen_Birth_Spritesheet_13
   - first:
-      213: 3058387888414640025
-    second: Queen_Spritesheet_4_14
+      213: -8460636870308016876
+    second: Queen_Birth_Spritesheet_14
   - first:
-      213: 9029987918053131292
-    second: Queen_Spritesheet_4_15
+      213: -1282191409890384717
+    second: Queen_Birth_Spritesheet_15
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -82,7 +82,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -96,7 +96,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  spritePixelsToUnits: 150
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -141,383 +141,357 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: Android
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
-    buildTarget: iOS
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_0
+      name: Queen_Birth_Spritesheet_0
       rect:
         serializedVersion: 2
-        x: 52
-        y: 1170
-        width: 601
-        height: 254
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 32
+        y: 578
+        width: 280
+        height: 165
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 86f73b65e639cae90800000000000000
-      internalID: -7013068417612415128
+      spriteID: 15cf6516c66dea280800000000000000
+      internalID: -9030044441853363119
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_1
+      name: Queen_Birth_Spritesheet_1
       rect:
         serializedVersion: 2
-        x: 756
-        y: 1170
-        width: 602
-        height: 269
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 387
+        y: 578
+        width: 280
+        height: 165
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 17c99ee3815885700800000000000000
-      internalID: 529319295397239921
+      spriteID: a0f04d619b5863ac0800000000000000
+      internalID: -3875763399307292918
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_2
+      name: Queen_Birth_Spritesheet_2
       rect:
         serializedVersion: 2
-        x: 1460
-        y: 1170
-        width: 601
-        height: 299
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 731
+        y: 578
+        width: 292
+        height: 167
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3c851107a9e420630800000000000000
-      internalID: 3891759453213644995
+      spriteID: 56aab74b66b0476e0800000000000000
+      internalID: -1840833811945117083
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_3
+      name: Queen_Birth_Spritesheet_3
       rect:
         serializedVersion: 2
-        x: 2162
-        y: 1169
-        width: 604
-        height: 325
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 1081
+        y: 578
+        width: 293
+        height: 164
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e2d21160a664d1490800000000000000
-      internalID: -7773979960589341394
+      spriteID: 8945b05ab699274e0800000000000000
+      internalID: -1985355798107433832
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_4
+      name: Queen_Birth_Spritesheet_4
       rect:
         serializedVersion: 2
-        x: 50
-        y: 787
-        width: 605
-        height: 312
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 27
+        y: 385
+        width: 292
+        height: 167
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9a20a3aa4dd1b8680800000000000000
-      internalID: -8751868651638226263
+      spriteID: f309b7e1f8acf82a0800000000000000
+      internalID: -6732940201855053761
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_5
+      name: Queen_Birth_Spritesheet_5
       rect:
         serializedVersion: 2
-        x: 754
-        y: 787
-        width: 604
-        height: 330
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 379
+        y: 384
+        width: 292
+        height: 166
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9b8fa66c34eb7b7b0800000000000000
-      internalID: -5208485245729703751
+      spriteID: 21681c6cc05928360800000000000000
+      internalID: 7170457438833968658
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_6
+      name: Queen_Birth_Spritesheet_6
       rect:
         serializedVersion: 2
-        x: 1457
-        y: 785
-        width: 605
-        height: 345
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 730
+        y: 379
+        width: 308
+        height: 180
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 27cbefddd1d03c590800000000000000
-      internalID: -7655260519670039438
+      spriteID: a54a06fc1e34b6b50800000000000000
+      internalID: 6587433517085402202
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_7
+      name: Queen_Birth_Spritesheet_7
       rect:
         serializedVersion: 2
-        x: 2161
-        y: 786
-        width: 606
-        height: 363
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 1082
+        y: 377
+        width: 308
+        height: 187
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f22fc54b3ae884310800000000000000
-      internalID: 1389517318800601647
+      spriteID: 5868ec916141a8e40800000000000000
+      internalID: 5659357966899250821
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_8
+      name: Queen_Birth_Spritesheet_8
       rect:
         serializedVersion: 2
-        x: 49
-        y: 400
-        width: 607
-        height: 351
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 28
+        y: 187
+        width: 307
+        height: 185
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: cb50cfa782924c1a0800000000000000
-      internalID: -6790257084329097796
+      spriteID: a9b1a1f0be7e3adc0800000000000000
+      internalID: -3628801877973787750
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_9
+      name: Queen_Birth_Spritesheet_9
       rect:
         serializedVersion: 2
-        x: 753
-        y: 400
-        width: 606
-        height: 368
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 379
+        y: 193
+        width: 302
+        height: 172
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7dd7c23596a6f4190800000000000000
-      internalID: -7976039414450324009
+      spriteID: 737f3e54ec95003a0800000000000000
+      internalID: -6701257503056595145
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_10
+      name: Queen_Birth_Spritesheet_10
       rect:
         serializedVersion: 2
-        x: 1454
-        y: 400
-        width: 609
-        height: 381
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 731
+        y: 192
+        width: 300
+        height: 172
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3234b17760e4b1c50800000000000000
-      internalID: 6636984265535603491
+      spriteID: c8421b853b4321910800000000000000
+      internalID: 1806564345420784780
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_11
+      name: Queen_Birth_Spritesheet_11
       rect:
         serializedVersion: 2
-        x: 2159
-        y: 408
-        width: 608
-        height: 275
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 1081
+        y: 190
+        width: 313
+        height: 176
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a72cfa5fb317d8170800000000000000
-      internalID: 8182320600341004922
+      spriteID: 142ab89123aff5070800000000000000
+      internalID: 8097465748119331393
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_12
+      name: Queen_Birth_Spritesheet_12
       rect:
         serializedVersion: 2
-        x: 49
-        y: 19
-        width: 607
-        height: 276
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 27
+        y: 0
+        width: 325
+        height: 179
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 17495a69721951250800000000000000
-      internalID: 5914793284838200433
+      spriteID: 60c04ed4a98491f80800000000000000
+      internalID: -8135391424299135994
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_13
+      name: Queen_Birth_Spritesheet_13
       rect:
         serializedVersion: 2
-        x: 753
-        y: 28
-        width: 607
-        height: 250
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 380
+        y: 0
+        width: 325
+        height: 184
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ae466716b49d60ce0800000000000000
-      internalID: -1439224113117371158
+      spriteID: 8bfac6b24cb142d90800000000000000
+      internalID: -7123538181237198920
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_14
+      name: Queen_Birth_Spritesheet_14
       rect:
         serializedVersion: 2
-        x: 1455
-        y: 29
-        width: 608
-        height: 214
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 737
+        y: 0
+        width: 322
+        height: 180
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 997cf4a9493917a20800000000000000
-      internalID: 3058387888414640025
+      spriteID: 41dc7b3c797c59a80800000000000000
+      internalID: -8460636870308016876
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Queen_Spritesheet_4_15
+      name: Queen_Birth_Spritesheet_15
       rect:
         serializedVersion: 2
-        x: 2159
-        y: 19
-        width: 608
-        height: 278
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
+        x: 1086
+        y: 0
+        width: 321
+        height: 180
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c1440a52b26f05d70800000000000000
-      internalID: 9029987918053131292
+      spriteID: 3b42d6fb4bdb43ee0800000000000000
+      internalID: -1282191409890384717
       vertices: []
       indices: 
       edges: []
@@ -526,7 +500,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 374003e2f4eb9fc4a90e364780efd06a
+    spriteID: 5e95b19869f0265419f7848324c1dfb8
     internalID: 0
     vertices: []
     indices: 
@@ -535,25 +509,27 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries:
+      - key: SpriteEditor.SliceOnImport
+        value: False
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Queen_Spritesheet_4_0: -7013068417612415128
-      Queen_Spritesheet_4_1: 529319295397239921
-      Queen_Spritesheet_4_10: 6636984265535603491
-      Queen_Spritesheet_4_11: 8182320600341004922
-      Queen_Spritesheet_4_12: 5914793284838200433
-      Queen_Spritesheet_4_13: -1439224113117371158
-      Queen_Spritesheet_4_14: 3058387888414640025
-      Queen_Spritesheet_4_15: 9029987918053131292
-      Queen_Spritesheet_4_2: 3891759453213644995
-      Queen_Spritesheet_4_3: -7773979960589341394
-      Queen_Spritesheet_4_4: -8751868651638226263
-      Queen_Spritesheet_4_5: -5208485245729703751
-      Queen_Spritesheet_4_6: -7655260519670039438
-      Queen_Spritesheet_4_7: 1389517318800601647
-      Queen_Spritesheet_4_8: -6790257084329097796
-      Queen_Spritesheet_4_9: -7976039414450324009
+      Queen_Birth_Spritesheet_0: -9030044441853363119
+      Queen_Birth_Spritesheet_1: -3875763399307292918
+      Queen_Birth_Spritesheet_10: 1806564345420784780
+      Queen_Birth_Spritesheet_11: 8097465748119331393
+      Queen_Birth_Spritesheet_12: -8135391424299135994
+      Queen_Birth_Spritesheet_13: -7123538181237198920
+      Queen_Birth_Spritesheet_14: -8460636870308016876
+      Queen_Birth_Spritesheet_15: -1282191409890384717
+      Queen_Birth_Spritesheet_2: -1840833811945117083
+      Queen_Birth_Spritesheet_3: -1985355798107433832
+      Queen_Birth_Spritesheet_4: -6732940201855053761
+      Queen_Birth_Spritesheet_5: 7170457438833968658
+      Queen_Birth_Spritesheet_6: 6587433517085402202
+      Queen_Birth_Spritesheet_7: 5659357966899250821
+      Queen_Birth_Spritesheet_8: -3628801877973787750
+      Queen_Birth_Spritesheet_9: -6701257503056595145
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
