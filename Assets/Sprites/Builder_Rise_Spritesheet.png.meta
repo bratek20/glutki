@@ -1,0 +1,457 @@
+fileFormatVersion: 2
+guid: 04d7289bdf3280543802c85ff7de3aa1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2787807392074863957
+    second: Builder_Rise_Spritesheet_0
+  - first:
+      213: -8428823394782482409
+    second: Builder_Rise_Spritesheet_1
+  - first:
+      213: 384092725626514239
+    second: Builder_Rise_Spritesheet_2
+  - first:
+      213: 9148388818443869546
+    second: Builder_Rise_Spritesheet_3
+  - first:
+      213: 2969093635571148224
+    second: Builder_Rise_Spritesheet_4
+  - first:
+      213: -8699370364172451274
+    second: Builder_Rise_Spritesheet_5
+  - first:
+      213: -3309530735679559837
+    second: Builder_Rise_Spritesheet_6
+  - first:
+      213: 3053779447319202630
+    second: Builder_Rise_Spritesheet_7
+  - first:
+      213: -7573920080851303300
+    second: Builder_Rise_Spritesheet_8
+  - first:
+      213: 6242088172896331342
+    second: Builder_Rise_Spritesheet_9
+  - first:
+      213: -7812444391190402597
+    second: Builder_Rise_Spritesheet_10
+  - first:
+      213: -1901689735273856489
+    second: Builder_Rise_Spritesheet_11
+  - first:
+      213: -8892132253144195421
+    second: Builder_Rise_Spritesheet_12
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 0
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_0
+      rect:
+        serializedVersion: 2
+        x: 250
+        y: 901
+        width: 136
+        height: 121
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: baa6b2582f7bf49d0800000000000000
+      internalID: -2787807392074863957
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 671
+        y: 899
+        width: 175
+        height: 207
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 710fc7fb7cdc60b80800000000000000
+      internalID: -8428823394782482409
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 1088
+        y: 897
+        width: 239
+        height: 245
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f3ba7c78c42945500800000000000000
+      internalID: 384092725626514239
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 1456
+        y: 881
+        width: 322
+        height: 332
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a6d908ef82b95fe70800000000000000
+      internalID: 9148388818443869546
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 1896
+        y: 874
+        width: 344
+        height: 397
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c5671d3ee6543920800000000000000
+      internalID: 2969093635571148224
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 2325
+        y: 871
+        width: 345
+        height: 408
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 632c0f9beb0a54780800000000000000
+      internalID: -8699370364172451274
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 2671
+        y: 908
+        width: 11
+        height: 15
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 367259e945f2212d0800000000000000
+      internalID: -3309530735679559837
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 129
+        y: 148
+        width: 393
+        height: 385
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 64b89db4a34316a20800000000000000
+      internalID: 3053779447319202630
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 572
+        y: 168
+        width: 361
+        height: 388
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c7409a790d704e690800000000000000
+      internalID: -7573920080851303300
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 1011
+        y: 166
+        width: 369
+        height: 397
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e46272a0f1a50a650800000000000000
+      internalID: 6242088172896331342
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 1437
+        y: 161
+        width: 374
+        height: 404
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd96a93e73f949390800000000000000
+      internalID: -7812444391190402597
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 1865
+        y: 154
+        width: 391
+        height: 397
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 712cef7e247db95e0800000000000000
+      internalID: -1901689735273856489
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Rise_Spritesheet_12
+      rect:
+        serializedVersion: 2
+        x: 2300
+        y: 150
+        width: 388
+        height: 417
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3aedb8b04dcc89480800000000000000
+      internalID: -8892132253144195421
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: ab3490f80c34f9f498c884dff4f57054
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      Builder_Rise_Spritesheet_0: -2787807392074863957
+      Builder_Rise_Spritesheet_1: -8428823394782482409
+      Builder_Rise_Spritesheet_10: -7812444391190402597
+      Builder_Rise_Spritesheet_11: -1901689735273856489
+      Builder_Rise_Spritesheet_12: -8892132253144195421
+      Builder_Rise_Spritesheet_2: 384092725626514239
+      Builder_Rise_Spritesheet_3: 9148388818443869546
+      Builder_Rise_Spritesheet_4: 2969093635571148224
+      Builder_Rise_Spritesheet_5: -8699370364172451274
+      Builder_Rise_Spritesheet_6: -3309530735679559837
+      Builder_Rise_Spritesheet_7: 3053779447319202630
+      Builder_Rise_Spritesheet_8: -7573920080851303300
+      Builder_Rise_Spritesheet_9: 6242088172896331342
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

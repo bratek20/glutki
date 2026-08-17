@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &4285713386010788789
+--- !u!1001 &4337603618042265166
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -8,33 +8,13 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 555000111222333444, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 680354959157110417, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
-      propertyPath: unitType
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 680354959157110417, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
-      propertyPath: isAggressive
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4299230178549845892, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 4299230178549845892, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.5
-      objectReference: {fileID: 0}
     - target: {fileID: 4299230178549845892, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.45
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4299230178549845892, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 6.44
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4299230178549845892, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_LocalPosition.z
@@ -70,20 +50,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5204329978016109118, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: _assetId
-      value: 648167777
+      value: 3814676891
       objectReference: {fileID: 0}
     - target: {fileID: 6014365302286197209, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_Name
-      value: Attacker
+      value: Builder
       objectReference: {fileID: 0}
     - target: {fileID: 6417617058562059431, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -1005602517836624203, guid: 656d983fdf324314986dcdd7260d7cb3, type: 3}
+      objectReference: {fileID: -4894801524080865115, guid: 14b937cf869a2aa43a43f7dea4e81bfe, type: 3}
     - target: {fileID: 8136976867981293379, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 9efff45b57b5e62498f5f45aacfdf672, type: 2}
+      objectReference: {fileID: 9100000, guid: 726c361d6ea8d48418d758f77797b1b6, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
