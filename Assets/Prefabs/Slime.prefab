@@ -209,6 +209,7 @@ MonoBehaviour:
   wanderMaxDistance: 5
   resourceDetectionRadius: 1.5
   resourceScanInterval: 0.2
+  gatherDuration: 1.5
   carryingTintColor: {r: 1, g: 0.85, b: 0.35, a: 1}
   guardRadius: 1.5
   isAggressive: 0
@@ -303,6 +304,8 @@ MonoBehaviour:
   - parameterName: IsWalking
     value: 0
   - parameterName: IsAttacking
+    value: 0
+  - parameterName: IsSpawning
     value: 0
   facingLeft: 0
   tinted: 0
