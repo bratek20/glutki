@@ -53,11 +53,13 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   birth: the Queen's `IsSpawning` animator bool goes true for a configurable `spawnDuration` (a
   plain timer, so the value can just be dialled in to match whatever the birth animation looks
   like), after which a **Child** unit appears at a configurable offset from the Queen — line that
-  offset up with the point the animation "produces" it. Growth tiles are ordinary build-grid tiles
-  immediately to the right of the Queen's tile (two by default, `growthTileCount`), each holding
-  exactly one Child; while they're all taken the Queen can't start a birth and orders just sit in
+  offset up with the point the animation "produces" it. Growth tiles are a run of ordinary
+  build-grid tiles offset from the Queen's tile (`growthTileOffset`, then `growthTileCount` tiles
+  running right — one tile to her right, two of them, by default), each holding exactly one unit
+  in production; while they're all taken the Queen can't start a birth and orders just sit in
   the queue. A slot is reserved from the moment a birth *starts*, so two births can never race for
-  the same tile, and is released when its Child grows up or dies. Nothing can be built on a growth
+  the same tile, and stays held all the way through both phases below — only the fully grown unit
+  hands it back (or a death at any point does). Nothing can be built on a growth
   tile (`IsTileBuildable` excludes them). A Queen's death clears the backlog and cancels the birth
   in progress, but Children already on a tile are real units and are left to finish.
 - **Units** (`UnitController.cs`) — server-authoritative AI. Each unit remembers the `PlayerBase`
@@ -70,11 +72,13 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   has none, and depositing there) → back to `ExitingBase`. Bot wave units instead run `MarchingToBase` →
   `MarchingToQueen`, following the same interior-warp mechanic to reach their target's Queen. The
   **Queen** (`UnitType.Queen`) is a special stationary unit permanently parked at each base's
-  interior center — it never runs the task state machine, only combat. A `UnitType.Child` runs a
-  two-state life of its own: `WalkingToGrowthTile` → `Growing` (stands on its tile with the
-  `IsGrowing` animator bool set for the base's `growthTime`), then the base swaps it out in place
-  for the unit it was ordered as — the Child is destroyed and the real prefab spawned on the spot,
-  so the grown unit starts its normal life from the growth tile. Player-owned
+  interior center — it never runs the task state machine, only combat. Growing up takes two timed
+  phases on the growth tile, split so each one can be matched to its own animation: a
+  `UnitType.Child` runs `WalkingToGrowthTile` → `WaitingToGrow` (idle for the base's
+  `childIdleTime`), then the base swaps it out in place — the Child is destroyed and the ordered
+  prefab spawned on the spot, inheriting the same tile — and that unit runs `Growing` (the
+  `IsGrowing` animator bool, for `growthTime`) before `BeginNormalLife` sends it off to gather or
+  guard. So the growth animation plays on the real unit, not the Child. Player-owned
   `UnitType.Attacker` units instead spawn straight into `Guarding` (idle near their home base's
   Queen, at a random spot within `guardRadius`) and stay there until `PlayerBase.CmdOrderAttack`
   (fired by `AttackOrderPopup`) calls `UnitController.OrderAttack` on some of them — from there they

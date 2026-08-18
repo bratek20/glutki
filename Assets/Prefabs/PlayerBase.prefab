@@ -139,10 +139,12 @@ MonoBehaviour:
   interiorSlotSpacing: 500
   interiorRowY: -1000
   tileSize: 1
-  spawnDuration: 1.5
-  childSpawnOffset: {x: 0.6, y: -0.6}
+  spawnDuration: 3.75
+  childSpawnOffset: {x: 1.5, y: -0.75}
+  growthTileOffset: {x: 3, y: 0}
   growthTileCount: 2
-  growthTime: 5
+  childIdleTime: 5
+  growthTime: 1.25
 --- !u!61 &200005
 BoxCollider2D:
   m_ObjectHideFlags: 0

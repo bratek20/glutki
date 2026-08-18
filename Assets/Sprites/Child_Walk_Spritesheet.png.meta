@@ -1,25 +1,25 @@
 fileFormatVersion: 2
-guid: 6d7e8230df3d93649803cae260f28a99
+guid: 2ed595512afab0c428a02b176b048314
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1657110067384569684
-    second: Builder_Rose_Spritesheet_0
+      213: -1984202947388891476
+    second: Builder_Turning_Spritesheet_0
   - first:
-      213: -5615921226176225333
-    second: Builder_Rose_Spritesheet_1
+      213: -4560953444734090340
+    second: Builder_Turning_Spritesheet_1
   - first:
-      213: 7444781800004301940
-    second: Builder_Rose_Spritesheet_2
+      213: 6558574836929152526
+    second: Builder_Turning_Spritesheet_2
   - first:
-      213: -2606778093974562293
-    second: Builder_Rose_Spritesheet_3
+      213: 4612517386219250207
+    second: Builder_Turning_Spritesheet_3
   - first:
-      213: -2948688107157601080
-    second: Builder_Rose_Spritesheet_4
+      213: -7598020922147172937
+    second: Builder_Turning_Spritesheet_4
   - first:
-      213: -6015547300245911114
-    second: Builder_Rose_Spritesheet_5
+      213: 6234850956919485846
+    second: Builder_Turning_Spritesheet_5
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -111,16 +111,42 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Builder_Rose_Spritesheet_0
+      name: Builder_Turning_Spritesheet_0
       rect:
         serializedVersion: 2
         x: 250
         y: 900
-        width: 137
+        width: 136
         height: 121
       alignment: 7
       pivot: {x: 0.5, y: 0}
@@ -130,42 +156,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 45f4e2893dc3ff610800000000000000
-      internalID: 1657110067384569684
+      spriteID: cae1a9e9ee1b674e0800000000000000
+      internalID: -1984202947388891476
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Builder_Rose_Spritesheet_1
+      name: Builder_Turning_Spritesheet_1
       rect:
         serializedVersion: 2
-        x: 690
-        y: 900
-        width: 140
-        height: 122
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: bcf9033366d3012b0800000000000000
-      internalID: -5615921226176225333
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Builder_Rose_Spritesheet_2
-      rect:
-        serializedVersion: 2
-        x: 1129
+        x: 687
         y: 899
-        width: 138
-        height: 122
+        width: 137
+        height: 141
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -174,20 +178,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 474bc8b5a9d215760800000000000000
-      internalID: 7444781800004301940
+      spriteID: c93c789c10d34b0c0800000000000000
+      internalID: -4560953444734090340
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Builder_Rose_Spritesheet_3
+      name: Builder_Turning_Spritesheet_2
       rect:
         serializedVersion: 2
-        x: 1568
-        y: 900
-        width: 137
-        height: 122
+        x: 1118
+        y: 892
+        width: 157
+        height: 118
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -196,20 +200,42 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b0a5064822dd2dbd0800000000000000
-      internalID: -2606778093974562293
+      spriteID: e064afbb01db40b50800000000000000
+      internalID: 6558574836929152526
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Builder_Rose_Spritesheet_4
+      name: Builder_Turning_Spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 1564
+        y: 899
+        width: 141
+        height: 131
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f1269e5ef14f20040800000000000000
+      internalID: 4612517386219250207
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Builder_Turning_Spritesheet_4
       rect:
         serializedVersion: 2
         x: 2003
         y: 900
-        width: 140
-        height: 122
+        width: 143
+        height: 139
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -218,19 +244,19 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 8c4c3731ac72417d0800000000000000
-      internalID: -2948688107157601080
+      spriteID: 7bd8e633a386e8690800000000000000
+      internalID: -7598020922147172937
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Builder_Rose_Spritesheet_5
+      name: Builder_Turning_Spritesheet_5
       rect:
         serializedVersion: 2
-        x: 2424
-        y: 900
-        width: 140
+        x: 2433
+        y: 897
+        width: 146
         height: 121
       alignment: 7
       pivot: {x: 0.5, y: 0}
@@ -240,8 +266,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6b948472a9b748ca0800000000000000
-      internalID: -6015547300245911114
+      spriteID: 695b0b269e3a68650800000000000000
+      internalID: 6234850956919485846
       vertices: []
       indices: 
       edges: []
@@ -250,7 +276,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: c516cb6830cd1754a9ff2d1419fe7245
+    spriteID: 39882e266d47575429ce1c88a4e1ddcd
     internalID: 0
     vertices: []
     indices: 
@@ -262,12 +288,12 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      Builder_Rose_Spritesheet_0: 1657110067384569684
-      Builder_Rose_Spritesheet_1: -5615921226176225333
-      Builder_Rose_Spritesheet_2: 7444781800004301940
-      Builder_Rose_Spritesheet_3: -2606778093974562293
-      Builder_Rose_Spritesheet_4: -2948688107157601080
-      Builder_Rose_Spritesheet_5: -6015547300245911114
+      Builder_Turning_Spritesheet_0: -1984202947388891476
+      Builder_Turning_Spritesheet_1: -4560953444734090340
+      Builder_Turning_Spritesheet_2: 6558574836929152526
+      Builder_Turning_Spritesheet_3: 4612517386219250207
+      Builder_Turning_Spritesheet_4: -7598020922147172937
+      Builder_Turning_Spritesheet_5: 6234850956919485846
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

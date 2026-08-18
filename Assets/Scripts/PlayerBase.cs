@@ -32,9 +32,13 @@ public class PlayerBase : NetworkBehaviour
     [SerializeField] private float spawnDuration = 1.5f;
     [Tooltip("Where a freshly produced Child appears, relative to the Queen. Line this up with the point the spawn animation 'drops' it.")]
     [SerializeField] private Vector2 childSpawnOffset = new Vector2(0.6f, -0.6f);
-    [Tooltip("How many grid tiles directly to the right of the Queen's tile are growth tiles. Each holds one growing Child at a time; while they're all taken the Queen can't start another spawn and orders just queue up.")]
+    [Tooltip("Where the first growth tile sits relative to the Queen's own tile, in grid tiles. Raise x to push the whole row further right of her.")]
+    [SerializeField] private Vector2Int growthTileOffset = new Vector2Int(1, 0);
+    [Tooltip("How many grid tiles, running right from growthTileOffset, are growth tiles. Each holds one growing Child at a time; while they're all taken the Queen can't start another spawn and orders just queue up.")]
     [SerializeField] private int growthTileCount = 2;
-    [Tooltip("How long a Child sits on its growth tile before it becomes the unit it was ordered as.")]
+    [Tooltip("How long a Child stands idle on its growth tile before it's transformed into the unit it was ordered as.")]
+    [SerializeField] private float childIdleTime = 3f;
+    [Tooltip("How long that transformed unit then plays its growth animation (IsGrowing) on the tile before it comes to life. Set this to match the animation's length.")]
     [SerializeField] private float growthTime = 5f;
 
     [SyncVar] private int storedResources = 5;
@@ -101,11 +105,12 @@ public class PlayerBase : NetworkBehaviour
         return GridOrigin + new Vector3((tile.x + 0.5f) * tileSize, (tile.y + 0.5f) * tileSize, 0f);
     }
 
-    // Growth tiles are just the run of ordinary grid tiles immediately to the right of the Queen's
-    // own tile - nothing is built on them, they're the spots Children stand on while growing.
+    // Growth tiles are just a run of ordinary grid tiles offset from the Queen's own tile - nothing
+    // is built on them, they're the spots Children stand on while growing.
     public int GrowthTileCount => Mathf.Max(0, growthTileCount);
+    public float ChildIdleTime => childIdleTime;
     public float GrowthTime => growthTime;
-    public Vector2Int GrowthTile(int slot) => WorldToTile(InteriorCenter) + new Vector2Int(slot + 1, 0);
+    public Vector2Int GrowthTile(int slot) => WorldToTile(InteriorCenter) + growthTileOffset + new Vector2Int(slot, 0);
     public Vector3 GrowthTileCenter(int slot) => TileCenter(GrowthTile(slot));
 
     public bool IsGrowthTile(Vector2Int tile)
@@ -376,25 +381,30 @@ public class PlayerBase : NetworkBehaviour
         return -1;
     }
 
-    // Called by a Child once its growth timer runs out: it's replaced, in place, by the unit it was
-    // ordered as, which then starts its own normal life (walking out to gather, or standing guard).
+    // Called by a Child once it's waited out childIdleTime: it's replaced, in place, by the unit it
+    // was ordered as. That unit inherits the same growth tile and holds it while it plays its
+    // growth animation there, handing it back itself once it's fully grown.
     [Server]
     public void CompleteGrowth(UnitController child)
     {
-        ReleaseGrowthSlot(child);
+        int slot = child.GrowthSlot;
+        UnitController grown = null;
 
         if (child.GrowsIntoPrefab != null)
         {
             GameObject unit = Instantiate(child.GrowsIntoPrefab, child.transform.position, Quaternion.identity);
-            UnitController controller = unit.GetComponent<UnitController>();
-            if (controller != null)
+            grown = unit.GetComponent<UnitController>();
+            if (grown != null)
             {
-                controller.HomeBase = this;
-                controller.Faction = UnitFaction;
+                grown.HomeBase = this;
+                grown.Faction = UnitFaction;
+                grown.GrowthSlot = slot;
             }
 
             NetworkServer.Spawn(unit);
         }
+
+        if (slot >= 0 && slot < growthSlots.Length) growthSlots[slot] = grown;
 
         NetworkServer.Destroy(child.gameObject);
     }
