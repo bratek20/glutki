@@ -18,7 +18,7 @@ GameObject:
   - component: {fileID: 555000111222333444}
   - component: {fileID: 4815947138182015336}
   m_Layer: 0
-  m_Name: Slime
+  m_Name: Unit
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -88,7 +88,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -3972691880002762918, guid: 5deaf582c8900f14fb1fa36ef3e25c7a, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -96,7 +96,7 @@ SpriteRenderer:
   m_Size: {x: 0.65625, y: 0.53125}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!58 &914676934660955566
 CircleCollider2D:
@@ -238,7 +238,7 @@ Animator:
   m_GameObject: {fileID: 6014365302286197209}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 68c0274330a604b43bbecf711c4f032d, type: 2}
+  m_Controller: {fileID: 9100000, guid: 726c361d6ea8d48418d758f77797b1b6, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -304,6 +304,8 @@ MonoBehaviour:
   - parameterName: IsWalking
     value: 0
   - parameterName: IsAttacking
+    value: 0
+  - parameterName: IsGrowing
     value: 0
   - parameterName: IsSpawning
     value: 0

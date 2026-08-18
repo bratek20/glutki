@@ -63,7 +63,10 @@ public class UnitController : NetworkBehaviour
         Guarding,
         MarchingToBotBase,
         AttackingBotBase,
-        ReturningToGuard
+        ReturningToGuard,
+        WalkingToGrowthTile,
+        WaitingToGrow,
+        Growing
     }
 
     [SerializeField] private UnitType unitType = UnitType.Gatherer;
@@ -112,6 +115,12 @@ public class UnitController : NetworkBehaviour
 
     [field: SerializeField] public Faction Faction { get; set; }
 
+    // Set by PlayerBase right before it spawns a Child: which unit prefab this Child eventually
+    // grows into, and which of the base's growth tiles it walks to and occupies until it does.
+    // Server-only - no peer other than the server ever needs to know.
+    public GameObject GrowsIntoPrefab { get; set; }
+    public int GrowthSlot { get; set; } = -1;
+
     public bool IsAlive => currentHealth > 0;
 
     [Header("Debug (runtime, read-only - select this unit in Play mode to inspect)")]
@@ -127,6 +136,7 @@ public class UnitController : NetworkBehaviour
 
     private float combatScanTimer;
     private float attackTimer;
+    private float growthTimer;
 
     // Replicates movement state from Server to all connected Clients
     [SyncVar] private bool isWalkingServer;
@@ -142,6 +152,13 @@ public class UnitController : NetworkBehaviour
 
     // Drives the "IsAttacking" animator bool on all clients.
     [SyncVar] private bool isAttackingServer;
+
+    // Drives the Queen's "IsSpawning" birth animation while her base produces a Child, and the
+    // "IsGrowing" animation a freshly transformed unit plays on its growth tile.
+    [SyncVar] private bool isSpawningServer;
+    [SyncVar] private bool isGrowingServer;
+
+    private HashSet<string> animatorParameters;
 
     private void Awake()
     {
@@ -192,6 +209,34 @@ public class UnitController : NetworkBehaviour
             return;
         }
 
+        // A Child is born next to the Queen and walks straight to the growth tile reserved for it,
+        // where it waits out childIdleTime before the base transforms it.
+        if (unitType == UnitType.Child)
+        {
+            state = UnitState.WalkingToGrowthTile;
+            SetTarget(HomeBase != null && GrowthSlot >= 0 ? HomeBase.GrowthTileCenter(GrowthSlot) : transform.position);
+            return;
+        }
+
+        // A slot already assigned means this unit was just transformed out of a Child and is
+        // standing on its growth tile - it plays the growth animation there before coming to life.
+        if (GrowthSlot >= 0)
+        {
+            state = UnitState.Growing;
+            hasTarget = false;
+            isGrowingServer = true;
+            growthTimer = HomeBase != null ? HomeBase.GrowthTime : 0f;
+            return;
+        }
+
+        BeginNormalLife();
+    }
+
+    // What a unit does once it's fully alive - either straight after spawning, or after it's
+    // finished growing on its tile.
+    [Server]
+    private void BeginNormalLife()
+    {
         // Player-spawned Attackers park themselves near their Queen and wait for an attack order
         // instead of wandering out onto the world map.
         if (unitType == UnitType.Attacker)
@@ -210,11 +255,11 @@ public class UnitController : NetworkBehaviour
     private void Update()
     {
         // 1. Visually update local Animator/SpriteRenderer on Host & Clients
-        if (animator != null)
-        {
-            animator.SetBool("IsWalking", isWalkingServer);
-            animator.SetBool("IsAttacking", isAttackingServer);
-        }
+        SetAnimatorBool("IsWalking", isWalkingServer);
+        SetAnimatorBool("IsAttacking", isAttackingServer);
+        SetAnimatorBool("IsSpawning", isSpawningServer);
+        SetAnimatorBool("IsGrowing", isGrowingServer);
+
         if (spriteRenderer != null)
         {
             spriteRenderer.flipX = facingLeftServer;
@@ -254,6 +299,25 @@ public class UnitController : NetworkBehaviour
         {
             UpdateGathering();
             return;
+        }
+
+        if (state == UnitState.WaitingToGrow)
+        {
+            UpdateWaitingToGrow();
+            return;
+        }
+
+        if (state == UnitState.Growing)
+        {
+            UpdateGrowing();
+            return;
+        }
+
+        // Re-aimed every frame rather than latched at birth, so the base's growth tile layout can
+        // be tuned in the Inspector during Play mode and Children retarget immediately.
+        if (state == UnitState.WalkingToGrowthTile && HomeBase != null && GrowthSlot >= 0)
+        {
+            SetTarget(HomeBase.GrowthTileCenter(GrowthSlot));
         }
 
         bool canGather = unitType == UnitType.Gatherer && HomeBase != null && HomeBase.IsQueenAlive;
@@ -365,6 +429,9 @@ public class UnitController : NetworkBehaviour
                 break;
             case UnitState.ReturningToGuard:
                 OnReturnedToGuard();
+                break;
+            case UnitState.WalkingToGrowthTile:
+                OnGrowthTileReached();
                 break;
             case UnitState.Guarding:
                 // Reached its guard spot near the Queen - stay put indefinitely until OrderAttack.
@@ -591,6 +658,59 @@ public class UnitController : NetworkBehaviour
     }
 
     [Server]
+    private void OnGrowthTileReached()
+    {
+        state = UnitState.WaitingToGrow;
+        hasTarget = false;
+        isWalkingServer = false;
+        growthTimer = HomeBase != null ? HomeBase.ChildIdleTime : 0f;
+    }
+
+    // Phase one: the Child just sits idle on its tile for childIdleTime.
+    [Server]
+    private void UpdateWaitingToGrow()
+    {
+        isWalkingServer = false;
+        StayOnGrowthTile();
+
+        growthTimer -= Time.deltaTime;
+        if (growthTimer > 0f) return;
+
+        // Waited long enough - the base swaps this Child out for the unit it was ordered as, in
+        // place and still holding the same tile, which then plays its growth animation there.
+        if (HomeBase != null) HomeBase.CompleteGrowth(this);
+    }
+
+    // Phase two: the transformed unit plays its growth animation on the tile before coming to life.
+    [Server]
+    private void UpdateGrowing()
+    {
+        isWalkingServer = false;
+        StayOnGrowthTile();
+
+        growthTimer -= Time.deltaTime;
+        if (growthTimer > 0f) return;
+
+        isGrowingServer = false;
+
+        // Fully grown - hand the tile back so the next queued order can use it, and start living.
+        if (HomeBase != null) HomeBase.ReleaseGrowthSlot(this);
+        GrowthSlot = -1;
+
+        BeginNormalLife();
+    }
+
+    // Keeps a unit glued to its growth tile through both phases, recomputed rather than latched so
+    // the base's growth tile layout can be tuned in the Inspector mid-game.
+    [Server]
+    private void StayOnGrowthTile()
+    {
+        if (HomeBase == null || GrowthSlot < 0) return;
+
+        transform.position = Vector3.MoveTowards(transform.position, HomeBase.GrowthTileCenter(GrowthSlot), moveSpeed * Time.deltaTime);
+    }
+
+    [Server]
     private Vector3 GuardPosition()
     {
         if (HomeBase == null) return transform.position;
@@ -711,6 +831,14 @@ public class UnitController : NetworkBehaviour
         }
     }
 
+    // Called by this unit's PlayerBase while it's producing a Child, so the Queen plays her birth
+    // animation for exactly as long as the base's spawnDuration says.
+    [Server]
+    public void SetSpawning(bool spawning)
+    {
+        isSpawningServer = spawning;
+    }
+
     [Server]
     public void TakeDamage(int amount, UnitController attacker)
     {
@@ -739,7 +867,33 @@ public class UnitController : NetworkBehaviour
             HomeBase.OnQueenKilled();
         }
 
+        // Killed while still on a growth tile (either as a Child waiting, or mid growth animation)
+        // - hand the tile back so the next queued order can use it.
+        if (GrowthSlot >= 0 && HomeBase != null)
+        {
+            HomeBase.ReleaseGrowthSlot(this);
+        }
+
         NetworkServer.Destroy(gameObject);
+    }
+
+    // Every unit type has its own Animator Controller declaring only the parameters it actually
+    // animates (a Queen has no attack, a Gatherer no birth), so pushing all of them blindly would
+    // log a warning every frame for the ones a given controller doesn't declare.
+    private void SetAnimatorBool(string parameterName, bool value)
+    {
+        if (animator == null || animator.runtimeAnimatorController == null) return;
+
+        if (animatorParameters == null)
+        {
+            animatorParameters = new HashSet<string>();
+            foreach (AnimatorControllerParameter parameter in animator.parameters)
+            {
+                animatorParameters.Add(parameter.name);
+            }
+        }
+
+        if (animatorParameters.Contains(parameterName)) animator.SetBool(parameterName, value);
     }
 
     private void OnCarryingChanged(bool oldValue, bool newValue)

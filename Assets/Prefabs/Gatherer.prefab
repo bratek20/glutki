@@ -62,16 +62,20 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6014365302286197209, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_Name
-      value: Slime7
+      value: Gatherer
       objectReference: {fileID: 0}
     - target: {fileID: 6417617058562059431, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 515953890230247726, guid: 381cc48021b634e47a5ae142701196a7, type: 3}
+    - target: {fileID: 6417617058562059431, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
+      propertyPath: m_WasSpriteAssigned
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8136976867981293379, guid: 4cac34426c3187c4c93179870f30386f, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: e46f8d1bb99a0fc4aa9694c8af62a799, type: 2}
+      objectReference: {fileID: 22100000, guid: afcf76e3b2134fe40a1b4f75d36730ed, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

@@ -9,8 +9,8 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
 ## Core concepts
 
 - **PlayerBase** (`PlayerBase.cs`) — a NetworkBehaviour placed in the scene. Holds `storedResources`
-  and a roster of unit prefabs it can spawn, plus a `queenPrefab`, an `attackerPrefab`, and a
-  `resourceStockPrefab`. Owned by either `Host` or `Client` (`BaseOwner` enum, assigned per-instance
+  and a roster of unit prefabs it can spawn, plus a `queenPrefab`, an `attackerPrefab`, a
+  `resourceStockPrefab`, and a `childPrefab`. Owned by either `Host` or `Client` (`BaseOwner` enum, assigned per-instance
   in the Inspector — not negotiated at runtime). Many bases can exist. `Base` the class name is
   intentionally free for a future common player/bot base if one ever turns out to be needed — right
   now `PlayerBase` and `BotBase` don't share code.
@@ -47,6 +47,21 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   `netId` rather than map position (`PlayerBase.InteriorCenter`) — each base gets its own far-apart slot
   in a dedicated row, so bases sitting close together on the map never bleed into each other's
   interior view.
+- **Unit production** — spawning is never instant. A spawn request (gatherer or Attacker) spends
+  the resources immediately but only *enqueues* a prefab on its `PlayerBase`; the base then runs a
+  strictly one-at-a-time production line, server-side. When a growth tile is free it starts a
+  birth: the Queen's `IsSpawning` animator bool goes true for a configurable `spawnDuration` (a
+  plain timer, so the value can just be dialled in to match whatever the birth animation looks
+  like), after which a **Child** unit appears at a configurable offset from the Queen — line that
+  offset up with the point the animation "produces" it. Growth tiles are a run of ordinary
+  build-grid tiles offset from the Queen's tile (`growthTileOffset`, then `growthTileCount` tiles
+  running right — one tile to her right, two of them, by default), each holding exactly one unit
+  in production; while they're all taken the Queen can't start a birth and orders just sit in
+  the queue. A slot is reserved from the moment a birth *starts*, so two births can never race for
+  the same tile, and stays held all the way through both phases below — only the fully grown unit
+  hands it back (or a death at any point does). Nothing can be built on a growth
+  tile (`IsTileBuildable` excludes them). A Queen's death clears the backlog and cancels the birth
+  in progress, but Children already on a tile are real units and are left to finish.
 - **Units** (`UnitController.cs`) — server-authoritative AI. Each unit remembers the `PlayerBase`
   that spawned it (`HomeBase`) and always returns gathered resources there specifically. Task state
   machine: `ExitingBase` (walking from spawn/entry point to the base's interior exit, then warps
@@ -57,7 +72,13 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   has none, and depositing there) → back to `ExitingBase`. Bot wave units instead run `MarchingToBase` →
   `MarchingToQueen`, following the same interior-warp mechanic to reach their target's Queen. The
   **Queen** (`UnitType.Queen`) is a special stationary unit permanently parked at each base's
-  interior center — it never runs the task state machine, only combat. Player-owned
+  interior center — it never runs the task state machine, only combat. Growing up takes two timed
+  phases on the growth tile, split so each one can be matched to its own animation: a
+  `UnitType.Child` runs `WalkingToGrowthTile` → `WaitingToGrow` (idle for the base's
+  `childIdleTime`), then the base swaps it out in place — the Child is destroyed and the ordered
+  prefab spawned on the spot, inheriting the same tile — and that unit runs `Growing` (the
+  `IsGrowing` animator bool, for `growthTime`) before `BeginNormalLife` sends it off to gather or
+  guard. So the growth animation plays on the real unit, not the Child. Player-owned
   `UnitType.Attacker` units instead spawn straight into `Guarding` (idle near their home base's
   Queen, at a random spot within `guardRadius`) and stay there until `PlayerBase.CmdOrderAttack`
   (fired by `AttackOrderPopup`) calls `UnitController.OrderAttack` on some of them — from there they
@@ -71,6 +92,11 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   whatever task a unit was otherwise doing - it resumes that task afterward. Death
   (`NetworkServer.Destroy`) is immediate at 0 HP; a dying Queen calls back into its `PlayerBase` to
   flip `IsQueenAlive` off.
+- **Animation** — all animator state is server-driven: a `[SyncVar]` per animator bool
+  (`IsWalking`/`IsAttacking`/`IsSpawning`/`IsGrowing`), pushed to the local `Animator` every frame
+  on every peer. Each unit type has its own Animator Controller declaring only the parameters it
+  actually animates, so `UnitController` filters pushes against the controller's real parameter
+  list — Unity logs a warning *per frame* otherwise.
 - **Resources** (`Resource.cs`) — pickups consumed by gatherer units, via `TryConsume` (not a bare
   `Consume`): it returns false if the resource was already consumed, so two gatherers racing for the
   same one can't both be credited its `amount`. **Gotcha:** same scene-placed-`NetworkIdentity`

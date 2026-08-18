@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -9,6 +10,7 @@ public class PlayerBase : NetworkBehaviour
     [SerializeField] private GameObject queenPrefab;
     [SerializeField] private GameObject attackerPrefab;
     [SerializeField] private GameObject resourceStockPrefab;
+    [SerializeField] private GameObject childPrefab;
     [SerializeField] private int spawnCost = 1;
     [SerializeField] private Color highlightColor = new Color(1f, 0.9f, 0.3f);
     [SerializeField] private BaseOwner owner = BaseOwner.Host;
@@ -25,6 +27,20 @@ public class PlayerBase : NetworkBehaviour
     [Tooltip("Size (world units) of one buildable tile inside this base's interior.")]
     [SerializeField] private float tileSize = 1f;
 
+    [Header("Unit Growth")]
+    [Tooltip("How long the Queen plays her spawn animation before the Child she's producing actually appears.")]
+    [SerializeField] private float spawnDuration = 1.5f;
+    [Tooltip("Where a freshly produced Child appears, relative to the Queen. Line this up with the point the spawn animation 'drops' it.")]
+    [SerializeField] private Vector2 childSpawnOffset = new Vector2(0.6f, -0.6f);
+    [Tooltip("Where the first growth tile sits relative to the Queen's own tile, in grid tiles. Raise x to push the whole row further right of her.")]
+    [SerializeField] private Vector2Int growthTileOffset = new Vector2Int(1, 0);
+    [Tooltip("How many grid tiles, running right from growthTileOffset, are growth tiles. Each holds one growing Child at a time; while they're all taken the Queen can't start another spawn and orders just queue up.")]
+    [SerializeField] private int growthTileCount = 2;
+    [Tooltip("How long a Child stands idle on its growth tile before it's transformed into the unit it was ordered as.")]
+    [SerializeField] private float childIdleTime = 3f;
+    [Tooltip("How long that transformed unit then plays its growth animation (IsGrowing) on the tile before it comes to life. Set this to match the animation's length.")]
+    [SerializeField] private float growthTime = 5f;
+
     [SyncVar] private int storedResources = 5;
     [SyncVar] private UnitController queen;
     [SyncVar] private bool queenAlive = true;
@@ -33,6 +49,15 @@ public class PlayerBase : NetworkBehaviour
     private Collider2D selectionCollider;
     private Color normalColor;
     private int unitIndex;
+
+    // Server-only production state. A spawn order is only ever a prefab waiting in this queue until
+    // a growth tile frees up; the Queen then plays her spawn animation for spawnDuration and a Child
+    // is born, which walks to that tile and grows into the ordered unit there.
+    private readonly Queue<GameObject> spawnQueue = new Queue<GameObject>();
+    private UnitController[] growthSlots = new UnitController[0];
+    private GameObject spawningPrefab;
+    private int spawningSlot = -1;
+    private float spawnTimer;
 
     public int StoredResources => storedResources;
     public int SpawnCost => spawnCost;
@@ -80,6 +105,23 @@ public class PlayerBase : NetworkBehaviour
         return GridOrigin + new Vector3((tile.x + 0.5f) * tileSize, (tile.y + 0.5f) * tileSize, 0f);
     }
 
+    // Growth tiles are just a run of ordinary grid tiles offset from the Queen's own tile - nothing
+    // is built on them, they're the spots Children stand on while growing.
+    public int GrowthTileCount => Mathf.Max(0, growthTileCount);
+    public float ChildIdleTime => childIdleTime;
+    public float GrowthTime => growthTime;
+    public Vector2Int GrowthTile(int slot) => WorldToTile(InteriorCenter) + growthTileOffset + new Vector2Int(slot, 0);
+    public Vector3 GrowthTileCenter(int slot) => TileCenter(GrowthTile(slot));
+
+    public bool IsGrowthTile(Vector2Int tile)
+    {
+        for (int slot = 0; slot < GrowthTileCount; slot++)
+        {
+            if (GrowthTile(slot) == tile) return true;
+        }
+        return false;
+    }
+
     // Safe to call on any peer (build-mode preview) as well as the server (authoritative check
     // before actually building) - both need exactly the same rule.
     public bool IsTileBuildable(Vector2Int tile)
@@ -89,6 +131,9 @@ public class PlayerBase : NetworkBehaviour
 
         // Don't let a build sit right on top of the Queen parked at InteriorCenter.
         if (queen != null && Vector3.Distance(TileCenter(tile), queen.transform.position) < tileSize * 0.5f) return false;
+
+        // Growth tiles are reserved for Children - a building there would block unit production.
+        if (IsGrowthTile(tile)) return false;
 
         if (ResourceStock.AnyOccupiesTile(this, tile)) return false;
 
@@ -120,6 +165,8 @@ public class PlayerBase : NetworkBehaviour
 
     private void Update()
     {
+        if (isServer) UpdateProduction();
+
         if (selectionCollider == null || Camera.main == null || Mouse.current == null) return;
         if (!Mouse.current.leftButton.wasPressedThisFrame) return;
         if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
@@ -140,6 +187,7 @@ public class PlayerBase : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
+        growthSlots = new UnitController[GrowthTileCount];
         SpawnQueen();
     }
 
@@ -188,6 +236,11 @@ public class PlayerBase : NetworkBehaviour
     public void OnQueenKilled()
     {
         queenAlive = false;
+
+        // Nobody left to give birth - drop the backlog and abandon the spawn in progress. Children
+        // already out on a growth tile are real units in the world, so they're left to finish.
+        spawnQueue.Clear();
+        CancelSpawnInProgress();
     }
 
     [Server]
@@ -222,30 +275,13 @@ public class PlayerBase : NetworkBehaviour
     public void ServerTrySpawn()
     {
         if (!queenAlive) return;
-        if (!TrySpendResource(spawnCost)) return;
-
-        SpawnUnit();
-    }
-
-    [Server]
-    private void SpawnUnit()
-    {
         if (unitPrefabs == null || unitPrefabs.Length == 0) return;
+        if (!TrySpendResource(spawnCost)) return;
 
         GameObject unitPrefab = unitPrefabs[unitIndex];
         unitIndex = (unitIndex + 1) % unitPrefabs.Length;
 
-        // Units spawn inside the base interior and have to walk out to the exit before they
-        // appear on the world map - see UnitController's ExitingBase state.
-        GameObject unit = Instantiate(unitPrefab, InteriorCenter, Quaternion.identity);
-        UnitController controller = unit.GetComponent<UnitController>();
-        if (controller != null)
-        {
-            controller.HomeBase = this;
-            controller.Faction = UnitFaction;
-        }
-
-        NetworkServer.Spawn(unit);
+        spawnQueue.Enqueue(unitPrefab);
     }
 
     // Same authorization rules as CmdRequestSpawn - see its comment.
@@ -266,21 +302,121 @@ public class PlayerBase : NetworkBehaviour
         if (attackerPrefab == null) return;
         if (!TrySpendResource(spawnCost)) return;
 
-        SpawnAttacker();
+        spawnQueue.Enqueue(attackerPrefab);
+    }
+
+    // Drives the one-Child-at-a-time production line: pull the next order off the queue as soon as
+    // a growth tile is free, have the Queen play her spawn animation for spawnDuration, then put a
+    // Child into the world.
+    [Server]
+    private void UpdateProduction()
+    {
+        if (spawningPrefab != null)
+        {
+            spawnTimer -= Time.deltaTime;
+            if (spawnTimer <= 0f) FinishSpawn();
+            return;
+        }
+
+        if (spawnQueue.Count == 0 || childPrefab == null) return;
+
+        int slot = FreeGrowthSlot();
+        // Every growth tile is taken - the order simply stays queued until one frees up.
+        if (slot < 0) return;
+
+        spawningSlot = slot;
+        spawningPrefab = spawnQueue.Dequeue();
+        spawnTimer = spawnDuration;
+        if (queen != null) queen.SetSpawning(true);
     }
 
     [Server]
-    private void SpawnAttacker()
+    private void FinishSpawn()
     {
-        GameObject unit = Instantiate(attackerPrefab, InteriorCenter, Quaternion.identity);
-        UnitController controller = unit.GetComponent<UnitController>();
-        if (controller != null)
+        if (queen != null) queen.SetSpawning(false);
+
+        GameObject grownPrefab = spawningPrefab;
+        int slot = spawningSlot;
+        spawningPrefab = null;
+        spawningSlot = -1;
+
+        GameObject childObject = Instantiate(childPrefab, InteriorCenter + (Vector3)childSpawnOffset, Quaternion.identity);
+        UnitController child = childObject.GetComponent<UnitController>();
+        if (child == null)
         {
-            controller.HomeBase = this;
-            controller.Faction = UnitFaction;
+            Destroy(childObject);
+            return;
         }
 
-        NetworkServer.Spawn(unit);
+        child.HomeBase = this;
+        child.Faction = UnitFaction;
+        child.GrowsIntoPrefab = grownPrefab;
+        child.GrowthSlot = slot;
+
+        NetworkServer.Spawn(childObject);
+        growthSlots[slot] = child;
+    }
+
+    [Server]
+    private void CancelSpawnInProgress()
+    {
+        if (spawningPrefab == null) return;
+
+        spawningPrefab = null;
+        if (spawningSlot >= 0) growthSlots[spawningSlot] = null;
+        spawningSlot = -1;
+        if (queen != null) queen.SetSpawning(false);
+    }
+
+    // A slot is taken from the moment its Child is ordered up (so two births can't race for the
+    // same tile) until that Child grows up or dies. Children are runtime-spawned, so a destroyed
+    // one really does go null here - unlike the scene-placed Resource/BotBase objects.
+    [Server]
+    private int FreeGrowthSlot()
+    {
+        for (int slot = 0; slot < growthSlots.Length; slot++)
+        {
+            if (growthSlots[slot] == null) return slot;
+        }
+        return -1;
+    }
+
+    // Called by a Child once it's waited out childIdleTime: it's replaced, in place, by the unit it
+    // was ordered as. That unit inherits the same growth tile and holds it while it plays its
+    // growth animation there, handing it back itself once it's fully grown.
+    [Server]
+    public void CompleteGrowth(UnitController child)
+    {
+        int slot = child.GrowthSlot;
+        UnitController grown = null;
+
+        if (child.GrowsIntoPrefab != null)
+        {
+            GameObject unit = Instantiate(child.GrowsIntoPrefab, child.transform.position, Quaternion.identity);
+            grown = unit.GetComponent<UnitController>();
+            if (grown != null)
+            {
+                grown.HomeBase = this;
+                grown.Faction = UnitFaction;
+                grown.GrowthSlot = slot;
+            }
+
+            NetworkServer.Spawn(unit);
+        }
+
+        if (slot >= 0 && slot < growthSlots.Length) growthSlots[slot] = grown;
+
+        NetworkServer.Destroy(child.gameObject);
+    }
+
+    // Called when a Child dies before it finished growing - frees its tile for the next order.
+    [Server]
+    public void ReleaseGrowthSlot(UnitController child)
+    {
+        for (int slot = 0; slot < growthSlots.Length; slot++)
+        {
+            if (growthSlots[slot] == child) growthSlots[slot] = null;
+        }
     }
 
     // Same authorization rules as CmdRequestSpawn - see its comment.
