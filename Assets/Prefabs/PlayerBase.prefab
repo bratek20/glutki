@@ -131,6 +131,7 @@ MonoBehaviour:
   queenPrefab: {fileID: 2987455192824275693, guid: f21e48b601821e949ade13010f22b9ef, type: 3}
   attackerPrefab: {fileID: 7498133833606980204, guid: d4452598639917a42887f9724880ba97, type: 3}
   resourceStockPrefab: {fileID: 100000, guid: 418aa6370f3be3d4aa4b7454d93c32db, type: 3}
+  childPrefab: {fileID: 5405288708221834748, guid: 4af8bb2e11586ce4fbc51e32e483c0b9, type: 3}
   spawnCost: 1
   highlightColor: {r: 1, g: 0.9, b: 0.3, a: 1}
   owner: 0
@@ -138,6 +139,10 @@ MonoBehaviour:
   interiorSlotSpacing: 500
   interiorRowY: -1000
   tileSize: 1
+  spawnDuration: 1.5
+  childSpawnOffset: {x: 0.6, y: -0.6}
+  growthTileCount: 2
+  growthTime: 5
 --- !u!61 &200005
 BoxCollider2D:
   m_ObjectHideFlags: 0

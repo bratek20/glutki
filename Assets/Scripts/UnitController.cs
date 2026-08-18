@@ -63,7 +63,9 @@ public class UnitController : NetworkBehaviour
         Guarding,
         MarchingToBotBase,
         AttackingBotBase,
-        ReturningToGuard
+        ReturningToGuard,
+        WalkingToGrowthTile,
+        Growing
     }
 
     [SerializeField] private UnitType unitType = UnitType.Gatherer;
@@ -112,6 +114,12 @@ public class UnitController : NetworkBehaviour
 
     [field: SerializeField] public Faction Faction { get; set; }
 
+    // Set by PlayerBase right before it spawns a Child: which unit prefab this Child eventually
+    // grows into, and which of the base's growth tiles it walks to and occupies until it does.
+    // Server-only - no peer other than the server ever needs to know.
+    public GameObject GrowsIntoPrefab { get; set; }
+    public int GrowthSlot { get; set; } = -1;
+
     public bool IsAlive => currentHealth > 0;
 
     [Header("Debug (runtime, read-only - select this unit in Play mode to inspect)")]
@@ -127,6 +135,7 @@ public class UnitController : NetworkBehaviour
 
     private float combatScanTimer;
     private float attackTimer;
+    private float growthTimer;
 
     // Replicates movement state from Server to all connected Clients
     [SyncVar] private bool isWalkingServer;
@@ -142,6 +151,13 @@ public class UnitController : NetworkBehaviour
 
     // Drives the "IsAttacking" animator bool on all clients.
     [SyncVar] private bool isAttackingServer;
+
+    // Drives the Queen's "IsSpawning" birth animation while her base produces a Child, and a
+    // Child's "IsGrowing" animation while it sits on its growth tile.
+    [SyncVar] private bool isSpawningServer;
+    [SyncVar] private bool isGrowingServer;
+
+    private HashSet<string> animatorParameters;
 
     private void Awake()
     {
@@ -192,6 +208,15 @@ public class UnitController : NetworkBehaviour
             return;
         }
 
+        // A Child is born next to the Queen and walks straight to the growth tile reserved for it,
+        // where it stands and grows into the unit it was ordered as.
+        if (unitType == UnitType.Child)
+        {
+            state = UnitState.WalkingToGrowthTile;
+            SetTarget(HomeBase != null && GrowthSlot >= 0 ? HomeBase.GrowthTileCenter(GrowthSlot) : transform.position);
+            return;
+        }
+
         // Player-spawned Attackers park themselves near their Queen and wait for an attack order
         // instead of wandering out onto the world map.
         if (unitType == UnitType.Attacker)
@@ -210,11 +235,11 @@ public class UnitController : NetworkBehaviour
     private void Update()
     {
         // 1. Visually update local Animator/SpriteRenderer on Host & Clients
-        if (animator != null)
-        {
-            animator.SetBool("IsWalking", isWalkingServer);
-            animator.SetBool("IsAttacking", isAttackingServer);
-        }
+        SetAnimatorBool("IsWalking", isWalkingServer);
+        SetAnimatorBool("IsAttacking", isAttackingServer);
+        SetAnimatorBool("IsSpawning", isSpawningServer);
+        SetAnimatorBool("IsGrowing", isGrowingServer);
+
         if (spriteRenderer != null)
         {
             spriteRenderer.flipX = facingLeftServer;
@@ -253,6 +278,12 @@ public class UnitController : NetworkBehaviour
         if (state == UnitState.Gathering)
         {
             UpdateGathering();
+            return;
+        }
+
+        if (state == UnitState.Growing)
+        {
+            UpdateGrowing();
             return;
         }
 
@@ -365,6 +396,9 @@ public class UnitController : NetworkBehaviour
                 break;
             case UnitState.ReturningToGuard:
                 OnReturnedToGuard();
+                break;
+            case UnitState.WalkingToGrowthTile:
+                OnGrowthTileReached();
                 break;
             case UnitState.Guarding:
                 // Reached its guard spot near the Queen - stay put indefinitely until OrderAttack.
@@ -591,6 +625,30 @@ public class UnitController : NetworkBehaviour
     }
 
     [Server]
+    private void OnGrowthTileReached()
+    {
+        state = UnitState.Growing;
+        hasTarget = false;
+        isWalkingServer = false;
+        isGrowingServer = true;
+        growthTimer = HomeBase != null ? HomeBase.GrowthTime : 0f;
+    }
+
+    [Server]
+    private void UpdateGrowing()
+    {
+        isWalkingServer = false;
+
+        growthTimer -= Time.deltaTime;
+        if (growthTimer > 0f) return;
+
+        isGrowingServer = false;
+
+        // Grown up - the base swaps this Child out for the unit it was ordered as, in place.
+        if (HomeBase != null) HomeBase.CompleteGrowth(this);
+    }
+
+    [Server]
     private Vector3 GuardPosition()
     {
         if (HomeBase == null) return transform.position;
@@ -711,6 +769,14 @@ public class UnitController : NetworkBehaviour
         }
     }
 
+    // Called by this unit's PlayerBase while it's producing a Child, so the Queen plays her birth
+    // animation for exactly as long as the base's spawnDuration says.
+    [Server]
+    public void SetSpawning(bool spawning)
+    {
+        isSpawningServer = spawning;
+    }
+
     [Server]
     public void TakeDamage(int amount, UnitController attacker)
     {
@@ -739,7 +805,32 @@ public class UnitController : NetworkBehaviour
             HomeBase.OnQueenKilled();
         }
 
+        // Killed mid-growth - hand its growth tile back so the next queued order can use it.
+        if (unitType == UnitType.Child && HomeBase != null)
+        {
+            HomeBase.ReleaseGrowthSlot(this);
+        }
+
         NetworkServer.Destroy(gameObject);
+    }
+
+    // Every unit type has its own Animator Controller declaring only the parameters it actually
+    // animates (a Queen has no attack, a Gatherer no birth), so pushing all of them blindly would
+    // log a warning every frame for the ones a given controller doesn't declare.
+    private void SetAnimatorBool(string parameterName, bool value)
+    {
+        if (animator == null || animator.runtimeAnimatorController == null) return;
+
+        if (animatorParameters == null)
+        {
+            animatorParameters = new HashSet<string>();
+            foreach (AnimatorControllerParameter parameter in animator.parameters)
+            {
+                animatorParameters.Add(parameter.name);
+            }
+        }
+
+        if (animatorParameters.Contains(parameterName)) animator.SetBool(parameterName, value);
     }
 
     private void OnCarryingChanged(bool oldValue, bool newValue)
