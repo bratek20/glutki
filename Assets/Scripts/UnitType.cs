@@ -2,5 +2,6 @@ public enum UnitType
 {
     Gatherer,
     Attacker,
-    Queen
+    Queen,
+    Child
 }

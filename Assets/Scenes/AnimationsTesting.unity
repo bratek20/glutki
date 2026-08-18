@@ -169,7 +169,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8017835476929978263, guid: 0d2e3586d37bb1b49ba5a183fd1a64dc, type: 3}
       propertyPath: m_Name
-      value: Builder-Spawn
+      value: Builder-Grow
       objectReference: {fileID: 0}
     - target: {fileID: 8361844241408371824, guid: 0d2e3586d37bb1b49ba5a183fd1a64dc, type: 3}
       propertyPath: sceneId
