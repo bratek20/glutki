@@ -1098,6 +1098,18 @@ PrefabInstance:
       propertyPath: sceneId
       value: 3078611961
       objectReference: {fileID: 0}
+    - target: {fileID: 2863153027900272653, guid: 491e1d7c78fc2be4caaf2056953586af, type: 3}
+      propertyPath: highlightColor.b
+      value: 0.2793699
+      objectReference: {fileID: 0}
+    - target: {fileID: 2863153027900272653, guid: 491e1d7c78fc2be4caaf2056953586af, type: 3}
+      propertyPath: highlightColor.g
+      value: 0.5477895
+      objectReference: {fileID: 0}
+    - target: {fileID: 2863153027900272653, guid: 491e1d7c78fc2be4caaf2056953586af, type: 3}
+      propertyPath: highlightColor.r
+      value: 0.8113208
+      objectReference: {fileID: 0}
     - target: {fileID: 3015125791246895569, guid: 491e1d7c78fc2be4caaf2056953586af, type: 3}
       propertyPath: sceneId
       value: 2798732710

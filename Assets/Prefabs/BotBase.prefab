@@ -84,8 +84,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -1092938698021982936, guid: 00f5e20bf5f4f4e47bde08385741712b, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: -1462051805457833277, guid: 9efb49508382ccb4fa3fa98451d8a820, type: 3}
+  m_Color: {r: 0.7169812, g: 0.7135992, b: 0.7135992, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -149,7 +149,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 20.615034, y: 12.36}
+    oldSize: {x: 23.21, y: 13.433344}
     newSize: {x: 2.56, y: 1.95}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -174,8 +174,8 @@ MonoBehaviour:
   syncInterval: 0
   enemyUnitPrefabs:
   - {fileID: 8480537066866195548, guid: a390b8bf71c3f4c41b67fd9e42a59bd0, type: 3}
-  waveIntervalMin: 1000
-  waveIntervalMax: 1000
+  waveIntervalMin: 1
+  waveIntervalMax: 5
   waveSizeMin: 1
   waveSizeMax: 1
   maxHealth: 30

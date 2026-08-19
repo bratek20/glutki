@@ -9,7 +9,7 @@ AnimatorOverrideController:
   m_Name: Queen
   m_Controller: {fileID: 9100000, guid: 726c361d6ea8d48418d758f77797b1b6, type: 2}
   m_Clips:
-  - m_OriginalClip: {fileID: 7400000, guid: daa25680fb9cffc4688773abc36c6203, type: 2}
-    m_OverrideClip: {fileID: 7400000, guid: 9a07e2ea8dfa016448fc75cd1e243589, type: 2}
   - m_OriginalClip: {fileID: 7400000, guid: 7205afc548d36e7439ad37864559cc06, type: 2}
     m_OverrideClip: {fileID: 7400000, guid: 7205afc548d36e7439ad37864559cc06, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: c0f75ef1bdff06f45889fdb3bd601708, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 9a07e2ea8dfa016448fc75cd1e243589, type: 2}

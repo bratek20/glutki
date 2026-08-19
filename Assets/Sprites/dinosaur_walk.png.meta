@@ -1,0 +1,429 @@
+fileFormatVersion: 2
+guid: 172656e769e54da48b69381ef2b46942
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 8583129356548596262
+    second: dinosaur_walk_0
+  - first:
+      213: 6415595402962813915
+    second: dinosaur_walk_1
+  - first:
+      213: -7494801924657724778
+    second: dinosaur_walk_2
+  - first:
+      213: 1430225432851076600
+    second: dinosaur_walk_3
+  - first:
+      213: 207920472791194999
+    second: dinosaur_walk_4
+  - first:
+      213: 5661175572844383173
+    second: dinosaur_walk_5
+  - first:
+      213: -5895263159476979198
+    second: dinosaur_walk_6
+  - first:
+      213: 374243873056136734
+    second: dinosaur_walk_7
+  - first:
+      213: -1815498637084974044
+    second: dinosaur_walk_8
+  - first:
+      213: -4434044786305713572
+    second: dinosaur_walk_9
+  - first:
+      213: 9087313327009258521
+    second: dinosaur_walk_10
+  - first:
+      213: -3941540898599707716
+    second: dinosaur_walk_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: dinosaur_walk_0
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 1057
+        width: 656
+        height: 354
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6226e46aca66d1770800000000000000
+      internalID: 8583129356548596262
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_walk_1
+      rect:
+        serializedVersion: 2
+        x: 766
+        y: 1054
+        width: 655
+        height: 357
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd34a381706c80950800000000000000
+      internalID: 6415595402962813915
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_walk_2
+      rect:
+        serializedVersion: 2
+        x: 1432
+        y: 1052
+        width: 643
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 692ccd2db5d1df790800000000000000
+      internalID: -7494801924657724778
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_walk_3
+      rect:
+        serializedVersion: 2
+        x: 2078
+        y: 1057
+        width: 654
+        height: 355
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f551d9147e29d310800000000000000
+      internalID: 1430225432851076600
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_walk_4
+      rect:
+        serializedVersion: 2
+        x: 118
+        y: 636
+        width: 651
+        height: 331
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77d1042819ea2e200800000000000000
+      internalID: 207920472791194999
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_walk_5
+      rect:
+        serializedVersion: 2
+        x: 767
+        y: 639
+        width: 654
+        height: 325
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5cb02867039809e40800000000000000
+      internalID: 5661175572844383173
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_walk_6
+      rect:
+        serializedVersion: 2
+        x: 1420
+        y: 623
+        width: 655
+        height: 344
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 20a7de11461df2ea0800000000000000
+      internalID: -5895263159476979198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_walk_7
+      rect:
+        serializedVersion: 2
+        x: 2077
+        y: 620
+        width: 655
+        height: 344
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e1e90e8d1d4913500800000000000000
+      internalID: 374243873056136734
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_walk_8
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 118
+        width: 661
+        height: 327
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4242856cb9d0ec6e0800000000000000
+      internalID: -1815498637084974044
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_walk_9
+      rect:
+        serializedVersion: 2
+        x: 774
+        y: 119
+        width: 649
+        height: 357
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c5a331a62cb1772c0800000000000000
+      internalID: -4434044786305713572
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_walk_10
+      rect:
+        serializedVersion: 2
+        x: 1442
+        y: 116
+        width: 638
+        height: 347
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 91c5f03035f9c1e70800000000000000
+      internalID: 9087313327009258521
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_walk_11
+      rect:
+        serializedVersion: 2
+        x: 2099
+        y: 118
+        width: 619
+        height: 406
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cbb5a479f65dc49c0800000000000000
+      internalID: -3941540898599707716
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      dinosaur_walk_0: 8583129356548596262
+      dinosaur_walk_1: 6415595402962813915
+      dinosaur_walk_10: 9087313327009258521
+      dinosaur_walk_11: -3941540898599707716
+      dinosaur_walk_2: -7494801924657724778
+      dinosaur_walk_3: 1430225432851076600
+      dinosaur_walk_4: 207920472791194999
+      dinosaur_walk_5: 5661175572844383173
+      dinosaur_walk_6: -5895263159476979198
+      dinosaur_walk_7: 374243873056136734
+      dinosaur_walk_8: -1815498637084974044
+      dinosaur_walk_9: -4434044786305713572
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

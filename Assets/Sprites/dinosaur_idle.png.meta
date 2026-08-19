@@ -1,49 +1,43 @@
 fileFormatVersion: 2
-guid: 759ef3e3869705f419e54562b9544858
+guid: b10cec30a45df0849ab5b0bd3b48590b
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1989709660986642231
-    second: Bot_Spritesheet2_0
+      213: -4661718479358534311
+    second: dinosaur_idle_0
   - first:
-      213: 3738170347825088945
-    second: Bot_Spritesheet2_1
+      213: 9113110452061917019
+    second: dinosaur_idle_1
   - first:
-      213: -1516885083195045468
-    second: Bot_Spritesheet2_2
+      213: -1250047057362192165
+    second: dinosaur_idle_2
   - first:
-      213: -8801854518098867869
-    second: Bot_Spritesheet2_3
+      213: 4754669570247867100
+    second: dinosaur_idle_3
   - first:
-      213: 1616027628044440765
-    second: Bot_Spritesheet2_4
+      213: 4634840858877898619
+    second: dinosaur_idle_4
   - first:
-      213: 2315313538343840755
-    second: Bot_Spritesheet2_5
+      213: -1641409740704119497
+    second: dinosaur_idle_5
   - first:
-      213: 7576467179578922702
-    second: Bot_Spritesheet2_6
+      213: -7286063368830310538
+    second: dinosaur_idle_6
   - first:
-      213: -7328696786910862229
-    second: Bot_Spritesheet2_7
+      213: 3337150693514657478
+    second: dinosaur_idle_7
   - first:
-      213: -1559852362022689998
-    second: Bot_Spritesheet2_8
+      213: -1386225958088294788
+    second: dinosaur_idle_8
   - first:
-      213: -9218655458587402662
-    second: Bot_Spritesheet2_9
+      213: 3835514875558772192
+    second: dinosaur_idle_9
   - first:
-      213: 2879284580025241363
-    second: Bot_Spritesheet2_10
+      213: -5586368847750456152
+    second: dinosaur_idle_10
   - first:
-      213: -8258389119058677154
-    second: Bot_Spritesheet2_11
-  - first:
-      213: 7608214685950181607
-    second: Bot_Spritesheet2_12
-  - first:
-      213: -7355733299241007230
-    second: Bot_Spritesheet2_13
+      213: -20320461277925865
+    second: dinosaur_idle_11
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -139,13 +133,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Bot_Spritesheet2_0
+      name: dinosaur_idle_0
       rect:
         serializedVersion: 2
-        x: 47
-        y: 859
-        width: 385
-        height: 512
+        x: 118
+        y: 1057
+        width: 649
+        height: 370
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -154,20 +148,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9c07ab2fa912364e0800000000000000
-      internalID: -1989709660986642231
+      spriteID: 95dd5faedbf3e4fb0800000000000000
+      internalID: -4661718479358534311
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Bot_Spritesheet2_1
+      name: dinosaur_idle_1
       rect:
         serializedVersion: 2
-        x: 457
-        y: 853
-        width: 368
-        height: 508
+        x: 775
+        y: 1056
+        width: 656
+        height: 359
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -176,20 +170,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1b9430c2026a0e330800000000000000
-      internalID: 3738170347825088945
+      spriteID: b5fcc0e3ca5487e70800000000000000
+      internalID: 9113110452061917019
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Bot_Spritesheet2_2
+      name: dinosaur_idle_2
       rect:
         serializedVersion: 2
-        x: 844
-        y: 859
-        width: 376
-        height: 508
+        x: 1429
+        y: 1056
+        width: 654
+        height: 354
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -198,20 +192,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 4a9021bbd01f2fae0800000000000000
-      internalID: -1516885083195045468
+      spriteID: bd8776903d0f6aee0800000000000000
+      internalID: -1250047057362192165
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Bot_Spritesheet2_3
+      name: dinosaur_idle_3
       rect:
         serializedVersion: 2
-        x: 1233
-        y: 856
-        width: 384
-        height: 521
+        x: 2083
+        y: 1055
+        width: 651
+        height: 366
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -220,20 +214,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 369cc0433f789d580800000000000000
-      internalID: -8801854518098867869
+      spriteID: cdabbf668cafbf140800000000000000
+      internalID: 4754669570247867100
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Bot_Spritesheet2_4
+      name: dinosaur_idle_4
       rect:
         serializedVersion: 2
-        x: 1628
-        y: 858
-        width: 385
-        height: 512
+        x: 113
+        y: 621
+        width: 654
+        height: 365
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -242,20 +236,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: db45eccc0984d6610800000000000000
-      internalID: 1616027628044440765
+      spriteID: b7f22e76433425040800000000000000
+      internalID: 4634840858877898619
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Bot_Spritesheet2_5
+      name: dinosaur_idle_5
       rect:
         serializedVersion: 2
-        x: 2012
-        y: 1049
-        width: 7
-        height: 22
+        x: 770
+        y: 621
+        width: 659
+        height: 354
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -264,20 +258,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3fb23a46565a12020800000000000000
-      internalID: 2315313538343840755
+      spriteID: 7350772998a8839e0800000000000000
+      internalID: -1641409740704119497
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Bot_Spritesheet2_6
+      name: dinosaur_idle_6
       rect:
         serializedVersion: 2
-        x: 2015
-        y: 857
-        width: 373
-        height: 506
+        x: 1431
+        y: 620
+        width: 649
+        height: 372
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -286,20 +280,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: ec6153b02c4052960800000000000000
-      internalID: 7576467179578922702
+      spriteID: 67722e128f3b2ea90800000000000000
+      internalID: -7286063368830310538
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Bot_Spritesheet2_7
+      name: dinosaur_idle_7
       rect:
         serializedVersion: 2
-        x: 2397
-        y: 856
-        width: 370
-        height: 511
+        x: 2086
+        y: 620
+        width: 640
+        height: 386
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -308,20 +302,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b64a1a5f91d3b4a90800000000000000
-      internalID: -7328696786910862229
+      spriteID: 6ceb3e0ffd0ff4e20800000000000000
+      internalID: 3337150693514657478
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Bot_Spritesheet2_8
+      name: dinosaur_idle_8
       rect:
         serializedVersion: 2
-        x: 91
-        y: 180
-        width: 363
-        height: 429
+        x: 113
+        y: 118
+        width: 656
+        height: 393
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -330,20 +324,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 233659b8a8a4a5ae0800000000000000
-      internalID: -1559852362022689998
+      spriteID: c7eb8bde5d223cce0800000000000000
+      internalID: -1386225958088294788
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Bot_Spritesheet2_9
+      name: dinosaur_idle_9
       rect:
         serializedVersion: 2
-        x: 448
-        y: 183
-        width: 344
-        height: 487
+        x: 770
+        y: 119
+        width: 656
+        height: 399
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -352,20 +346,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a5e9e24f3b1c01080800000000000000
-      internalID: -9218655458587402662
+      spriteID: 0ed3868357c7a3530800000000000000
+      internalID: 3835514875558772192
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Bot_Spritesheet2_10
+      name: dinosaur_idle_10
       rect:
         serializedVersion: 2
-        x: 766
-        y: 178
-        width: 348
-        height: 476
+        x: 1431
+        y: 118
+        width: 647
+        height: 400
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -374,20 +368,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 31f0aa7021645f720800000000000000
-      internalID: 2879284580025241363
+      spriteID: 8ac968d712b3972b0800000000000000
+      internalID: -5586368847750456152
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: Bot_Spritesheet2_11
+      name: dinosaur_idle_11
       rect:
         serializedVersion: 2
-        x: 1103
-        y: 179
-        width: 680
-        height: 494
+        x: 2086
+        y: 119
+        width: 648
+        height: 399
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -396,52 +390,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e527e8dd9de446d80800000000000000
-      internalID: -8258389119058677154
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Bot_Spritesheet2_12
-      rect:
-        serializedVersion: 2
-        x: 1748
-        y: 177
-        width: 652
-        height: 477
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 7e088f262fec59960800000000000000
-      internalID: 7608214685950181607
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: Bot_Spritesheet2_13
-      rect:
-        serializedVersion: 2
-        x: 2391
-        y: 178
-        width: 351
-        height: 434
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 2874a34698f2be990800000000000000
-      internalID: -7355733299241007230
+      spriteID: 71e6bdbe5aec7bff0800000000000000
+      internalID: -20320461277925865
       vertices: []
       indices: 
       edges: []
@@ -460,20 +410,18 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Bot_Spritesheet2_0: -1989709660986642231
-      Bot_Spritesheet2_1: 3738170347825088945
-      Bot_Spritesheet2_10: 2879284580025241363
-      Bot_Spritesheet2_11: -8258389119058677154
-      Bot_Spritesheet2_12: 7608214685950181607
-      Bot_Spritesheet2_13: -7355733299241007230
-      Bot_Spritesheet2_2: -1516885083195045468
-      Bot_Spritesheet2_3: -8801854518098867869
-      Bot_Spritesheet2_4: 1616027628044440765
-      Bot_Spritesheet2_5: 2315313538343840755
-      Bot_Spritesheet2_6: 7576467179578922702
-      Bot_Spritesheet2_7: -7328696786910862229
-      Bot_Spritesheet2_8: -1559852362022689998
-      Bot_Spritesheet2_9: -9218655458587402662
+      dinosaur_idle_0: -4661718479358534311
+      dinosaur_idle_1: 9113110452061917019
+      dinosaur_idle_10: -5586368847750456152
+      dinosaur_idle_11: -20320461277925865
+      dinosaur_idle_2: -1250047057362192165
+      dinosaur_idle_3: 4754669570247867100
+      dinosaur_idle_4: 4634840858877898619
+      dinosaur_idle_5: -1641409740704119497
+      dinosaur_idle_6: -7286063368830310538
+      dinosaur_idle_7: 3337150693514657478
+      dinosaur_idle_8: -1386225958088294788
+      dinosaur_idle_9: 3835514875558772192
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

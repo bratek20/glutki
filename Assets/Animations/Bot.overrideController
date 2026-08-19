@@ -6,12 +6,12 @@ AnimatorOverrideController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Attacker
+  m_Name: Bot
   m_Controller: {fileID: 9100000, guid: 726c361d6ea8d48418d758f77797b1b6, type: 2}
   m_Clips:
-  - m_OriginalClip: {fileID: 7400000, guid: 539f751f54bee444499ce8416cfa0c44, type: 2}
-    m_OverrideClip: {fileID: 7400000, guid: 52feac31d2c9a72419c828affb74410d, type: 2}
   - m_OriginalClip: {fileID: 7400000, guid: c0f75ef1bdff06f45889fdb3bd601708, type: 2}
-    m_OverrideClip: {fileID: 7400000, guid: 5b0cd3b5b5b32c34dbabe6ac5b12505a, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: b8bae11d9c9878c4e8ee41b09f8cb937, type: 2}
+  - m_OriginalClip: {fileID: 7400000, guid: 539f751f54bee444499ce8416cfa0c44, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: 757cff75da1d0c14d9a2d1688477d66c, type: 2}
   - m_OriginalClip: {fileID: 7400000, guid: 80e9e732253112c4a938c96a2a1f20b6, type: 2}
-    m_OverrideClip: {fileID: 7400000, guid: ff015c7a360c763479a473a088a37c9f, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: d610139dde6389347acf1a8fe3353f8e, type: 2}

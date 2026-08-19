@@ -1,0 +1,429 @@
+fileFormatVersion: 2
+guid: d5d854047d243964f8e2cc6e165af4ad
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -943660641679713146
+    second: dinosaur_attack_0
+  - first:
+      213: 9134024828469542866
+    second: dinosaur_attack_1
+  - first:
+      213: 1621838267222493211
+    second: dinosaur_attack_2
+  - first:
+      213: -5855676070706454201
+    second: dinosaur_attack_3
+  - first:
+      213: 2323404289055213947
+    second: dinosaur_attack_4
+  - first:
+      213: -2420615712788387370
+    second: dinosaur_attack_5
+  - first:
+      213: 235362668441076015
+    second: dinosaur_attack_6
+  - first:
+      213: 4535141975497692129
+    second: dinosaur_attack_7
+  - first:
+      213: -2517965091153194020
+    second: dinosaur_attack_8
+  - first:
+      213: -4081776366995966756
+    second: dinosaur_attack_9
+  - first:
+      213: -3990792440490839413
+    second: dinosaur_attack_10
+  - first:
+      213: -2791610564313492330
+    second: dinosaur_attack_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 2
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: dinosaur_attack_0
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 1059
+        width: 659
+        height: 344
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68cd92865a177e2f0800000000000000
+      internalID: -943660641679713146
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_attack_1
+      rect:
+        serializedVersion: 2
+        x: 771
+        y: 1058
+        width: 660
+        height: 327
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2df7686ff2392ce70800000000000000
+      internalID: 9134024828469542866
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_attack_2
+      rect:
+        serializedVersion: 2
+        x: 1448
+        y: 1057
+        width: 634
+        height: 337
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b188ee8af4de18610800000000000000
+      internalID: 1621838267222493211
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_attack_3
+      rect:
+        serializedVersion: 2
+        x: 2091
+        y: 1060
+        width: 643
+        height: 337
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74169cd63a57cbea0800000000000000
+      internalID: -5855676070706454201
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_attack_4
+      rect:
+        serializedVersion: 2
+        x: 117
+        y: 623
+        width: 636
+        height: 333
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7941c614e36e3020800000000000000
+      internalID: 2323404289055213947
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_attack_5
+      rect:
+        serializedVersion: 2
+        x: 778
+        y: 622
+        width: 656
+        height: 322
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6d9e48d85de386ed0800000000000000
+      internalID: -2420615712788387370
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_attack_6
+      rect:
+        serializedVersion: 2
+        x: 1437
+        y: 622
+        width: 638
+        height: 347
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f2181d5991d244300800000000000000
+      internalID: 235362668441076015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_attack_7
+      rect:
+        serializedVersion: 2
+        x: 2090
+        y: 620
+        width: 639
+        height: 360
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e3d087399f00fe30800000000000000
+      internalID: 4535141975497692129
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_attack_8
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 119
+        width: 662
+        height: 367
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd3daf027146e0dd0800000000000000
+      internalID: -2517965091153194020
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_attack_9
+      rect:
+        serializedVersion: 2
+        x: 766
+        y: 119
+        width: 660
+        height: 367
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cd4fe98350e9a57c0800000000000000
+      internalID: -4081776366995966756
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_attack_10
+      rect:
+        serializedVersion: 2
+        x: 1424
+        y: 118
+        width: 653
+        height: 362
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b82ba346b6bdd98c0800000000000000
+      internalID: -3990792440490839413
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: dinosaur_attack_11
+      rect:
+        serializedVersion: 2
+        x: 2083
+        y: 119
+        width: 651
+        height: 367
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 694ddda7bf43249d0800000000000000
+      internalID: -2791610564313492330
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      dinosaur_attack_0: -943660641679713146
+      dinosaur_attack_1: 9134024828469542866
+      dinosaur_attack_10: -3990792440490839413
+      dinosaur_attack_11: -2791610564313492330
+      dinosaur_attack_2: 1621838267222493211
+      dinosaur_attack_3: -5855676070706454201
+      dinosaur_attack_4: 2323404289055213947
+      dinosaur_attack_5: -2420615712788387370
+      dinosaur_attack_6: 235362668441076015
+      dinosaur_attack_7: 4535141975497692129
+      dinosaur_attack_8: -2517965091153194020
+      dinosaur_attack_9: -4081776366995966756
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -85,7 +85,7 @@ SpriteRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: -8991467134410963220, guid: 149e70aa708fd9243a1bce73a51181ef, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.8396226, g: 0.55895394, b: 0.2732734, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -133,7 +133,7 @@ MonoBehaviour:
   resourceStockPrefab: {fileID: 100000, guid: 418aa6370f3be3d4aa4b7454d93c32db, type: 3}
   childPrefab: {fileID: 5405288708221834748, guid: 4af8bb2e11586ce4fbc51e32e483c0b9, type: 3}
   spawnCost: 1
-  highlightColor: {r: 1, g: 0.9, b: 0.3, a: 1}
+  highlightColor: {r: 1, g: 1, b: 1, a: 1}
   owner: 0
   interiorHalfSize: {x: 9, y: 5}
   interiorSlotSpacing: 500
