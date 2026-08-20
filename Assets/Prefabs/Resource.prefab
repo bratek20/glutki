@@ -162,4 +162,15 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  amount: 1
+  totalAmount: 40
+  fillStages:
+  - maxPercentage: 1
+    sprite: {fileID: -4498159184811713307, guid: 1e7310af9f3642346a13fe6301eb1a6c, type: 3}
+  - maxPercentage: 0.75
+    sprite: {fileID: -7757097984784445967, guid: 1e7310af9f3642346a13fe6301eb1a6c, type: 3}
+  - maxPercentage: 0.5
+    sprite: {fileID: -7383734684156432339, guid: 1e7310af9f3642346a13fe6301eb1a6c, type: 3}
+  - maxPercentage: 0.25
+    sprite: {fileID: 6533066914187245562, guid: 1e7310af9f3642346a13fe6301eb1a6c, type: 3}
+  spriteRenderer: {fileID: 100002}
+  previewPercentage: 1
