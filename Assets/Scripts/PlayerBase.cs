@@ -9,11 +9,23 @@ public class PlayerBase : NetworkBehaviour
     [SerializeField] private GameObject[] unitPrefabs;
     [SerializeField] private GameObject queenPrefab;
     [SerializeField] private GameObject attackerPrefab;
+    [SerializeField] private GameObject builderPrefab;
     [SerializeField] private GameObject resourceStockPrefab;
     [SerializeField] private GameObject childPrefab;
-    [SerializeField] private int spawnCost = 1;
     [SerializeField] private Color highlightColor = new Color(1f, 0.9f, 0.3f);
     [SerializeField] private BaseOwner owner = BaseOwner.Host;
+
+    [Header("Queen Feeding")]
+    [Tooltip("How much food the Queen must have been fed before she can start one birth. Ordering a unit is free and instant; the wait is a Builder shuttling this much from a ResourceStock to her.")]
+    [SerializeField] private int spawnCost = 5;
+
+    [Header("Starting Loadout")]
+    [Tooltip("Units this base is given for free, fully grown (skipping the Child/growth pipeline), the moment the game starts. One Builder and one Gatherer by default - with no Builder the Queen could never be fed, so the base could never produce anything.")]
+    [SerializeField] private GameObject[] startingUnitPrefabs;
+    [Tooltip("Where the free starting ResourceStock is built, in grid tiles relative to the Queen's own tile. Must not land on a growth tile or it won't build.")]
+    [SerializeField] private Vector2Int startingStockOffset = new Vector2Int(-2, 0);
+    [Tooltip("How far from the Queen the starting units appear. They're spread evenly around her so they don't stack up.")]
+    [SerializeField] private float startingUnitRadius = 1.5f;
 
     [Header("Base View interior")]
     [Tooltip("Half-size of the interior room, roughly 2x a screen's worth of view. Also used to clamp camera panning while inside this base.")]
@@ -45,6 +57,15 @@ public class PlayerBase : NetworkBehaviour
     [SyncVar] private UnitController queen;
     [SyncVar] private bool queenAlive = true;
 
+    // Food a Builder has carried to the Queen and she hasn't spent on a birth yet. Synced because
+    // the HUD shows it - it's the player's only read on why a queued order hasn't started.
+    [SyncVar] private int queenFood;
+
+    // Latched by OnBuilderKilled rather than derived from a live count, so it can only ever be set
+    // as the result of a Builder actually dying - never by a count that reads 0 before the starting
+    // loadout has spawned.
+    [SyncVar] private bool buildersLost;
+
     private SpriteRenderer spriteRenderer;
     private Collider2D selectionCollider;
     private Color normalColor;
@@ -61,9 +82,18 @@ public class PlayerBase : NetworkBehaviour
 
     public int StoredResources => storedResources;
     public int SpawnCost => spawnCost;
+    public int QueenFood => queenFood;
     public BaseOwner Owner => owner;
     public UnitController Queen => queen;
     public bool HasResourceStockPrefab => resourceStockPrefab != null;
+
+    // Losing every Builder is as terminal as losing the Queen - nobody is left to carry food to
+    // her, so the base can never produce again. GameController treats it as a loss for that reason.
+    public bool HasLivingBuilder => !buildersLost;
+
+    // How much more food the Queen still needs to work through every order currently queued - what
+    // this base's Builders are working toward. Server-only: spawnQueue only exists there.
+    public int FoodShortfall => Mathf.Max(0, spawnQueue.Count * spawnCost - queenFood);
 
     // Closest of this base's built ResourceStocks to position, or null if it has none built yet.
     public ResourceStock NearestResourceStock(Vector3 position) => ResourceStock.Nearest(this, position);
@@ -189,6 +219,49 @@ public class PlayerBase : NetworkBehaviour
         base.OnStartServer();
         growthSlots = new UnitController[GrowthTileCount];
         SpawnQueen();
+        SpawnStartingLoadout();
+    }
+
+    // A base doesn't start from nothing: it gets one ResourceStock for its Gatherers to fill and its
+    // Builders to fetch from, plus its starting units. Runs after SpawnQueen because the stock's
+    // buildable check needs to know where the Queen is standing.
+    [Server]
+    private void SpawnStartingLoadout()
+    {
+        if (resourceStockPrefab != null)
+        {
+            ServerBuildResourceStock(WorldToTile(InteriorCenter) + startingStockOffset);
+        }
+
+        if (startingUnitPrefabs == null) return;
+
+        for (int i = 0; i < startingUnitPrefabs.Length; i++)
+        {
+            if (startingUnitPrefabs[i] == null) continue;
+            SpawnGrownUnit(startingUnitPrefabs[i], StartingUnitPosition(i, startingUnitPrefabs.Length));
+        }
+    }
+
+    // Spawns a unit straight into its adult life, bypassing the Child -> growth tile pipeline. Only
+    // the starting loadout uses this - everything produced during play has to be grown.
+    [Server]
+    private void SpawnGrownUnit(GameObject prefab, Vector3 position)
+    {
+        GameObject unitObject = Instantiate(prefab, position, Quaternion.identity);
+        UnitController unit = unitObject.GetComponent<UnitController>();
+        if (unit != null)
+        {
+            unit.HomeBase = this;
+            unit.Faction = UnitFaction;
+        }
+
+        NetworkServer.Spawn(unitObject);
+    }
+
+    private Vector3 StartingUnitPosition(int index, int count)
+    {
+        float angle = count > 0 ? (Mathf.PI * 2f * index) / count : 0f;
+        return InteriorCenter + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * startingUnitRadius;
     }
 
     [Server]
@@ -243,20 +316,42 @@ public class PlayerBase : NetworkBehaviour
         CancelSpawnInProgress();
     }
 
+    // Called by one of this base's Builders when it dies. Only ever flips the flag when the last one
+    // is gone - and never back, because a base with no Builder can't produce the replacement.
+    [Server]
+    public void OnBuilderKilled()
+    {
+        if (buildersLost) return;
+        if (UnitController.CountAlive(this, UnitType.Builder) > 0) return;
+
+        buildersLost = true;
+    }
+
     [Server]
     public void DepositResource(int resourceAmount)
     {
         storedResources += resourceAmount;
-        Debug.Log($"Base now holds {storedResources} resource(s).");
     }
 
+    // Taken by a Builder loading up at a stock. The base's pool is the single source of truth for
+    // resource accounting - a ResourceStock is the physical place a Builder walks to, not a separate
+    // container - so a Builder that never makes it to the Queen loses what it was carrying.
     [Server]
-    public bool TrySpendResource(int amount)
+    public int WithdrawForFeeding(int amount)
     {
-        if (storedResources < amount) return false;
+        int taken = Mathf.Min(amount, storedResources);
+        storedResources -= taken;
+        return taken;
+    }
 
-        storedResources -= amount;
-        return true;
+    // Called by a Builder that just delivered a load to the Queen. Overshooting the current orders
+    // is fine - the surplus banks toward whatever is ordered next.
+    [Server]
+    public void FeedQueen(int amount)
+    {
+        if (amount <= 0) return;
+
+        queenFood += amount;
     }
 
     // Any client can call this, but the server only honors it for whichever side (Host or the
@@ -271,12 +366,13 @@ public class PlayerBase : NetworkBehaviour
         ServerTrySpawn();
     }
 
+    // Ordering is free and instant - the resource cost is paid later, in food, by whichever Builder
+    // carries it to the Queen. An order the base can't currently afford simply waits in the queue.
     [Server]
     public void ServerTrySpawn()
     {
         if (!queenAlive) return;
         if (unitPrefabs == null || unitPrefabs.Length == 0) return;
-        if (!TrySpendResource(spawnCost)) return;
 
         GameObject unitPrefab = unitPrefabs[unitIndex];
         unitIndex = (unitIndex + 1) % unitPrefabs.Length;
@@ -300,14 +396,13 @@ public class PlayerBase : NetworkBehaviour
     {
         if (!queenAlive) return;
         if (attackerPrefab == null) return;
-        if (!TrySpendResource(spawnCost)) return;
 
         spawnQueue.Enqueue(attackerPrefab);
     }
 
-    // Drives the one-Child-at-a-time production line: pull the next order off the queue as soon as
-    // a growth tile is free, have the Queen play her spawn animation for spawnDuration, then put a
-    // Child into the world.
+    // Drives the one-Child-at-a-time production line: pull the next order off the queue once the
+    // Queen has been fed enough and a growth tile is free, have her play her spawn animation for
+    // spawnDuration, then put a Child into the world.
     [Server]
     private void UpdateProduction()
     {
@@ -320,10 +415,15 @@ public class PlayerBase : NetworkBehaviour
 
         if (spawnQueue.Count == 0 || childPrefab == null) return;
 
+        // The Queen can't give birth on an empty stomach - the order waits until a Builder has
+        // carried her spawnCost worth of food.
+        if (queenFood < spawnCost) return;
+
         int slot = FreeGrowthSlot();
         // Every growth tile is taken - the order simply stays queued until one frees up.
         if (slot < 0) return;
 
+        queenFood -= spawnCost;
         spawningSlot = slot;
         spawningPrefab = spawnQueue.Dequeue();
         spawnTimer = spawnDuration;
@@ -417,6 +517,28 @@ public class PlayerBase : NetworkBehaviour
         {
             if (growthSlots[slot] == child) growthSlots[slot] = null;
         }
+    }
+
+    // Same authorization rules as CmdRequestSpawn - see its comment.
+    [Command(requiresAuthority = false)]
+    public void CmdRequestSpawnBuilder(NetworkConnectionToClient sender = null)
+    {
+        bool senderIsHost = sender != null && sender == NetworkServer.localConnection;
+        bool authorized = senderIsHost ? owner == BaseOwner.Host : owner == BaseOwner.Client;
+        if (!authorized) return;
+
+        ServerTrySpawnBuilder();
+    }
+
+    // Builders have to be replaceable: losing the last one loses the base, so a player who's down to
+    // one needs a way to order another before it dies. Ordering costs the same food as anything else.
+    [Server]
+    public void ServerTrySpawnBuilder()
+    {
+        if (!queenAlive) return;
+        if (builderPrefab == null) return;
+
+        spawnQueue.Enqueue(builderPrefab);
     }
 
     // Same authorization rules as CmdRequestSpawn - see its comment.

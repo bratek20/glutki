@@ -25,6 +25,19 @@ public class UnitController : NetworkBehaviour
         return count;
     }
 
+    // Same as CountActive but skips units already at 0 HP. A dying unit is still in the registry when
+    // it reports its own death (Mirror only removes it once the object is actually destroyed), so a
+    // caller asking "is there anyone left?" from inside Die() would otherwise count the corpse.
+    public static int CountAlive(PlayerBase homeBase, UnitType type)
+    {
+        int count = 0;
+        foreach (UnitController unit in activeUnits)
+        {
+            if (unit.HomeBase == homeBase && unit.unitType == type && unit.IsAlive) count++;
+        }
+        return count;
+    }
+
     // Attackers belonging to homeBase that haven't already been sent to attack a BotBase.
     public static int CountAvailableAttackers(PlayerBase homeBase)
     {
@@ -66,7 +79,10 @@ public class UnitController : NetworkBehaviour
         ReturningToGuard,
         WalkingToGrowthTile,
         WaitingToGrow,
-        Growing
+        Growing,
+        WalkingToStock,
+        LoadingFood,
+        CarryingFoodToQueen
     }
 
     [SerializeField] private UnitType unitType = UnitType.Gatherer;
@@ -87,6 +103,16 @@ public class UnitController : NetworkBehaviour
     [Tooltip("How much a Gatherer takes out of a resource per trip. A resource holding less than this gives up whatever it has left.")]
     [SerializeField] private int gatherAmount = 10;
     [SerializeField] private Color carryingTintColor = new Color(1f, 0.85f, 0.35f);
+
+    [Header("Feeding (Builder only)")]
+    [Tooltip("How much the Builder carries from a ResourceStock to the Queen per trip. Bigger loads mean fewer, slower round trips.")]
+    [SerializeField] private int feedCarryAmount = 5;
+    [Tooltip("How long the Builder stands at the stock loading up (playing the attack animation) before the resources actually leave storage.")]
+    [SerializeField] private float feedLoadDuration = 1f;
+    [Tooltip("How often an idle Builder re-checks whether the Queen needs feeding again.")]
+    [SerializeField] private float feedScanInterval = 0.5f;
+    [Tooltip("How far inside the interior walls a Builder's idle wandering is kept, so it never potters into one.")]
+    [SerializeField] private float interiorWanderMargin = 1f;
 
     [Header("Attacker Guard")]
     [Tooltip("How far from the home base's interior center a freshly spawned Attacker parks itself while waiting for an attack order.")]
@@ -135,6 +161,10 @@ public class UnitController : NetworkBehaviour
     private float resourceScanTimer;
     private float gatherTimer;
     private int carriedAmount;
+
+    private ResourceStock targetStock;
+    private float feedTimer;
+    private float feedScanTimer;
 
     private float combatScanTimer;
     private float attackTimer;
@@ -248,6 +278,13 @@ public class UnitController : NetworkBehaviour
             return;
         }
 
+        // A Builder's whole life happens inside the base - it never walks out to the exit.
+        if (unitType == UnitType.Builder)
+        {
+            if (!TryStartFeedingTrip()) StartWandering();
+            return;
+        }
+
         // Every other unit is spawned inside its home base's interior and has to walk out to the
         // exit before it can be seen on the world map.
         state = UnitState.ExitingBase;
@@ -303,6 +340,12 @@ public class UnitController : NetworkBehaviour
             return;
         }
 
+        if (state == UnitState.LoadingFood)
+        {
+            UpdateLoadingFood();
+            return;
+        }
+
         if (state == UnitState.WaitingToGrow)
         {
             UpdateWaitingToGrow();
@@ -337,6 +380,18 @@ public class UnitController : NetworkBehaviour
         else if (canGather && (state == UnitState.Wandering || state == UnitState.SeekingResource))
         {
             ScanForResource();
+        }
+
+        // An idle Builder keeps an eye on the Queen - the moment an order is placed (or a Gatherer
+        // tops the stock back up) it stops pottering about and starts carrying.
+        if (unitType == UnitType.Builder && state == UnitState.Wandering)
+        {
+            feedScanTimer -= Time.deltaTime;
+            if (feedScanTimer <= 0f)
+            {
+                feedScanTimer = feedScanInterval;
+                TryStartFeedingTrip();
+            }
         }
 
         UpdateServerMovement();
@@ -434,6 +489,12 @@ public class UnitController : NetworkBehaviour
                 break;
             case UnitState.WalkingToGrowthTile:
                 OnGrowthTileReached();
+                break;
+            case UnitState.WalkingToStock:
+                OnStockReached();
+                break;
+            case UnitState.CarryingFoodToQueen:
+                OnQueenReachedWithFood();
                 break;
             case UnitState.Guarding:
                 // Reached its guard spot near the Queen - stay put indefinitely until OrderAttack.
@@ -659,6 +720,91 @@ public class UnitController : NetworkBehaviour
         SetTarget(GuardPosition());
     }
 
+    // Starts a stock -> Queen round trip if there's one worth making. Returns false when there's
+    // nothing to do, leaving the caller to decide what to do with an idle Builder - which is why
+    // this doesn't fall back to wandering itself: the idle re-check calls it every feedScanInterval
+    // and must not restart a wander that's already in progress.
+    [Server]
+    private bool TryStartFeedingTrip()
+    {
+        if (HomeBase == null) return false;
+
+        // A dead Queen can't be fed, and nothing is worth carrying if she's already got enough
+        // banked for every order that's been placed.
+        if (!HomeBase.IsQueenAlive) return false;
+        if (HomeBase.FoodShortfall <= 0) return false;
+        if (HomeBase.StoredResources <= 0) return false;
+
+        // No stock built means there's nowhere to pick up from - the Builder simply can't work.
+        ResourceStock stock = HomeBase.NearestResourceStock(transform.position);
+        if (stock == null) return false;
+
+        targetStock = stock;
+        state = UnitState.WalkingToStock;
+        SetTarget(stock.transform.position);
+        return true;
+    }
+
+    [Server]
+    private void OnStockReached()
+    {
+        // ResourceStocks are runtime-spawned, so a destroyed one really does go null here.
+        if (targetStock == null || HomeBase == null)
+        {
+            targetStock = null;
+            if (!TryStartFeedingTrip()) StartWandering();
+            return;
+        }
+
+        state = UnitState.LoadingFood;
+        hasTarget = false;
+        feedTimer = feedLoadDuration;
+        UpdateFacing(targetStock.transform.position);
+    }
+
+    [Server]
+    private void UpdateLoadingFood()
+    {
+        isWalkingServer = false;
+        isAttackingServer = true;
+
+        feedTimer -= Time.deltaTime;
+        if (feedTimer > 0f) return;
+
+        isAttackingServer = false;
+        targetStock = null;
+
+        // Resources only actually leave storage once the load animation has played out, so another
+        // Builder may have emptied the pool in the meantime.
+        carriedAmount = HomeBase != null ? HomeBase.WithdrawForFeeding(feedCarryAmount) : 0;
+        if (carriedAmount <= 0)
+        {
+            if (!TryStartFeedingTrip()) StartWandering();
+            return;
+        }
+
+        isCarryingResource = true;
+        state = UnitState.CarryingFoodToQueen;
+        SetTarget(QueenPosition());
+    }
+
+    [Server]
+    private void OnQueenReachedWithFood()
+    {
+        if (HomeBase != null) HomeBase.FeedQueen(carriedAmount);
+
+        carriedAmount = 0;
+        isCarryingResource = false;
+
+        if (!TryStartFeedingTrip()) StartWandering();
+    }
+
+    private Vector3 QueenPosition()
+    {
+        if (HomeBase == null) return transform.position;
+        return HomeBase.Queen != null ? HomeBase.Queen.transform.position : HomeBase.InteriorCenter;
+    }
+
     [Server]
     private void OnGrowthTileReached()
     {
@@ -733,7 +879,29 @@ public class UnitController : NetworkBehaviour
         Vector2 direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
         float distance = Random.Range(wanderMinDistance, wanderMaxDistance);
 
-        SetTarget(transform.position + new Vector3(direction.x, direction.y, 0f) * distance);
+        Vector3 destination = transform.position + new Vector3(direction.x, direction.y, 0f) * distance;
+
+        // A Builder never leaves its base, so its idle wandering is penned into the interior room
+        // rather than allowed to drift off toward the exit.
+        if (unitType == UnitType.Builder) destination = ClampToInterior(destination);
+
+        SetTarget(destination);
+    }
+
+    // Pulls a position back inside the home base's interior room, keeping a margin so a unit never
+    // ends up standing in a wall.
+    [Server]
+    private Vector3 ClampToInterior(Vector3 position)
+    {
+        if (HomeBase == null) return position;
+
+        Vector3 center = HomeBase.InteriorCenter;
+        Vector2 half = Vector2.Max(HomeBase.InteriorHalfSize - Vector2.one * interiorWanderMargin, Vector2.zero);
+
+        return new Vector3(
+            Mathf.Clamp(position.x, center.x - half.x, center.x + half.x),
+            Mathf.Clamp(position.y, center.y - half.y, center.y + half.y),
+            position.z);
     }
 
     [Server]
@@ -867,6 +1035,13 @@ public class UnitController : NetworkBehaviour
         if (unitType == UnitType.Queen && HomeBase != null)
         {
             HomeBase.OnQueenKilled();
+        }
+
+        // Losing the last Builder ends the base as surely as losing the Queen does - see
+        // PlayerBase.HasLivingBuilder.
+        if (unitType == UnitType.Builder && HomeBase != null)
+        {
+            HomeBase.OnBuilderKilled();
         }
 
         // Killed while still on a growth tile (either as a Child waiting, or mid growth animation)

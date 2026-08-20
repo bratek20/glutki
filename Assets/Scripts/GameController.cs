@@ -37,11 +37,13 @@ public class GameController : NetworkBehaviour
     {
         if (result != GameResult.None) return;
 
+        // A base is out either when its Queen falls or when its last Builder does - with nobody left
+        // to carry food to her, a Queen can never produce again, so it's the same loss either way.
         var playerBases = BaseSelectionManager.AllBases;
-        bool allQueensDead = playerBases.Count > 0;
+        bool allBasesLost = playerBases.Count > 0;
         foreach (PlayerBase b in playerBases)
         {
-            if (b.IsQueenAlive) { allQueensDead = false; break; }
+            if (b.IsQueenAlive && b.HasLivingBuilder) { allBasesLost = false; break; }
         }
 
         BotBase[] botBases = FindObjectsByType<BotBase>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -56,7 +58,7 @@ public class GameController : NetworkBehaviour
             CancelInvoke(nameof(CheckGameEnd));
             result = GameResult.PlayersWon;
         }
-        else if (allQueensDead)
+        else if (allBasesLost)
         {
             CancelInvoke(nameof(CheckGameEnd));
             result = GameResult.BotsWon;

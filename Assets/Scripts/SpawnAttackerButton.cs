@@ -17,10 +17,10 @@ public class SpawnAttackerButton : MonoBehaviour
         PlayerBase selectedBase = BaseSelectionManager.SelectedBase;
         bool canManage = selectedBase != null && selectedBase.IsOwnedByLocalPlayer;
         int cost = selectedBase != null ? selectedBase.SpawnCost : 1;
-        int resources = selectedBase != null ? selectedBase.StoredResources : 0;
 
-        button.interactable = canManage && resources >= cost;
-        label.text = canManage ? $"Spawn Attacker ({cost})" : "Not your base";
+        // Same as SpawnUnitButton - ordering is free, the food cost is paid on the Queen's side.
+        button.interactable = canManage && selectedBase.IsQueenAlive;
+        label.text = canManage ? $"Spawn Attacker ({cost} food)" : "Not your base";
     }
 
     private void OnClicked()

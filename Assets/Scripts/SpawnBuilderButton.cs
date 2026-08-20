@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SpawnUnitButton : MonoBehaviour
+public class SpawnBuilderButton : MonoBehaviour
 {
     [SerializeField] private Button button;
     [SerializeField] private TMP_Text label;
@@ -18,14 +18,13 @@ public class SpawnUnitButton : MonoBehaviour
         bool canManage = selectedBase != null && selectedBase.IsOwnedByLocalPlayer;
         int cost = selectedBase != null ? selectedBase.SpawnCost : 1;
 
-        // Placing the order is free - the cost is paid later, in food a Builder carries to the
-        // Queen - so this is gated on the Queen being alive to take the order, not on storage.
+        // Same as SpawnUnitButton - ordering is free, the food cost is paid on the Queen's side.
         button.interactable = canManage && selectedBase.IsQueenAlive;
-        label.text = canManage ? $"Spawn Gatherer ({cost} food)" : "Not your base";
+        label.text = canManage ? $"Spawn Builder ({cost} food)" : "Not your base";
     }
 
     private void OnClicked()
     {
-        BaseSelectionManager.SelectedBase?.CmdRequestSpawn();
+        BaseSelectionManager.SelectedBase?.CmdRequestSpawnBuilder();
     }
 }

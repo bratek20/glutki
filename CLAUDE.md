@@ -47,10 +47,19 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   `netId` rather than map position (`PlayerBase.InteriorCenter`) — each base gets its own far-apart slot
   in a dedicated row, so bases sitting close together on the map never bleed into each other's
   interior view.
-- **Unit production** — spawning is never instant. A spawn request (gatherer or Attacker) spends
-  the resources immediately but only *enqueues* a prefab on its `PlayerBase`; the base then runs a
-  strictly one-at-a-time production line, server-side. When a growth tile is free it starts a
-  birth: the Queen's `IsSpawning` animator bool goes true for a configurable `spawnDuration` (a
+- **Queen feeding** — resources don't buy units directly; the Queen has to be *fed* them. Placing an
+  order (gatherer, Attacker, or Builder) is free and instant — it only enqueues a prefab. The Queen
+  can't start a birth until she's been fed `spawnCost` worth of food, which only ever arrives on a
+  **Builder**'s back. So the real cost of a unit is a Builder round trip, and a base with no Builder
+  can't produce at all. Surplus food banks toward whatever is ordered next; over-delivery is
+  harmless. The player's read on all this is `ResourceHud`, which shows storage *and* `queenFood`.
+  **Design decision:** a `ResourceStock` is the physical place a Builder walks to, not a container —
+  the resource count itself stays a single pool on `PlayerBase`. One authoritative counter beats
+  reconciling N per-stock balances, and it keeps the no-stock-built deposit fallback meaningful.
+  A Builder that dies mid-trip loses what it was carrying, which follows from that same choice.
+- **Unit production** — spawning is never instant. A spawn request only *enqueues* a prefab on its
+  `PlayerBase`; the base then runs a strictly one-at-a-time production line, server-side. When the
+  Queen has enough food and a growth tile is free it starts a birth: the Queen's `IsSpawning` animator bool goes true for a configurable `spawnDuration` (a
   plain timer, so the value can just be dialled in to match whatever the birth animation looks
   like), after which a **Child** unit appears at a configurable offset from the Queen — line that
   offset up with the point the animation "produces" it. Growth tiles are a run of ordinary
@@ -78,7 +87,17 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   `childIdleTime`), then the base swaps it out in place — the Child is destroyed and the ordered
   prefab spawned on the spot, inheriting the same tile — and that unit runs `Growing` (the
   `IsGrowing` animator bool, for `growthTime`) before `BeginNormalLife` sends it off to gather or
-  guard. So the growth animation plays on the real unit, not the Child. Player-owned
+  guard. So the growth animation plays on the real unit, not the Child. A base is also handed a
+  **starting loadout** the instant it spawns — one `ResourceStock` plus its `startingUnitPrefabs`
+  (one Builder, one Gatherer) — spawned fully grown, the only path that bypasses the Child pipeline.
+  Without it a new base would be deadlocked: no Builder to feed the Queen, so no way to produce one.
+  `UnitType.Builder` units never leave the interior. They shuttle resources from the nearest
+  `ResourceStock` to the Queen (`WalkingToStock` → `LoadingFood` → `CarryingFoodToQueen`) whenever
+  `PlayerBase.FoodShortfall` says an order is waiting on food, and otherwise just wander inside —
+  their idle wandering is clamped to the interior room rather than drifting toward the exit. Losing
+  every Builder ends a base exactly like losing its Queen (see **Game end**): the flag is *latched*
+  when the last one dies rather than derived from a live count, so it can't trip on a count read
+  before the starting loadout exists, and it never unlatches. Player-owned
   `UnitType.Attacker` units instead spawn straight into `Guarding` (idle near their home base's
   Queen, at a random spot within `guardRadius`) and stay there until `PlayerBase.CmdOrderAttack`
   (fired by `AttackOrderPopup`) calls `UnitController.OrderAttack` on some of them — from there they
@@ -135,21 +154,28 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   legacy `OnRenderObject` callback — GL-based overlays like this one have to hook
   `RenderPipelineManager.endCameraRendering` instead and set up `GL.LoadProjectionMatrix`/
   `GL.modelview` by hand, since URP doesn't do that implicitly the way the built-in pipeline does.
-- **UI** — `ResourceHud`, `UnitsHud`, `SpawnUnitButton`, `SpawnAttackerButton`, `ViewToggleButton`,
-  `NewBuildButton`, and `AttackOrderPopup` all read/act on `BaseSelectionManager.SelectedBase` /
+- **UI** — `ResourceHud`, `UnitsHud`, `SpawnUnitButton`, `SpawnAttackerButton`, `SpawnBuilderButton`,
+  `ViewToggleButton`, `NewBuildButton`, and `AttackOrderPopup` all read/act on
+  `BaseSelectionManager.SelectedBase` /
   `ViewManager`, never a global base reference. Each is a plain `MonoBehaviour` added to its
   corresponding pre-built GameObject in `GameScene` (`Resource_Hud`, `Units_Hud`, `SpawnUnit_Button`,
-  `SpawnAttacker_Button`, `ViewToggle_Button`, `NewBuild_Button`, `AttackOrder_Popup`) with its
+  `SpawnAttacker_Button`, `SpawnBuilder_Button`, `ViewToggle_Button`, `NewBuild_Button`,
+  `AttackOrder_Popup`) with its
   `TMP_Text`/`Button`/`Slider` references wired in the Inspector — UI is laid out by hand in the
-  scene, never built at runtime. `UnitsHud` counts gatherers/attackers via
+  scene, never built at runtime. `UnitsHud` counts gatherers/builders/attackers via
   `UnitController.CountActive`, scoped to the selected base's `HomeBase` (bot-wave units have no
-  `HomeBase`, so they never count toward any base). `AttackOrderPopup` is opened by `BotBase` on
+  `HomeBase`, so they never count toward any base) — `CountAlive` is the variant that also skips
+  units already at 0 HP, which is what a unit reporting its own death has to use, since it's still
+  in the registry at that point. The three spawn buttons gate on the Queen being *alive*, not on
+  stored resources: ordering is free, the cost lands later as food. `AttackOrderPopup` is opened by `BotBase` on
   click and lets the player choose how many of `BaseSelectionManager.SelectedBase`'s available
   Attackers (`PlayerBase.AvailableAttackers`) to send via a slider, then confirms with
   `PlayerBase.CmdOrderAttack`.
 - **Game end** (`GameController.cs`) — server-only, checked once a second via `InvokeRepeating`:
   players win once every `BotBase` is dead (`IsAlive` false, not `== null` — see the `BotBase`
-  gotcha above), bots win once every `PlayerBase.IsQueenAlive` is false. The outcome is a
+  gotcha above), bots win once every `PlayerBase` is out. A base is out when it loses *either* its
+  Queen (`IsQueenAlive`) *or* its last Builder (`HasLivingBuilder`) — with nobody left to carry food
+  to her, a Queen can never produce again, so the two are the same defeat. The outcome is a
   `[SyncVar] GameResult` with a hook, so it reaches every peer the same instant the server decides
   it and pops up `GameResultPopup` there too — same local, unsynced popup pattern as
   `AttackOrderPopup`. Its Confirm button calls `GameUI.Disconnect()` (shared with the Leave
@@ -209,9 +235,12 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
 
 - Claude never hand-edits `GameScene.unity` (or any other scene file) to add, move, or restyle a
   UI element. All UI is added by the **user**, in the Editor, by clicking a `Claude -> ...` menu
-  item that Claude writes under `Assets/Editor/` (see `ClaudeUiTools.cs` for the existing pair of
-  actions). This is a deliberate split: Claude owns the gameplay/UI *scripts*, the user owns what
-  actually lands in the scene.
+  item that Claude writes under `Assets/Editor/` (see `ClaudeUiTools.cs`). This is a deliberate
+  split: Claude owns the gameplay/UI *scripts*, the user owns what actually lands in the scene.
+- The same split applies to **prefab and project-settings wiring** a new feature needs before it
+  will run: it goes into a menu action too, not hand-edited asset YAML. `ClaudeGameplayTools.cs`
+  (`Claude -> Setup Builder Loadout`) and `ClaudeRenderingTools.cs` are the examples. These must be
+  idempotent and must not clobber a value the user has deliberately set.
 - A menu action must fully build **and** wire its GameObject in one click — find the scene's
   `UI Canvas`, construct the hierarchy as its child, add the driving `MonoBehaviour`, and assign
   every one of its serialized `Button`/`TMP_Text`/`Slider` references via `SerializedObject` (not

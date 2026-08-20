@@ -43,6 +43,35 @@ public static class ClaudeUiTools
         FinishCreation(root, "Create Attacker Spawn Button");
     }
 
+    [MenuItem("Claude/Create Builder Spawn Button")]
+    public static void CreateBuilderSpawnButton()
+    {
+        Transform canvas = FindCanvas();
+        if (canvas == null) return;
+
+        Transform existing = canvas.Find("SpawnBuilder_Button");
+        if (existing != null)
+        {
+            EditorUtility.DisplayDialog("Claude", "SpawnBuilder_Button already exists in this scene.", "OK");
+            Selection.activeGameObject = existing.gameObject;
+            return;
+        }
+
+        // Same anchor/pivot convention as the other spawn buttons - stacks above SpawnAttacker_Button.
+        GameObject root = CreateButton("SpawnBuilder_Button", canvas, "Spawn Builder",
+            anchorMin: new Vector2(0f, 0f), anchorMax: new Vector2(0f, 0f), pivot: new Vector2(0.5f, 0.5f),
+            anchoredPosition: new Vector2(200f, 260f), sizeDelta: new Vector2(300f, 50f),
+            out Button button, out TMP_Text label);
+
+        SpawnBuilderButton behaviour = Undo.AddComponent<SpawnBuilderButton>(root);
+        SerializedObject so = new SerializedObject(behaviour);
+        so.FindProperty("button").objectReferenceValue = button;
+        so.FindProperty("label").objectReferenceValue = label;
+        so.ApplyModifiedPropertiesWithoutUndo();
+
+        FinishCreation(root, "Create Builder Spawn Button");
+    }
+
     [MenuItem("Claude/Create New Build Button")]
     public static void CreateNewBuildButton()
     {
