@@ -130,11 +130,17 @@ MonoBehaviour:
   - {fileID: 1388244362970297067, guid: f34044d7f68e33a47aae255e3c0da37b, type: 3}
   queenPrefab: {fileID: 2987455192824275693, guid: f21e48b601821e949ade13010f22b9ef, type: 3}
   attackerPrefab: {fileID: 7498133833606980204, guid: d4452598639917a42887f9724880ba97, type: 3}
+  builderPrefab: {fileID: 8017835476929978263, guid: 0d2e3586d37bb1b49ba5a183fd1a64dc, type: 3}
   resourceStockPrefab: {fileID: 100000, guid: 418aa6370f3be3d4aa4b7454d93c32db, type: 3}
   childPrefab: {fileID: 5405288708221834748, guid: 4af8bb2e11586ce4fbc51e32e483c0b9, type: 3}
-  spawnCost: 1
   highlightColor: {r: 1, g: 1, b: 1, a: 1}
   owner: 0
+  spawnCost: 1
+  startingUnitPrefabs:
+  - {fileID: 8017835476929978263, guid: 0d2e3586d37bb1b49ba5a183fd1a64dc, type: 3}
+  - {fileID: 1388244362970297067, guid: f34044d7f68e33a47aae255e3c0da37b, type: 3}
+  startingStockOffset: {x: -2, y: 0}
+  startingUnitRadius: 1.5
   interiorHalfSize: {x: 9, y: 5}
   interiorSlotSpacing: 500
   interiorRowY: -1000
@@ -182,7 +188,7 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
+    pivot: {x: 0.5, y: 0}
     oldSize: {x: 12.57307, y: 8.38}
     newSize: {x: 2.56, y: 1.95}
     adaptiveTilingThreshold: 0.5
