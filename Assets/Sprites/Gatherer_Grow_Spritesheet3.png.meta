@@ -1,0 +1,325 @@
+fileFormatVersion: 2
+guid: 0c6428ce7f2751045b7ef847b2fea58b
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6281096964184463912
+    second: Gatherer_Grow_Spritesheet3_0
+  - first:
+      213: 77322784342085969
+    second: Gatherer_Grow_Spritesheet3_1
+  - first:
+      213: 7425056879680376525
+    second: Gatherer_Grow_Spritesheet3_2
+  - first:
+      213: -8285973969650766665
+    second: Gatherer_Grow_Spritesheet3_3
+  - first:
+      213: -7176398837307875056
+    second: Gatherer_Grow_Spritesheet3_4
+  - first:
+      213: 429938871683920027
+    second: Gatherer_Grow_Spritesheet3_5
+  - first:
+      213: 2582609282457960770
+    second: Gatherer_Grow_Spritesheet3_6
+  - first:
+      213: 9134501251608839481
+    second: Gatherer_Grow_Spritesheet3_7
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Gatherer_Grow_Spritesheet3_0
+      rect:
+        serializedVersion: 2
+        x: 74
+        y: 414
+        width: 95
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82adff50960fa2750800000000000000
+      internalID: 6281096964184463912
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_Grow_Spritesheet3_1
+      rect:
+        serializedVersion: 2
+        x: 247
+        y: 414
+        width: 124
+        height: 105
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 15111c5a9a4b21100800000000000000
+      internalID: 77322784342085969
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_Grow_Spritesheet3_2
+      rect:
+        serializedVersion: 2
+        x: 440
+        y: 409
+        width: 145
+        height: 122
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dce4b6674e91b0760800000000000000
+      internalID: 7425056879680376525
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_Grow_Spritesheet3_3
+      rect:
+        serializedVersion: 2
+        x: 654
+        y: 408
+        width: 180
+        height: 162
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7bc25d8539e420d80800000000000000
+      internalID: -8285973969650766665
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_Grow_Spritesheet3_4
+      rect:
+        serializedVersion: 2
+        x: 897
+        y: 405
+        width: 196
+        height: 187
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 011ecb7974f486c90800000000000000
+      internalID: -7176398837307875056
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_Grow_Spritesheet3_5
+      rect:
+        serializedVersion: 2
+        x: 24
+        y: 24
+        width: 332
+        height: 333
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b903ad9302377f500800000000000000
+      internalID: 429938871683920027
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_Grow_Spritesheet3_6
+      rect:
+        serializedVersion: 2
+        x: 392
+        y: 32
+        width: 356
+        height: 313
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 241888a857547d320800000000000000
+      internalID: 2582609282457960770
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Gatherer_Grow_Spritesheet3_7
+      rect:
+        serializedVersion: 2
+        x: 777
+        y: 33
+        width: 336
+        height: 340
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 935818edd7444ce70800000000000000
+      internalID: 9134501251608839481
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Gatherer_Grow_Spritesheet3_0: 6281096964184463912
+      Gatherer_Grow_Spritesheet3_1: 77322784342085969
+      Gatherer_Grow_Spritesheet3_2: 7425056879680376525
+      Gatherer_Grow_Spritesheet3_3: -8285973969650766665
+      Gatherer_Grow_Spritesheet3_4: -7176398837307875056
+      Gatherer_Grow_Spritesheet3_5: 429938871683920027
+      Gatherer_Grow_Spritesheet3_6: 2582609282457960770
+      Gatherer_Grow_Spritesheet3_7: 9134501251608839481
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

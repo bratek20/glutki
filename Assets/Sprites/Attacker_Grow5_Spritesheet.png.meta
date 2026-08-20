@@ -1,0 +1,613 @@
+fileFormatVersion: 2
+guid: 6a63e874f82ac8d44a07ad4dd8dcb6f5
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6691192814159155419
+    second: Attacker_Grow5_Spritesheet_0
+  - first:
+      213: 3635518732330180004
+    second: Attacker_Grow5_Spritesheet_1
+  - first:
+      213: 7614714277746831271
+    second: Attacker_Grow5_Spritesheet_2
+  - first:
+      213: -4509631152547613394
+    second: Attacker_Grow5_Spritesheet_3
+  - first:
+      213: 2996999359163285051
+    second: Attacker_Grow5_Spritesheet_4
+  - first:
+      213: -3452081697277586475
+    second: Attacker_Grow5_Spritesheet_5
+  - first:
+      213: 8579492237707140040
+    second: Attacker_Grow5_Spritesheet_6
+  - first:
+      213: 8501058531379907880
+    second: Attacker_Grow5_Spritesheet_7
+  - first:
+      213: 7360567465227531523
+    second: Attacker_Grow5_Spritesheet_8
+  - first:
+      213: -1079701430222785544
+    second: Attacker_Grow5_Spritesheet_9
+  - first:
+      213: 8297805636513973085
+    second: Attacker_Grow5_Spritesheet_10
+  - first:
+      213: 7653974995452412494
+    second: Attacker_Grow5_Spritesheet_11
+  - first:
+      213: -4218693559495913758
+    second: Attacker_Grow5_Spritesheet_12
+  - first:
+      213: 4216014147920866809
+    second: Attacker_Grow5_Spritesheet_13
+  - first:
+      213: -128360679882964899
+    second: Attacker_Grow5_Spritesheet_14
+  - first:
+      213: 4652560670108073165
+    second: Attacker_Grow5_Spritesheet_15
+  - first:
+      213: 6828922629859012017
+    second: Attacker_Grow5_Spritesheet_16
+  - first:
+      213: -7655343587437174408
+    second: Attacker_Grow5_Spritesheet_17
+  - first:
+      213: -3630546599679429934
+    second: Attacker_Grow5_Spritesheet_18
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_0
+      rect:
+        serializedVersion: 2
+        x: 164
+        y: 704
+        width: 137
+        height: 124
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bd05a9bb964ebdc50800000000000000
+      internalID: 6691192814159155419
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 423
+        y: 695
+        width: 222
+        height: 161
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ad91d67605f37230800000000000000
+      internalID: 3635518732330180004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 725
+        y: 694
+        width: 224
+        height: 183
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7afe1378a46eca960800000000000000
+      internalID: 7614714277746831271
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 1017
+        y: 692
+        width: 243
+        height: 215
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e253d5c1c529a61c0800000000000000
+      internalID: -4509631152547613394
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 1322
+        y: 692
+        width: 238
+        height: 286
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3e3003d90b779920800000000000000
+      internalID: 2996999359163285051
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 1609
+        y: 693
+        width: 255
+        height: 280
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d3542a7cfdb710d0800000000000000
+      internalID: -3452081697277586475
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 355
+        width: 251
+        height: 282
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8cb51cdebba701770800000000000000
+      internalID: 8579492237707140040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 408
+        y: 355
+        width: 252
+        height: 280
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82d04b991b3d9f570800000000000000
+      internalID: 8501058531379907880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 712
+        y: 355
+        width: 252
+        height: 281
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3053f269c1df52660800000000000000
+      internalID: 7360567465227531523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 1017
+        y: 355
+        width: 251
+        height: 280
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f3f61c05412401f0800000000000000
+      internalID: -1079701430222785544
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 1319
+        y: 355
+        width: 250
+        height: 282
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d5346a3434ab72370800000000000000
+      internalID: 8297805636513973085
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 1623
+        y: 355
+        width: 250
+        height: 282
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e42c9a3b4b1683a60800000000000000
+      internalID: 7653974995452412494
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_12
+      rect:
+        serializedVersion: 2
+        x: 115
+        y: 37
+        width: 237
+        height: 279
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ee840a2f803475c0800000000000000
+      internalID: -4218693559495913758
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_13
+      rect:
+        serializedVersion: 2
+        x: 428
+        y: 43
+        width: 228
+        height: 282
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9fd28d6b78a428a30800000000000000
+      internalID: 4216014147920866809
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_14
+      rect:
+        serializedVersion: 2
+        x: 724
+        y: 40
+        width: 232
+        height: 293
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d50c27844a8f73ef0800000000000000
+      internalID: -128360679882964899
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_15
+      rect:
+        serializedVersion: 2
+        x: 989
+        y: 47
+        width: 33
+        height: 26
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dccbeb57747319040800000000000000
+      internalID: 4652560670108073165
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_16
+      rect:
+        serializedVersion: 2
+        x: 1025
+        y: 36
+        width: 248
+        height: 231
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1bd6f5f53f435ce50800000000000000
+      internalID: 6828922629859012017
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_17
+      rect:
+        serializedVersion: 2
+        x: 1283
+        y: 32
+        width: 291
+        height: 227
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8712e352191c2c590800000000000000
+      internalID: -7655343587437174408
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Attacker_Grow5_Spritesheet_18
+      rect:
+        serializedVersion: 2
+        x: 1623
+        y: 32
+        width: 237
+        height: 243
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2d2fa916a15bd9dc0800000000000000
+      internalID: -3630546599679429934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 7ad3287b59ca63c4c812a7f6b9585b1d
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      Attacker_Grow5_Spritesheet_0: 6691192814159155419
+      Attacker_Grow5_Spritesheet_1: 3635518732330180004
+      Attacker_Grow5_Spritesheet_10: 8297805636513973085
+      Attacker_Grow5_Spritesheet_11: 7653974995452412494
+      Attacker_Grow5_Spritesheet_12: -4218693559495913758
+      Attacker_Grow5_Spritesheet_13: 4216014147920866809
+      Attacker_Grow5_Spritesheet_14: -128360679882964899
+      Attacker_Grow5_Spritesheet_15: 4652560670108073165
+      Attacker_Grow5_Spritesheet_16: 6828922629859012017
+      Attacker_Grow5_Spritesheet_17: -7655343587437174408
+      Attacker_Grow5_Spritesheet_18: -3630546599679429934
+      Attacker_Grow5_Spritesheet_2: 7614714277746831271
+      Attacker_Grow5_Spritesheet_3: -4509631152547613394
+      Attacker_Grow5_Spritesheet_4: 2996999359163285051
+      Attacker_Grow5_Spritesheet_5: -3452081697277586475
+      Attacker_Grow5_Spritesheet_6: 8579492237707140040
+      Attacker_Grow5_Spritesheet_7: 8501058531379907880
+      Attacker_Grow5_Spritesheet_8: 7360567465227531523
+      Attacker_Grow5_Spritesheet_9: -1079701430222785544
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
