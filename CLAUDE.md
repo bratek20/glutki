@@ -173,6 +173,30 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   normally is unaffected — the bootstrap only ever acts when nothing has created a NetworkManager
   yet.
 
+## Sprite sorting
+
+- Draw order is engine-level, not script-driven. Sorting layers (back to front:
+  `Background` → `Ground` → `Entities` → `Overlay`) give a coarse absolute order for things that
+  must never fight each other, and within a layer the URP **2D Renderer**'s Transparency Sort Mode
+  is `Custom Axis (0,1,0)`, so sprites sort by world Y — whatever stands lower on screen draws in
+  front. Nothing per-frame, and it applies to every sprite automatically.
+- Everything that shares the world and should overlap by position — units, Queens, bases,
+  resources, resource stocks — lives together on `Entities` **on purpose**: a unit walking below a
+  base overlaps it, walking above it goes behind. Splitting buildings into their own layer would
+  make one of those two cases always wrong.
+- **Sorting order stays 0 on `Entities`.** It's compared before the sort axis, so any nonzero value
+  pins that sprite in front of or behind everything and defeats the Y sorting.
+- Y sorting uses each renderer's transform position, so **pivots are the sort point**. Unit
+  spritesheets are bottom-center pivoted, which makes it read as "whose feet are lower".
+  `Base_Spritesheet` is center-pivoted, so a base sorts from its middle rather than its base.
+- The setup is applied by the `Claude -> Setup Sprite Sorting` menu action
+  (`Assets/Editor/ClaudeRenderingTools.cs`) — it creates the layers, flips the sort mode, and
+  assigns every prefab/scene sprite renderer. Re-runnable and idempotent; run it after adding art.
+  Sorting layer IDs in it are fixed constants, not Unity's random ones, precisely so a re-run can't
+  orphan assignments a previous run made.
+- A unit with child sprites (health bar, marker) needs a `SortingGroup` on its root, or each child
+  Y-sorts independently and can slide behind other units.
+
 ## Input & platform notes
 
 - The project uses the **new Input System exclusively** (`activeInputHandler: 1`). Legacy
