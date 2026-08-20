@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1001 &2461051778924402875
+--- !u!1001 &2415846255733634864
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -11,14 +11,6 @@ PrefabInstance:
     - target: {fileID: 100000, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
       propertyPath: m_Name
       value: Resource2
-      objectReference: {fileID: 0}
-    - target: {fileID: 100001, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 100001, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.5
       objectReference: {fileID: 0}
     - target: {fileID: 100001, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
       propertyPath: m_LocalPosition.x
@@ -60,26 +52,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 100002, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
-      propertyPath: m_Size.x
-      value: 3.47
-      objectReference: {fileID: 0}
-    - target: {fileID: 100002, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
-      propertyPath: m_Size.y
-      value: 3.4603562
-      objectReference: {fileID: 0}
-    - target: {fileID: 100002, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
-      propertyPath: m_Sprite
-      value: 
-      objectReference: {fileID: 6975570459966251722, guid: 21de45a379cb7a94db5475c26e5a0aaf, type: 3}
-    - target: {fileID: 100002, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
-      propertyPath: m_WasSpriteAssigned
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 100004, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
       propertyPath: _assetId
       value: 3768649205
       objectReference: {fileID: 0}
+    - target: {fileID: 100005, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
+      propertyPath: fillStages.Array.data[0].sprite
+      value: 
+      objectReference: {fileID: 4371728719257556522, guid: 21de45a379cb7a94db5475c26e5a0aaf, type: 3}
+    - target: {fileID: 100005, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
+      propertyPath: fillStages.Array.data[1].sprite
+      value: 
+      objectReference: {fileID: 4838770719772661346, guid: 21de45a379cb7a94db5475c26e5a0aaf, type: 3}
+    - target: {fileID: 100005, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
+      propertyPath: fillStages.Array.data[2].sprite
+      value: 
+      objectReference: {fileID: 6240609913673604453, guid: 21de45a379cb7a94db5475c26e5a0aaf, type: 3}
+    - target: {fileID: 100005, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
+      propertyPath: fillStages.Array.data[3].sprite
+      value: 
+      objectReference: {fileID: 97436347146386294, guid: 21de45a379cb7a94db5475c26e5a0aaf, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

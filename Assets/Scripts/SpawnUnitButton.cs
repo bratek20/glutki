@@ -20,7 +20,7 @@ public class SpawnUnitButton : MonoBehaviour
         int resources = selectedBase != null ? selectedBase.StoredResources : 0;
 
         button.interactable = canManage && resources >= cost;
-        label.text = canManage ? $"Spawn Unit ({cost})" : "Not your base";
+        label.text = canManage ? $"Spawn Gatherer ({cost})" : "Not your base";
     }
 
     private void OnClicked()

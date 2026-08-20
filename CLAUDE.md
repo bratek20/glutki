@@ -66,8 +66,8 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   that spawned it (`HomeBase`) and always returns gathered resources there specifically. Task state
   machine: `ExitingBase` (walking from spawn/entry point to the base's interior exit, then warps
   onto the world map) → `Wandering` → `SeekingResource` → `Gathering` (stands at the resource for
-  `gatherDuration`, playing the attack animation, before it's actually consumed via
-  `Resource.TryConsume`) → `ReturningToBase` (world map, walking toward the base) → warps into the
+  `gatherDuration`, playing the attack animation, before actually drawing from it via
+  `Resource.TryGather`) → `ReturningToBase` (world map, walking toward the base) → warps into the
   interior → `EnteringBase` (walking to the resource stock building, or the Queen's spot if the base
   has none, and depositing there) → back to `ExitingBase`. Bot wave units instead run `MarchingToBase` →
   `MarchingToQueen`, following the same interior-warp mechanic to reach their target's Queen. The
@@ -97,13 +97,19 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   on every peer. Each unit type has its own Animator Controller declaring only the parameters it
   actually animates, so `UnitController` filters pushes against the controller's real parameter
   list — Unity logs a warning *per frame* otherwise.
-- **Resources** (`Resource.cs`) — pickups consumed by gatherer units, via `TryConsume` (not a bare
-  `Consume`): it returns false if the resource was already consumed, so two gatherers racing for the
-  same one can't both be credited its `amount`. **Gotcha:** same scene-placed-`NetworkIdentity`
-  situation as `BotBase` — `Resource` instances are nested in `Map.prefab`, so
-  `NetworkServer.Destroy` only deactivates a consumed one, it's never truly destroyed. Code that
-  needs to know whether a resource is still up for grabs must check `Resource.IsAvailable`, not
-  `== null` — a held reference to a consumed `Resource` never becomes null.
+- **Resources** (`Resource.cs`) — depletable deposits, not one-shot pickups: each holds a
+  `totalAmount` and is mined down over many trips. A gatherer takes its own configurable
+  `gatherAmount` per trip via `TryGather`, which grants whatever is actually left if that's less
+  than asked and returns false once the deposit is empty — so two gatherers finishing in the same
+  tick can never over-draw it. A deposit's look tracks how much it still holds: `fillStages` maps
+  fill fractions to sprites (the tightest stage covering the current fraction wins, so `1` is the
+  full sprite), driven off the remaining-amount `[SyncVar]` so every peer sees the same stage.
+  A stage of `0` is never shown — that's the point where the resource disappears. **Gotcha:** same
+  scene-placed-`NetworkIdentity` situation as `BotBase` — `Resource` instances are nested in
+  `Map.prefab`, so `NetworkServer.Destroy` only deactivates a depleted one, it's never truly
+  destroyed. Code that needs to know whether a resource is still up for grabs must check
+  `Resource.IsAvailable`, not `== null` — a held reference to a depleted `Resource` never becomes
+  null.
 - **ResourceStock** (`ResourceStock.cs`) — a player-built "building" in a base's interior; a base
   can have many, built up over time. Purely a deposit point in the world plus a thin forward to
   `PlayerBase.DepositResource` — the resource count itself still lives on `PlayerBase`. Registers

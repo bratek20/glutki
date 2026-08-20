@@ -84,6 +84,8 @@ public class UnitController : NetworkBehaviour
     [SerializeField] private float resourceScanInterval = 0.2f;
     [Tooltip("How long a Gatherer stands at a resource (playing the attack animation) before it's actually consumed.")]
     [SerializeField] private float gatherDuration = 1.5f;
+    [Tooltip("How much a Gatherer takes out of a resource per trip. A resource holding less than this gives up whatever it has left.")]
+    [SerializeField] private int gatherAmount = 10;
     [SerializeField] private Color carryingTintColor = new Color(1f, 0.85f, 0.35f);
 
     [Header("Attacker Guard")]
@@ -501,8 +503,8 @@ public class UnitController : NetworkBehaviour
 
         isAttackingServer = false;
 
-        // Someone else may have grabbed it in the same instant our timer ran out.
-        if (!targetResource.TryConsume(out int amount))
+        // Someone else may have drained the last of it in the same instant our timer ran out.
+        if (!targetResource.TryGather(gatherAmount, out int amount))
         {
             targetResource = null;
             StartWandering();
