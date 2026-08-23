@@ -5264,7 +5264,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 200000, guid: a56d029a8ad044d18c629178ae811d8d, type: 3}
       propertyPath: m_Name
-      value: Base
+      value: HostBase
       objectReference: {fileID: 0}
     - target: {fileID: 200001, guid: a56d029a8ad044d18c629178ae811d8d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -5499,13 +5499,13 @@ Transform:
   m_Children:
   - {fileID: 5771439679160408447}
   - {fileID: 7510803438808837392}
-  - {fileID: 8532162086403488128}
+  - {fileID: 2863153027571716398}
   - {fileID: 6602502102070743401}
+  - {fileID: 8532162086403488128}
   - {fileID: 5865979665726652112}
   - {fileID: 5252543832535206594}
   - {fileID: 6938656184032827415}
   - {fileID: 8697801976358550725}
-  - {fileID: 2863153027571716398}
   - {fileID: 7302852423728726053}
   - {fileID: 4606071668536720931}
   - {fileID: 8863590664358079000}
@@ -5685,7 +5685,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 200000, guid: a56d029a8ad044d18c629178ae811d8d, type: 3}
       propertyPath: m_Name
-      value: Base (2)
+      value: CientBase
       objectReference: {fileID: 0}
     - target: {fileID: 200001, guid: a56d029a8ad044d18c629178ae811d8d, type: 3}
       propertyPath: m_LocalPosition.x
@@ -5739,14 +5739,6 @@ PrefabInstance:
       propertyPath: owner
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 200004, guid: a56d029a8ad044d18c629178ae811d8d, type: 3}
-      propertyPath: unitPrefabs.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 200004, guid: a56d029a8ad044d18c629178ae811d8d, type: 3}
-      propertyPath: 'unitPrefabs.Array.data[0]'
-      value: 
-      objectReference: {fileID: 1388244362970297067, guid: f34044d7f68e33a47aae255e3c0da37b, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

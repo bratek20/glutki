@@ -133,7 +133,7 @@ MonoBehaviour:
   builderPrefab: {fileID: 8017835476929978263, guid: 0d2e3586d37bb1b49ba5a183fd1a64dc, type: 3}
   resourceStockPrefab: {fileID: 100000, guid: 418aa6370f3be3d4aa4b7454d93c32db, type: 3}
   childPrefab: {fileID: 5405288708221834748, guid: 4af8bb2e11586ce4fbc51e32e483c0b9, type: 3}
-  highlightColor: {r: 1, g: 1, b: 1, a: 1}
+  highlightColor: {r: 0.8509804, g: 0.62352943, b: 0.2784314, a: 1}
   owner: 0
   spawnCost: 1
   startingUnitPrefabs:
@@ -185,7 +185,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0, y: 4}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0}
@@ -195,5 +195,5 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2.56, y: 1.95}
+  m_Size: {x: 14, y: 10}
   m_EdgeRadius: 0
