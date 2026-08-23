@@ -1,69 +1,39 @@
-using System.Collections.Generic;
-using Mirror;
 using UnityEngine;
 
-// A player-built "building" inside a base's interior - gatherers walk here (not to the Queen) to
-// deposit resources. Purely a deposit point in the world; the actual resource count still lives on
-// PlayerBase. A base can have many of these built over time.
-public class ResourceStock : NetworkBehaviour
+// The ResourceStock tile: the physical place a Gatherer deposits at and a Builder loads up from,
+// plus the piles that show how full it looks.
+//
+// Deliberately holds no resource count of its own. The count is still one pool on PlayerBase (see
+// CLAUDE.md) - the base just hands each of its stocks the slice of that pool it should be showing,
+// so N stocks can never disagree with the number in the HUD.
+public class ResourceStock : MonoBehaviour
 {
-    // Every stock visible to this peer, keyed by nothing in particular - same static-registry
-    // pattern as UnitController.activeUnits, so any peer (not just the server) can enumerate a
-    // base's stocks, e.g. for the build-mode preview's occupied-tile check.
-    private static readonly List<ResourceStock> allStocks = new List<ResourceStock>();
+    [Tooltip("The piles on this tile, filled in order. Left empty, every StoredResource under this object is used, in hierarchy order.")]
+    [SerializeField] private StoredResource[] piles;
 
-    // A plain SerializeField wouldn't reach remote clients - this has to be a SyncVar so every
-    // peer (not just the server that sets it) knows which base a given stock belongs to.
-    [SyncVar] private PlayerBase homeBase;
-    public PlayerBase HomeBase { get => homeBase; set => homeBase = value; }
+    // Derived rather than configured, so adding or removing a pile in the prefab can't disagree
+    // with how much the tile claims to hold. Four piles of two = the capacity of eight.
+    public int Capacity => Piles.Length * StoredResource.MaxAmount;
 
-    public override void OnStartClient()
+    private StoredResource[] Piles
     {
-        base.OnStartClient();
-        allStocks.Add(this);
-    }
-
-    public override void OnStopClient()
-    {
-        base.OnStopClient();
-        allStocks.Remove(this);
-    }
-
-    [Server]
-    public void Deposit(int amount)
-    {
-        if (homeBase != null) homeBase.DepositResource(amount);
-    }
-
-    // True if one of homeBase's stocks already sits on tile - keeps two builds from landing on the
-    // same tile.
-    public static bool AnyOccupiesTile(PlayerBase homeBase, Vector2Int tile)
-    {
-        foreach (ResourceStock stock in allStocks)
+        get
         {
-            if (stock.homeBase == homeBase && homeBase.WorldToTile(stock.transform.position) == tile) return true;
+            if (piles == null || piles.Length == 0) piles = GetComponentsInChildren<StoredResource>(true);
+            return piles;
         }
-        return false;
     }
 
-    // Closest stock belonging to homeBase to position, or null if it has none built yet.
-    public static ResourceStock Nearest(PlayerBase homeBase, Vector3 position)
+    // Shows amount resources, spread over the piles in order - each one filled to the brim before
+    // the next one shows anything.
+    public void SetFill(int amount)
     {
-        ResourceStock nearest = null;
-        float nearestDistance = float.MaxValue;
+        StoredResource[] resourcePiles = Piles;
 
-        foreach (ResourceStock stock in allStocks)
+        for (int i = 0; i < resourcePiles.Length; i++)
         {
-            if (stock.homeBase != homeBase) continue;
-
-            float distance = Vector3.Distance(stock.transform.position, position);
-            if (distance < nearestDistance)
-            {
-                nearestDistance = distance;
-                nearest = stock;
-            }
+            if (resourcePiles[i] == null) continue;
+            resourcePiles[i].SetAmount(Mathf.Clamp(amount - i * StoredResource.MaxAmount, 0, StoredResource.MaxAmount));
         }
-
-        return nearest;
     }
 }

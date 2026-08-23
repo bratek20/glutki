@@ -13,6 +13,14 @@ PrefabInstance:
       value: Resource2
       objectReference: {fileID: 0}
     - target: {fileID: 100001, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 100001, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 100001, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
       objectReference: {fileID: 0}
@@ -51,6 +59,22 @@ PrefabInstance:
     - target: {fileID: 100001, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 100002, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 4371728719257556522, guid: 21de45a379cb7a94db5475c26e5a0aaf, type: 3}
+    - target: {fileID: 100002, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
+      propertyPath: m_Color.b
+      value: 0.7106918
+      objectReference: {fileID: 0}
+    - target: {fileID: 100002, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
+      propertyPath: m_Color.g
+      value: 0.7106918
+      objectReference: {fileID: 0}
+    - target: {fileID: 100002, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
+      propertyPath: m_Color.r
+      value: 0.7106918
       objectReference: {fileID: 0}
     - target: {fileID: 100004, guid: 0c43e2891ec942b498925bd32113d71a, type: 3}
       propertyPath: _assetId

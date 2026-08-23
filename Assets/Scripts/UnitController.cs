@@ -73,10 +73,10 @@ public class UnitController : NetworkBehaviour
         EnteringBase,
         MarchingToBase,
         MarchingToQueen,
-        Guarding,
+        InBarrack,
         MarchingToBotBase,
         AttackingBotBase,
-        ReturningToGuard,
+        ReturningToBarrack,
         WalkingToGrowthTile,
         WaitingToGrow,
         Growing,
@@ -111,12 +111,6 @@ public class UnitController : NetworkBehaviour
     [SerializeField] private float feedLoadDuration = 1f;
     [Tooltip("How often an idle Builder re-checks whether the Queen needs feeding again.")]
     [SerializeField] private float feedScanInterval = 0.5f;
-    [Tooltip("How far inside the interior walls a Builder's idle wandering is kept, so it never potters into one.")]
-    [SerializeField] private float interiorWanderMargin = 1f;
-
-    [Header("Attacker Guard")]
-    [Tooltip("How far from the home base's interior center a freshly spawned Attacker parks itself while waiting for an attack order.")]
-    [SerializeField] private float guardRadius = 1.5f;
 
     [Header("Combat")]
     [Tooltip("Aggressive units actively hunt down enemies within aggroRadius and chase them. Non-aggressive units only fight back if something attacks them, and won't chase.")]
@@ -143,11 +137,18 @@ public class UnitController : NetworkBehaviour
 
     [field: SerializeField] public Faction Faction { get; set; }
 
+    public UnitType Type => unitType;
+
     // Set by PlayerBase right before it spawns a Child: which unit prefab this Child eventually
     // grows into, and which of the base's growth tiles it walks to and occupies until it does.
     // Server-only - no peer other than the server ever needs to know.
     public GameObject GrowsIntoPrefab { get; set; }
     public int GrowthSlot { get; set; } = -1;
+
+    // Which of the home base's barracks this Attacker lives in. Reserved by PlayerBase when the
+    // Attacker is ordered and carried down the Child -> grown unit chain, so no two ever share one.
+    // Server-only, like GrowthSlot.
+    public int BarrackSlot { get; set; } = -1;
 
     public bool IsAlive => currentHealth > 0;
 
@@ -162,7 +163,6 @@ public class UnitController : NetworkBehaviour
     private float gatherTimer;
     private int carriedAmount;
 
-    private ResourceStock targetStock;
     private float feedTimer;
     private float feedScanTimer;
 
@@ -269,12 +269,12 @@ public class UnitController : NetworkBehaviour
     [Server]
     private void BeginNormalLife()
     {
-        // Player-spawned Attackers park themselves near their Queen and wait for an attack order
-        // instead of wandering out onto the world map.
+        // An Attacker lives in the barrack its order reserved - it walks there and stays put until
+        // it's sent out, rather than milling about the interior.
         if (unitType == UnitType.Attacker)
         {
-            state = UnitState.Guarding;
-            SetTarget(GuardPosition());
+            state = UnitState.InBarrack;
+            SetTarget(BarrackPosition());
             return;
         }
 
@@ -438,12 +438,28 @@ public class UnitController : NetworkBehaviour
         return nearest;
     }
 
+    // Whichever base's interior this unit is currently standing in, if any - its own while it's at
+    // home, or the one it's marching on as a wave unit. Null out on the world map, where nothing
+    // blocks movement.
+    private PlayerBase CurrentInteriorBase()
+    {
+        if (HomeBase != null && HomeBase.ContainsInterior(transform.position)) return HomeBase;
+        if (AttackTargetBase != null && AttackTargetBase.ContainsInterior(transform.position)) return AttackTargetBase;
+        return null;
+    }
+
     [Server]
     private void UpdateServerMovement()
     {
         if (!hasTarget) return;
 
-        transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
+        Vector3 from = transform.position;
+        Vector3 to = Vector3.MoveTowards(from, targetPosition, moveSpeed * Time.deltaTime);
+
+        // Inside a base, obstacle tiles are solid - the interior decides where the step actually
+        // lands, sliding along a wall rather than passing through it.
+        PlayerBase interiorBase = CurrentInteriorBase();
+        transform.position = interiorBase != null ? interiorBase.ResolveMovement(from, to) : to;
 
         if (Vector3.Distance(transform.position, targetPosition) <= stoppingDistance)
         {
@@ -484,8 +500,8 @@ public class UnitController : NetworkBehaviour
             case UnitState.MarchingToBotBase:
                 OnArrivedAtBotBase();
                 break;
-            case UnitState.ReturningToGuard:
-                OnReturnedToGuard();
+            case UnitState.ReturningToBarrack:
+                OnReturnedToBarrack();
                 break;
             case UnitState.WalkingToGrowthTile:
                 OnGrowthTileReached();
@@ -496,8 +512,8 @@ public class UnitController : NetworkBehaviour
             case UnitState.CarryingFoodToQueen:
                 OnQueenReachedWithFood();
                 break;
-            case UnitState.Guarding:
-                // Reached its guard spot near the Queen - stay put indefinitely until OrderAttack.
+            case UnitState.InBarrack:
+                // Home - stay put indefinitely until OrderAttack sends it out again.
                 break;
             default:
                 Invoke(nameof(StartWandering), Random.Range(1f, 3f));
@@ -588,30 +604,15 @@ public class UnitController : NetworkBehaviour
         transform.position = entryPoint;
 
         state = UnitState.EnteringBase;
-        SetTarget(DepositPoint(entryPoint));
-    }
-
-    // Where a Gatherer walks to inside the base to deposit - whichever of its stock buildings is
-    // closest to the entry point, falling back to the Queen's spot if none are built yet.
-    private Vector3 DepositPoint(Vector3 fallback)
-    {
-        if (HomeBase == null) return fallback;
-
-        ResourceStock stock = HomeBase.NearestResourceStock(transform.position);
-        return stock != null ? stock.transform.position : HomeBase.InteriorCenter;
+        SetTarget(HomeBase != null ? HomeBase.DepositPoint(entryPoint) : entryPoint);
     }
 
     [Server]
     private void OnEntryReached()
     {
-        // Reached whichever stock (or the Queen's spot, if this base has none built) it was
-        // heading for - deposit there, then head back out.
-        if (HomeBase != null)
-        {
-            ResourceStock stock = HomeBase.NearestResourceStock(transform.position);
-            if (stock != null) stock.Deposit(carriedAmount);
-            else HomeBase.DepositResource(carriedAmount);
-        }
+        // Reached whichever stock tile (or the Queen's spot, if this base has none) it was heading
+        // for. The count itself is one pool on the base - a stock is only the place to drop it.
+        if (HomeBase != null) HomeBase.DepositResource(carriedAmount);
 
         carriedAmount = 0;
         isCarryingResource = false;
@@ -634,7 +635,7 @@ public class UnitController : NetworkBehaviour
         transform.position = AttackTargetBase.InteriorExitPoint;
 
         state = UnitState.MarchingToQueen;
-        SetTarget(AttackTargetBase.InteriorCenter);
+        SetTarget(AttackTargetBase.QueenPoint);
     }
 
     // True once the target is gone - either actually destroyed (a runtime-spawned BotBase) or, far
@@ -652,11 +653,11 @@ public class UnitController : NetworkBehaviour
     {
         if (IsBotBaseGone(AttackTargetBotBase))
         {
-            // Gone by someone else while we were still marching there - head back and resume
-            // guarding the Queen instead of attacking nothing.
-            Debug.Log($"{name}: target BotBase gone before arrival, returning to guard", this);
+            // Gone by someone else while we were still marching there - head home to the barrack
+            // instead of attacking nothing.
+            Debug.Log($"{name}: target BotBase gone before arrival, returning to barrack", this);
             AttackTargetBotBase = null;
-            state = UnitState.ReturningToGuard;
+            state = UnitState.ReturningToBarrack;
             SetTarget(HomeBase != null ? HomeBase.transform.position : transform.position);
             return;
         }
@@ -673,12 +674,12 @@ public class UnitController : NetworkBehaviour
     {
         if (IsBotBaseGone(AttackTargetBotBase))
         {
-            // The target is gone - head back and resume guarding the Queen, the same way this
-            // Attacker did right after it was spawned.
-            Debug.Log($"{name}: target BotBase destroyed, returning to guard (HomeBase={HomeBase})", this);
+            // The target is gone - head back to the barrack, the same way this Attacker did right
+            // after it was spawned.
+            Debug.Log($"{name}: target BotBase destroyed, returning to barrack (HomeBase={HomeBase})", this);
             AttackTargetBotBase = null;
             isAttackingServer = false;
-            state = UnitState.ReturningToGuard;
+            state = UnitState.ReturningToBarrack;
             SetTarget(HomeBase != null ? HomeBase.transform.position : transform.position);
             return;
         }
@@ -694,8 +695,9 @@ public class UnitController : NetworkBehaviour
         }
     }
 
-    // Sends this Attacker out from wherever it currently is (normally guarding near its Queen) to
-    // march on and attack the given BotBase.
+    // Sends this Attacker out from wherever it currently is (normally sitting in its barrack) to
+    // march on and attack the given BotBase. Its barrack stays reserved while it's away - it has
+    // somewhere to come back to.
     [Server]
     public void OrderAttack(BotBase target)
     {
@@ -708,16 +710,16 @@ public class UnitController : NetworkBehaviour
     }
 
     [Server]
-    private void OnReturnedToGuard()
+    private void OnReturnedToBarrack()
     {
         // Warp from the world map into the home base interior, entering through the same opening
-        // units exit from, then walk to a guard spot near the Queen - exactly like a freshly
-        // spawned Attacker does in OnStartServer.
-        Debug.Log($"{name}: back home, resuming guard (HomeBase={HomeBase})", this);
+        // units exit from, then walk back to its own barrack - exactly like a freshly grown
+        // Attacker does in BeginNormalLife.
+        Debug.Log($"{name}: back home, returning to barrack (HomeBase={HomeBase})", this);
         transform.position = HomeBase != null ? HomeBase.InteriorExitPoint : transform.position;
 
-        state = UnitState.Guarding;
-        SetTarget(GuardPosition());
+        state = UnitState.InBarrack;
+        SetTarget(BarrackPosition());
     }
 
     // Starts a stock -> Queen round trip if there's one worth making. Returns false when there's
@@ -735,31 +737,27 @@ public class UnitController : NetworkBehaviour
         if (HomeBase.FoodShortfall <= 0) return false;
         if (HomeBase.StoredResources <= 0) return false;
 
-        // No stock built means there's nowhere to pick up from - the Builder simply can't work.
-        ResourceStock stock = HomeBase.NearestResourceStock(transform.position);
-        if (stock == null) return false;
+        // A base whose layout gives it no stock tile has nowhere to pick up from - its Builder
+        // simply can't work.
+        if (!HomeBase.HasResourceStock) return false;
 
-        targetStock = stock;
         state = UnitState.WalkingToStock;
-        SetTarget(stock.transform.position);
+        SetTarget(HomeBase.DepositPoint(transform.position));
         return true;
     }
 
     [Server]
     private void OnStockReached()
     {
-        // ResourceStocks are runtime-spawned, so a destroyed one really does go null here.
-        if (targetStock == null || HomeBase == null)
+        if (HomeBase == null)
         {
-            targetStock = null;
-            if (!TryStartFeedingTrip()) StartWandering();
+            StartWandering();
             return;
         }
 
         state = UnitState.LoadingFood;
         hasTarget = false;
         feedTimer = feedLoadDuration;
-        UpdateFacing(targetStock.transform.position);
     }
 
     [Server]
@@ -772,7 +770,6 @@ public class UnitController : NetworkBehaviour
         if (feedTimer > 0f) return;
 
         isAttackingServer = false;
-        targetStock = null;
 
         // Resources only actually leave storage once the load animation has played out, so another
         // Builder may have emptied the pool in the meantime.
@@ -802,7 +799,7 @@ public class UnitController : NetworkBehaviour
     private Vector3 QueenPosition()
     {
         if (HomeBase == null) return transform.position;
-        return HomeBase.Queen != null ? HomeBase.Queen.transform.position : HomeBase.InteriorCenter;
+        return HomeBase.Queen != null ? HomeBase.Queen.transform.position : HomeBase.QueenPoint;
     }
 
     [Server]
@@ -858,16 +855,14 @@ public class UnitController : NetworkBehaviour
         transform.position = Vector3.MoveTowards(transform.position, HomeBase.GrowthTileCenter(GrowthSlot), moveSpeed * Time.deltaTime);
     }
 
+    // The middle of this Attacker's own barrack tile. Falls back to the Queen's spot for an
+    // Attacker that somehow has no barrack (a base whose layout has none, say) - it still needs
+    // somewhere to stand.
     [Server]
-    private Vector3 GuardPosition()
+    private Vector3 BarrackPosition()
     {
         if (HomeBase == null) return transform.position;
-
-        float angle = Random.Range(0f, Mathf.PI * 2f);
-        Vector2 direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
-        float distance = Random.Range(0f, guardRadius);
-
-        return HomeBase.InteriorCenter + new Vector3(direction.x, direction.y, 0f) * distance;
+        return BarrackSlot >= 0 ? HomeBase.BarrackCenter(BarrackSlot) : HomeBase.QueenPoint;
     }
 
     [Server]
@@ -881,27 +876,12 @@ public class UnitController : NetworkBehaviour
 
         Vector3 destination = transform.position + new Vector3(direction.x, direction.y, 0f) * distance;
 
-        // A Builder never leaves its base, so its idle wandering is penned into the interior room
-        // rather than allowed to drift off toward the exit.
-        if (unitType == UnitType.Builder) destination = ClampToInterior(destination);
+        // Wandering inside a base is penned into the room and off the walls, so a unit is never
+        // sent toward a tile it can't reach. Out on the world map nothing is in the way.
+        PlayerBase interiorBase = CurrentInteriorBase();
+        if (interiorBase != null) destination = interiorBase.NearestWalkablePoint(destination);
 
         SetTarget(destination);
-    }
-
-    // Pulls a position back inside the home base's interior room, keeping a margin so a unit never
-    // ends up standing in a wall.
-    [Server]
-    private Vector3 ClampToInterior(Vector3 position)
-    {
-        if (HomeBase == null) return position;
-
-        Vector3 center = HomeBase.InteriorCenter;
-        Vector2 half = Vector2.Max(HomeBase.InteriorHalfSize - Vector2.one * interiorWanderMargin, Vector2.zero);
-
-        return new Vector3(
-            Mathf.Clamp(position.x, center.x - half.x, center.x + half.x),
-            Mathf.Clamp(position.y, center.y - half.y, center.y + half.y),
-            position.z);
     }
 
     [Server]
@@ -1049,6 +1029,15 @@ public class UnitController : NetworkBehaviour
         if (GrowthSlot >= 0 && HomeBase != null)
         {
             HomeBase.ReleaseGrowthSlot(this);
+        }
+
+        // Its barrack is free again - whether it died in it, on the way to it, or out on a raid.
+        // A Child carries the reservation too, so an Attacker that dies before it's even grown
+        // doesn't leave its barrack held forever.
+        if (BarrackSlot >= 0 && HomeBase != null)
+        {
+            HomeBase.ReleaseBarrack(BarrackSlot);
+            BarrackSlot = -1;
         }
 
         NetworkServer.Destroy(gameObject);

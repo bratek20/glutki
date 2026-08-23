@@ -18,9 +18,21 @@ public class SpawnAttackerButton : MonoBehaviour
         bool canManage = selectedBase != null && selectedBase.IsOwnedByLocalPlayer;
         int cost = selectedBase != null ? selectedBase.SpawnCost : 1;
 
-        // Same as SpawnUnitButton - ordering is free, the food cost is paid on the Queen's side.
-        button.interactable = canManage && selectedBase.IsQueenAlive;
-        label.text = canManage ? $"Spawn Attacker ({cost} food)" : "Not your base";
+        if (!canManage)
+        {
+            button.interactable = false;
+            label.text = "Not your base";
+            return;
+        }
+
+        // Unlike the other two, this one can be refused up front: an Attacker lives in a barrack,
+        // and there's nowhere to put one while every barrack is taken or already reserved by a
+        // queued order. Ordering itself is still free - the food cost is paid on the Queen's side.
+        bool hasBarrack = selectedBase.FreeBarracks > 0;
+        button.interactable = selectedBase.IsQueenAlive && hasBarrack;
+        label.text = hasBarrack
+            ? $"Spawn Attacker ({cost} food, {selectedBase.FreeBarracks} barracks)"
+            : "No free barrack";
     }
 
     private void OnClicked()

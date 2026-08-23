@@ -37,9 +37,17 @@ public static class ClaudeRenderingTools
     private const int FirstLayerId = 5001;
 
     // Sprites that need a layer other than Entities, matched on GameObject name.
+    //
+    // Interior tiles are ground the units walk on, so they sit behind everything on Entities.
+    // Obstacles and barracks are deliberately left off this list: they're things units stand in
+    // front of or behind depending on where they are, which is exactly what Entities' Y sort does.
     private static readonly Dictionary<string, string> LayerByObjectName = new Dictionary<string, string>
     {
         { "Terrain", BackgroundLayer },
+        { "Tile_Floor", GroundLayer },
+        { "Tile_Queen", GroundLayer },
+        { "Tile_GrowthTile", GroundLayer },
+        { "Tile_Entry", GroundLayer },
     };
 
     private const string Renderer2DPath = "Assets/Settings/Renderer2D.asset";

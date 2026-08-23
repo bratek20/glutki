@@ -5,10 +5,10 @@ using UnityEngine.InputSystem;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 
-// Lets the player enter "build mode" for their selected base: draws its buildable tile grid on
-// the ground plus a hover highlight (green if the hovered tile is free to build on, red
-// otherwise), and places a ResourceStock there on click. Clicking the button again, right-
-// clicking, or pressing Escape all cancel without building.
+// Lets the player enter "build mode" for their selected base: draws its interior tile grid on
+// the ground plus a hover highlight (green if the hovered tile is free to build on - i.e. a plain
+// floor tile - red otherwise), and turns it into a ResourceStock tile on click. Clicking the
+// button again, right-clicking, or pressing Escape all cancel without building.
 public class NewBuildButton : MonoBehaviour
 {
     [SerializeField] private Button button;
@@ -38,7 +38,7 @@ public class NewBuildButton : MonoBehaviour
     private void Update()
     {
         PlayerBase viewedBase = ViewManager.CurrentView == ViewMode.Base ? ViewManager.ViewedBase : null;
-        bool canBuildHere = viewedBase != null && viewedBase.IsOwnedByLocalPlayer && viewedBase.HasResourceStockPrefab;
+        bool canBuildHere = viewedBase != null && viewedBase.IsOwnedByLocalPlayer && viewedBase.CanBuildStock;
 
         if (buildModeActive && !canBuildHere) buildModeActive = false;
 
@@ -72,14 +72,14 @@ public class NewBuildButton : MonoBehaviour
         Vector2Int tile = viewedBase.WorldToTile(worldPoint);
         if (!viewedBase.IsTileBuildable(tile)) return;
 
-        viewedBase.CmdBuildResourceStock(tile);
+        viewedBase.CmdBuildTile(tile, TileType.ResourceStock);
         buildModeActive = false;
     }
 
     private void OnClicked()
     {
         PlayerBase viewedBase = ViewManager.CurrentView == ViewMode.Base ? ViewManager.ViewedBase : null;
-        if (viewedBase == null || !viewedBase.IsOwnedByLocalPlayer || !viewedBase.HasResourceStockPrefab) return;
+        if (viewedBase == null || !viewedBase.IsOwnedByLocalPlayer || !viewedBase.CanBuildStock) return;
 
         buildModeActive = !buildModeActive;
     }

@@ -131,7 +131,6 @@ MonoBehaviour:
   queenPrefab: {fileID: 2987455192824275693, guid: f21e48b601821e949ade13010f22b9ef, type: 3}
   attackerPrefab: {fileID: 7498133833606980204, guid: d4452598639917a42887f9724880ba97, type: 3}
   builderPrefab: {fileID: 8017835476929978263, guid: 0d2e3586d37bb1b49ba5a183fd1a64dc, type: 3}
-  resourceStockPrefab: {fileID: 100000, guid: 418aa6370f3be3d4aa4b7454d93c32db, type: 3}
   childPrefab: {fileID: 5405288708221834748, guid: 4af8bb2e11586ce4fbc51e32e483c0b9, type: 3}
   highlightColor: {r: 0.8509804, g: 0.62352943, b: 0.2784314, a: 1}
   owner: 0
@@ -139,16 +138,30 @@ MonoBehaviour:
   startingUnitPrefabs:
   - {fileID: 8017835476929978263, guid: 0d2e3586d37bb1b49ba5a183fd1a64dc, type: 3}
   - {fileID: 1388244362970297067, guid: f34044d7f68e33a47aae255e3c0da37b, type: 3}
-  startingStockOffset: {x: -2, y: 0}
-  startingUnitRadius: 1.5
-  interiorHalfSize: {x: 9, y: 5}
+  layout: 'OOOEOOO
+
+    OFBFBFO
+
+    OQQFGGO
+
+    OFFFFFO
+
+    ORRRRRO
+
+    OOOOOOO'
+  tileSize: 5
+  tilePrefabs:
+    floor: {fileID: 2173352239366689461, guid: 81b3383f46e4bef468eb7f4618416d67, type: 3}
+    obstacle: {fileID: 4770186762279174531, guid: 03de82fc469e06642b9d82f89732af6f, type: 3}
+    queen: {fileID: 6287099720202691928, guid: cb4e78c25758e7b4f810cdf8691e821d, type: 3}
+    barrack: {fileID: 5389997413972878596, guid: 0e85ad6cc8ab1eb4b8475f8c849be995, type: 3}
+    resourceStock: {fileID: 100000, guid: 418aa6370f3be3d4aa4b7454d93c32db, type: 3}
+    growthTile: {fileID: 3194400489579065572, guid: 3727e894c4a79a14f9f6aa3b7c7a65f8, type: 3}
+    entry: {fileID: 949484981948166103, guid: 1e59601614302504096f3801506110f3, type: 3}
   interiorSlotSpacing: 500
   interiorRowY: -1000
-  tileSize: 1
   spawnDuration: 3.75
   childSpawnOffset: {x: 1.5, y: -0.75}
-  growthTileOffset: {x: 3, y: 0}
-  growthTileCount: 2
   childIdleTime: 5
   growthTime: 1.25
 --- !u!61 &200005

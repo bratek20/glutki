@@ -9,8 +9,9 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
 ## Core concepts
 
 - **PlayerBase** (`PlayerBase.cs`) — a NetworkBehaviour placed in the scene. Holds `storedResources`
-  and a roster of unit prefabs it can spawn, plus a `queenPrefab`, an `attackerPrefab`, a
-  `resourceStockPrefab`, and a `childPrefab`. Owned by either `Host` or `Client` (`BaseOwner` enum, assigned per-instance
+  and a roster of unit prefabs it can spawn, plus a `queenPrefab`, an `attackerPrefab` and a
+  `childPrefab`, and the authored **interior layout** (see below). Owned by either `Host` or
+  `Client` (`BaseOwner` enum, assigned per-instance
   in the Inspector — not negotiated at runtime). Many bases can exist. `Base` the class name is
   intentionally free for a future common player/bot base if one ever turns out to be needed — right
   now `PlayerBase` and `BotBase` don't share code.
@@ -47,6 +48,30 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   `netId` rather than map position (`PlayerBase.InteriorCenter`) — each base gets its own far-apart slot
   in a dedicated row, so bases sitting close together on the map never bleed into each other's
   interior view.
+- **Interior tile map** — a base interior *is* a grid of tiles, one `TileType` each: `Floor`,
+  `Obstacle`, `Queen`, `Barrack`, `ResourceStock`, `GrowthTile`, `Entry`. It's authored as a letter
+  grid on the `PlayerBase` prefab (`layout`, parsed by `BaseLayout`) — `F O Q B R G E`, top row
+  first, every row the same width — and the room's whole footprint follows from it (`tileSize` x the
+  layout's dimensions), rather than being dialled in separately. The default is a 7x6 walled room
+  with the entry in the top wall, two barracks, two growth tiles and a row of five stocks.
+  Each type has its own prefab (`BaseInterior.Prefabs`, floor as the fallback), authored **one world
+  unit square** and scaled to the base's `tileSize`.
+  **Design decision:** the tile *objects* are built locally on every peer (`BaseInterior`), not
+  networked — a few dozen `NetworkIdentity`s per base to say the same thing twice would be absurd
+  when every peer can derive them. What *is* synced is the grid itself, a `SyncList<byte>` of tile
+  types on `PlayerBase`, because a player can change it during play by building. Everything else
+  about the interior (where the Queen stands, which tiles are growth tiles or barracks, where the
+  entry is) is parsed once from the layout in `Awake` and never changes.
+  The **Queen** always covers exactly two side-by-side `Q` tiles and parks on the seam between them
+  (`PlayerBase.QueenPoint`) — that, not `InteriorCenter`, is what units aim at. The **entry** tile is
+  the gap in the wall units warp in and out through (`InteriorExitPoint`).
+- **Obstacles** — units can't walk through an `Obstacle` tile. Enforced in
+  `PlayerBase.ResolveMovement`, which every unit's movement step goes through while it's standing in
+  some base's interior: it clamps the step into the room and slides along a wall rather than through
+  it. Deliberately **not** pathfinding — obstacles are only ever the outer walls today, so nothing
+  can be boxed in behind one. Interior wander destinations are pulled onto a walkable tile
+  (`NearestWalkablePoint`) so nothing is ever sent toward a target it can't reach. Adding obstacles
+  *inside* a room is what would force real pathfinding, and that's out of scope.
 - **Queen feeding** — resources don't buy units directly; the Queen has to be *fed* them. Placing an
   order (gatherer, Attacker, or Builder) is free and instant — it only enqueues a prefab. The Queen
   can't start a birth until she's been fed `spawnCost` worth of food, which only ever arrives on a
@@ -62,14 +87,14 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   Queen has enough food and a growth tile is free it starts a birth: the Queen's `IsSpawning` animator bool goes true for a configurable `spawnDuration` (a
   plain timer, so the value can just be dialled in to match whatever the birth animation looks
   like), after which a **Child** unit appears at a configurable offset from the Queen — line that
-  offset up with the point the animation "produces" it. Growth tiles are a run of ordinary
-  build-grid tiles offset from the Queen's tile (`growthTileOffset`, then `growthTileCount` tiles
-  running right — one tile to her right, two of them, by default), each holding exactly one unit
-  in production; while they're all taken the Queen can't start a birth and orders just sit in
-  the queue. A slot is reserved from the moment a birth *starts*, so two births can never race for
-  the same tile, and stays held all the way through both phases below — only the fully grown unit
-  hands it back (or a death at any point does). Nothing can be built on a growth
-  tile (`IsTileBuildable` excludes them). A Queen's death clears the backlog and cancels the birth
+  offset up with the point the animation "produces" it. Growth tiles are the layout's `G` tiles,
+  each holding exactly one unit in production; while they're all taken the Queen can't start a birth
+  and orders just sit in the queue. A slot is reserved from the moment a birth *starts*, so two
+  births can never race for the same tile, and stays held all the way through both phases below —
+  only the fully grown unit hands it back (or a death at any point does).
+  Ordering an **Attacker** additionally reserves a `Barrack` tile up front (see **Units**), and is
+  refused outright when none is free — the one order that can be turned down at request time.
+  A Queen's death clears the backlog (releasing the barracks it reserved) and cancels the birth
   in progress, but Children already on a tile are real units and are left to finish.
 - **Units** (`UnitController.cs`) — server-authoritative AI. Each unit remembers the `PlayerBase`
   that spawned it (`HomeBase`) and always returns gathered resources there specifically. Task state
@@ -77,32 +102,37 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   onto the world map) → `Wandering` → `SeekingResource` → `Gathering` (stands at the resource for
   `gatherDuration`, playing the attack animation, before actually drawing from it via
   `Resource.TryGather`) → `ReturningToBase` (world map, walking toward the base) → warps into the
-  interior → `EnteringBase` (walking to the resource stock building, or the Queen's spot if the base
-  has none, and depositing there) → back to `ExitingBase`. Bot wave units instead run `MarchingToBase` →
+  interior → `EnteringBase` (walking to the nearest `ResourceStock` tile, or the Queen's spot if the
+  base has none, and depositing there) → back to `ExitingBase`. Bot wave units instead run `MarchingToBase` →
   `MarchingToQueen`, following the same interior-warp mechanic to reach their target's Queen. The
-  **Queen** (`UnitType.Queen`) is a special stationary unit permanently parked at each base's
-  interior center — it never runs the task state machine, only combat. Growing up takes two timed
+  **Queen** (`UnitType.Queen`) is a special stationary unit permanently parked on her two tiles at
+  each base (`QueenPoint`) — she never runs the task state machine, only combat. Growing up takes two timed
   phases on the growth tile, split so each one can be matched to its own animation: a
   `UnitType.Child` runs `WalkingToGrowthTile` → `WaitingToGrow` (idle for the base's
   `childIdleTime`), then the base swaps it out in place — the Child is destroyed and the ordered
   prefab spawned on the spot, inheriting the same tile — and that unit runs `Growing` (the
-  `IsGrowing` animator bool, for `growthTime`) before `BeginNormalLife` sends it off to gather or
-  guard. So the growth animation plays on the real unit, not the Child. A base is also handed a
-  **starting loadout** the instant it spawns — one `ResourceStock` plus its `startingUnitPrefabs`
-  (one Builder, one Gatherer) — spawned fully grown, the only path that bypasses the Child pipeline.
-  Without it a new base would be deadlocked: no Builder to feed the Queen, so no way to produce one.
+  `IsGrowing` animator bool, for `growthTime`) before `BeginNormalLife` sends it off to work. So the
+  growth animation plays on the real unit, not the Child. A base is also handed a
+  **starting loadout** the instant it spawns — its `startingUnitPrefabs` (one Builder, one Gatherer),
+  spawned fully grown on the floor tiles nearest the Queen, the only path that bypasses the Child
+  pipeline. Without it a new base would be deadlocked: no Builder to feed the Queen, so no way to
+  produce one. (Its stocks it already has — they're in the layout.)
   `UnitType.Builder` units never leave the interior. They shuttle resources from the nearest
-  `ResourceStock` to the Queen (`WalkingToStock` → `LoadingFood` → `CarryingFoodToQueen`) whenever
+  `ResourceStock` tile to the Queen (`WalkingToStock` → `LoadingFood` → `CarryingFoodToQueen`) whenever
   `PlayerBase.FoodShortfall` says an order is waiting on food, and otherwise just wander inside —
-  their idle wandering is clamped to the interior room rather than drifting toward the exit. Losing
+  interior wandering is penned into the room and off the walls. Losing
   every Builder ends a base exactly like losing its Queen (see **Game end**): the flag is *latched*
   when the last one dies rather than derived from a live count, so it can't trip on a count read
   before the starting loadout exists, and it never unlatches. Player-owned
-  `UnitType.Attacker` units instead spawn straight into `Guarding` (idle near their home base's
-  Queen, at a random spot within `guardRadius`) and stay there until `PlayerBase.CmdOrderAttack`
+  `UnitType.Attacker` units **live in barracks**: each one owns exactly one `Barrack` tile
+  (`BarrackSlot`), walks there when it's grown and sits in it (`InBarrack`) — they don't patrol.
+  The barrack is claimed when the Attacker is *ordered*, not when it's born, so the free-barrack
+  count the player sees is honest with several queued; it stays held while the Attacker is away on a
+  raid, and is only released when it dies (a Child carries the reservation too, so one killed before
+  it's grown doesn't hold a barrack forever). `PlayerBase.CmdOrderAttack`
   (fired by `AttackOrderPopup`) calls `UnitController.OrderAttack` on some of them — from there they
   run `ExitingBase` → `MarchingToBotBase` → `AttackingBotBase` (stand and repeatedly damage the
-  target `BotBase` until it's destroyed or they are, then wander).
+  target `BotBase` until it's destroyed or they are) → `ReturningToBarrack`.
 - **Combat** — every unit has HP/damage/attack-interval/attack-range stats and a `Faction`
   (`Host`/`Client`/`Bot`; assigned by whoever spawns the unit). `isAggressive` units actively hunt
   the nearest different-faction unit within `aggroRadius` and chase it; non-aggressive units never
@@ -129,27 +159,25 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   destroyed. Code that needs to know whether a resource is still up for grabs must check
   `Resource.IsAvailable`, not `== null` — a held reference to a depleted `Resource` never becomes
   null.
-- **ResourceStock** (`ResourceStock.cs`) — a player-built "building" in a base's interior; a base
-  can have many, built up over time. Purely a deposit point in the world plus a thin forward to
-  `PlayerBase.DepositResource` — the resource count itself still lives on `PlayerBase`. Registers
-  itself into a static `allStocks` list on `OnStartClient`/`OnStopClient` (same pattern as
-  `UnitController.activeUnits`) so *any* peer, not just the server, can enumerate a base's stocks -
-  used both for `PlayerBase.IsTileBuildable`'s occupied-tile check and for picking the nearest
-  stock to deposit at (`PlayerBase.NearestResourceStock`). `HomeBase` is a `[SyncVar]`, not a bare
-  serialized field - it has to reach every peer, not just the server that sets it, since clients
-  read it directly (e.g. for the occupied-tile check). If a base has no stock built yet (or no
-  `resourceStockPrefab` assigned), gatherers fall back to depositing at the Queen's spot instead.
-- **Build grid / Build mode** — each base's interior is tiled by a simple N x M grid of same-size
-  tiles (`PlayerBase.tileSize`/`GridColumns`/`GridRows`/`GridOrigin`, fully covering the interior
-  room, centered on `InteriorCenter`; `WorldToTile`/`TileCenter` convert between a world position
-  and a tile), used to place buildings on. `NewBuildButton` drives client-local "build mode" for
-  the viewed base: while active it draws the grid and a green/red hover-tile highlight straight to
-  the screen via `GL` calls, and a left-click on a buildable tile calls
-  `PlayerBase.CmdBuildResourceStock`; right-click, Escape, or clicking the button again cancel
-  instead. `PlayerBase.IsTileBuildable` is the single source of truth for whether a tile can be
-  built on (in bounds, not the Queen's tile, not already occupied by one of this base's own
-  stocks) — called client-side for the preview and server-side (again) as the actual authorization
-  check, so they can never disagree. **Gotcha:** the project renders via URP (see
+- **ResourceStock** (`ResourceStock.cs`) — the `R` tile: where a Gatherer deposits and a Builder
+  loads up. A base starts with whatever its layout gives it and can build more. It holds **no count
+  of its own** — the resource count is still one pool on `PlayerBase` (see **Queen feeding**), and
+  the deposit/withdraw calls go straight there. What the component does is *show* how full the base
+  is: a tile carries four `StoredResource` piles, each holding one or two resources (a sprite for
+  each amount, hidden entirely at zero), so a stock reads up to 8. `PlayerBase` spreads its pool
+  over its stocks in grid order, each filled to capacity before the next shows anything — one pool,
+  a deterministic way to draw it, so every peer sees the same thing and no per-stock balance can
+  ever drift from the HUD. The piles are placed by hand in the prefab; `ResourceStock` finds them
+  under itself and derives its capacity from how many there are.
+- **Build mode** — `NewBuildButton` drives client-local "build mode" for the viewed base: while
+  active it draws the interior grid and a green/red hover-tile highlight straight to the screen via
+  `GL` calls, and a left-click on a buildable tile calls `PlayerBase.CmdBuildTile`; right-click,
+  Escape, or clicking the button again cancel instead. `PlayerBase.IsTileBuildable` is the single
+  source of truth for whether a tile can be built on — a plain `Floor` tile and nothing else —
+  called client-side for the preview and server-side (again) as the actual authorization check, so
+  they can never disagree. Only a `ResourceStock` can go up during play: growth tiles and barracks
+  are counted once at startup, so letting one appear later would put the server's slot bookkeeping
+  out of step with the grid. **Gotcha:** the project renders via URP (see
   `ProjectSettings/QualitySettings.asset`'s `customRenderPipeline`), which never invokes the
   legacy `OnRenderObject` callback — GL-based overlays like this one have to hook
   `RenderPipelineManager.endCameraRendering` instead and set up `GL.LoadProjectionMatrix`/
@@ -167,7 +195,9 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   `HomeBase`, so they never count toward any base) — `CountAlive` is the variant that also skips
   units already at 0 HP, which is what a unit reporting its own death has to use, since it's still
   in the registry at that point. The three spawn buttons gate on the Queen being *alive*, not on
-  stored resources: ordering is free, the cost lands later as food. `AttackOrderPopup` is opened by `BotBase` on
+  stored resources: ordering is free, the cost lands later as food. `SpawnAttackerButton` has the
+  one extra gate — `PlayerBase.FreeBarracks` (a `[SyncVar]`, so the button can read server-side
+  occupancy) must be above zero. `AttackOrderPopup` is opened by `BotBase` on
   click and lets the player choose how many of `BaseSelectionManager.SelectedBase`'s available
   Attackers (`PlayerBase.AvailableAttackers`) to send via a slider, then confirms with
   `PlayerBase.CmdOrderAttack`.
@@ -207,9 +237,12 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   is `Custom Axis (0,1,0)`, so sprites sort by world Y — whatever stands lower on screen draws in
   front. Nothing per-frame, and it applies to every sprite automatically.
 - Everything that shares the world and should overlap by position — units, Queens, bases,
-  resources, resource stocks — lives together on `Entities` **on purpose**: a unit walking below a
-  base overlaps it, walking above it goes behind. Splitting buildings into their own layer would
-  make one of those two cases always wrong.
+  resources, resource stocks, interior obstacles and barracks — lives together on `Entities`
+  **on purpose**: a unit walking below a base overlaps it, walking above it goes behind. Splitting
+  buildings into their own layer would make one of those two cases always wrong.
+- Interior tiles that are literally the ground (`Tile_Floor`, `Tile_Queen`, `Tile_GrowthTile`,
+  `Tile_Entry`) go on `Ground` instead — units always walk on top of them, so there's nothing to
+  resolve by position.
 - **Sorting order stays 0 on `Entities`.** It's compared before the sort axis, so any nonzero value
   pins that sprite in front of or behind everything and defeats the Y sorting.
 - Y sorting uses each renderer's transform position, so **pivots are the sort point**. Unit
@@ -237,6 +270,11 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   UI element. All UI is added by the **user**, in the Editor, by clicking a `Claude -> ...` menu
   item that Claude writes under `Assets/Editor/` (see `ClaudeUiTools.cs`). This is a deliberate
   split: Claude owns the gameplay/UI *scripts*, the user owns what actually lands in the scene.
+- The same rule covers **generated prefabs**: `Claude -> Setup Base Tiles`
+  (`ClaudeBaseTileTools.cs`) is what creates the placeholder tile sprite and the per-`TileType`
+  prefabs, converts `ResourceStock.prefab` into a plain (non-networked) tile with its
+  `StoredResource` piles, and wires all of it into `PlayerBase.prefab`. It only ever fills in what's
+  missing — a prefab or reference the user has already chosen is never overwritten.
 - The same split applies to **prefab and project-settings wiring** a new feature needs before it
   will run: it goes into a menu action too, not hand-edited asset YAML. `ClaudeGameplayTools.cs`
   (`Claude -> Setup Builder Loadout`) and `ClaudeRenderingTools.cs` are the examples. These must be

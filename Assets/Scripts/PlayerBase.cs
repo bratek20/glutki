@@ -10,7 +10,6 @@ public class PlayerBase : NetworkBehaviour
     [SerializeField] private GameObject queenPrefab;
     [SerializeField] private GameObject attackerPrefab;
     [SerializeField] private GameObject builderPrefab;
-    [SerializeField] private GameObject resourceStockPrefab;
     [SerializeField] private GameObject childPrefab;
     [SerializeField] private Color highlightColor = new Color(1f, 0.9f, 0.3f);
     [SerializeField] private BaseOwner owner = BaseOwner.Host;
@@ -22,38 +21,31 @@ public class PlayerBase : NetworkBehaviour
     [Header("Starting Loadout")]
     [Tooltip("Units this base is given for free, fully grown (skipping the Child/growth pipeline), the moment the game starts. One Builder and one Gatherer by default - with no Builder the Queen could never be fed, so the base could never produce anything.")]
     [SerializeField] private GameObject[] startingUnitPrefabs;
-    [Tooltip("Where the free starting ResourceStock is built, in grid tiles relative to the Queen's own tile. Must not land on a growth tile or it won't build.")]
-    [SerializeField] private Vector2Int startingStockOffset = new Vector2Int(-2, 0);
-    [Tooltip("How far from the Queen the starting units appear. They're spread evenly around her so they don't stack up.")]
-    [SerializeField] private float startingUnitRadius = 1.5f;
 
-    [Header("Base View interior")]
-    [Tooltip("Half-size of the interior room, roughly 2x a screen's worth of view. Also used to clamp camera panning while inside this base.")]
-    [SerializeField] private Vector2 interiorHalfSize = new Vector2(18f, 10f);
-    [Tooltip("Distance between one base's interior slot and the next. Must comfortably exceed interiorHalfSize.x * 2 so no two interiors are ever visible at once, regardless of how close the bases are on the map.")]
+    [Header("Interior layout")]
+    [Tooltip("The interior, one letter per tile, top row first: O obstacle, F floor, Q queen (always two side by side), B barrack, R resource stock, G growth tile, E base entry. Every row must be the same width.")]
+    [TextArea(6, 14)]
+    [SerializeField] private string layout = BaseLayout.Default;
+    [Tooltip("Size (world units) of one interior tile. The room's whole footprint is the layout's tile count times this, and tile prefabs (authored one world unit square) are scaled to it.")]
+    [SerializeField] private float tileSize = 2f;
+    [Tooltip("One prefab per tile type, each authored one world unit square. Anything left empty falls back to the floor prefab.")]
+    [SerializeField] private BaseInterior.Prefabs tilePrefabs = new BaseInterior.Prefabs();
+    [Tooltip("Distance between one base's interior slot and the next. Must comfortably exceed the interior's own width so no two interiors are ever visible at once, regardless of how close the bases are on the map.")]
     [SerializeField] private float interiorSlotSpacing = 500f;
     [Tooltip("How far below the map the whole row of interiors sits.")]
     [SerializeField] private float interiorRowY = -1000f;
 
-    [Header("Build Grid")]
-    [Tooltip("Size (world units) of one buildable tile inside this base's interior.")]
-    [SerializeField] private float tileSize = 1f;
-
     [Header("Unit Growth")]
     [Tooltip("How long the Queen plays her spawn animation before the Child she's producing actually appears.")]
     [SerializeField] private float spawnDuration = 1.5f;
-    [Tooltip("Where a freshly produced Child appears, relative to the Queen. Line this up with the point the spawn animation 'drops' it.")]
+    [Tooltip("Where a freshly produced Child appears, relative to the Queen. Line this up with the point the spawn animation 'drops' it. Pulled onto the nearest walkable tile if it lands in a wall.")]
     [SerializeField] private Vector2 childSpawnOffset = new Vector2(0.6f, -0.6f);
-    [Tooltip("Where the first growth tile sits relative to the Queen's own tile, in grid tiles. Raise x to push the whole row further right of her.")]
-    [SerializeField] private Vector2Int growthTileOffset = new Vector2Int(1, 0);
-    [Tooltip("How many grid tiles, running right from growthTileOffset, are growth tiles. Each holds one growing Child at a time; while they're all taken the Queen can't start another spawn and orders just queue up.")]
-    [SerializeField] private int growthTileCount = 2;
     [Tooltip("How long a Child stands idle on its growth tile before it's transformed into the unit it was ordered as.")]
     [SerializeField] private float childIdleTime = 3f;
     [Tooltip("How long that transformed unit then plays its growth animation (IsGrowing) on the tile before it comes to life. Set this to match the animation's length.")]
     [SerializeField] private float growthTime = 5f;
 
-    [SyncVar] private int storedResources = 5;
+    [SyncVar(hook = nameof(OnStoredResourcesChanged))] private int storedResources = 5;
     [SyncVar] private UnitController queen;
     [SyncVar] private bool queenAlive = true;
 
@@ -66,26 +58,62 @@ public class PlayerBase : NetworkBehaviour
     // loadout has spawned.
     [SyncVar] private bool buildersLost;
 
+    // Barracks not already taken by an Attacker - or reserved by one that's been ordered and hasn't
+    // been born yet. Synced purely so SpawnAttackerButton can grey itself out; the occupancy itself
+    // is server state.
+    [SyncVar] private int freeBarracks;
+
+    // The live tile grid, one byte per tile, row-major from the bottom-left. Seeded from `layout`,
+    // which is identical on every peer - but a player can build on a floor tile during play, so the
+    // grid has to be synced rather than re-derived. Bytes rather than the enum so the wire format
+    // can't shift under a reordered TileType.
+    private readonly SyncList<byte> tileTypes = new SyncList<byte>();
+
     private SpriteRenderer spriteRenderer;
     private Collider2D selectionCollider;
     private Color normalColor;
     private int unitIndex;
 
+    // Parsed from `layout` in Awake, on every peer. The grid's shape and its special tiles never
+    // change during play (only floor tiles are ever built on), so this is worked out exactly once.
+    private TileType[] layoutTiles;
+    private int columns = 1;
+    private int rows = 1;
+    private readonly List<Vector2Int> growthTiles = new List<Vector2Int>();
+    private readonly List<Vector2Int> barrackTiles = new List<Vector2Int>();
+    private readonly List<Vector2Int> queenTiles = new List<Vector2Int>();
+    private Vector2Int entryTile;
+    private bool hasEntryTile;
+
+    // Local view of the interior - the actual tile GameObjects. Null on a peer that never renders.
+    private BaseInterior interior;
+
     // Server-only production state. A spawn order is only ever a prefab waiting in this queue until
     // a growth tile frees up; the Queen then plays her spawn animation for spawnDuration and a Child
     // is born, which walks to that tile and grows into the ordered unit there.
-    private readonly Queue<GameObject> spawnQueue = new Queue<GameObject>();
+    private readonly Queue<SpawnOrder> spawnQueue = new Queue<SpawnOrder>();
     private UnitController[] growthSlots = new UnitController[0];
-    private GameObject spawningPrefab;
-    private int spawningSlot = -1;
+    private bool[] barrackTaken = new bool[0];
+    private SpawnOrder spawningOrder;
+    private bool isSpawning;
     private float spawnTimer;
+
+    // A queued unit, plus the barrack that was set aside for it if it's an Attacker. Reserved at
+    // order time rather than at birth, so the "is a barrack free?" the player sees is honest even
+    // with several Attackers queued up. growthSlot is filled in later, when the birth actually
+    // starts and a tile is picked.
+    private struct SpawnOrder
+    {
+        public GameObject prefab;
+        public int barrackSlot;
+        public int growthSlot;
+    }
 
     public int StoredResources => storedResources;
     public int SpawnCost => spawnCost;
     public int QueenFood => queenFood;
     public BaseOwner Owner => owner;
     public UnitController Queen => queen;
-    public bool HasResourceStockPrefab => resourceStockPrefab != null;
 
     // Losing every Builder is as terminal as losing the Queen - nobody is left to carry food to
     // her, so the base can never produce again. GameController treats it as a loss for that reason.
@@ -95,9 +123,6 @@ public class PlayerBase : NetworkBehaviour
     // this base's Builders are working toward. Server-only: spawnQueue only exists there.
     public int FoodShortfall => Mathf.Max(0, spawnQueue.Count * spawnCost - queenFood);
 
-    // Closest of this base's built ResourceStocks to position, or null if it has none built yet.
-    public ResourceStock NearestResourceStock(Vector3 position) => ResourceStock.Nearest(this, position);
-
     // Once the Queen dies, this base can no longer spawn units and its gatherers give up
     // gathering entirely - see UnitController's queen-alive checks.
     public bool IsQueenAlive => queenAlive;
@@ -106,27 +131,69 @@ public class PlayerBase : NetworkBehaviour
     // AttackOrderPopup's slider maxes out at.
     public int AvailableAttackers => UnitController.CountAvailableAttackers(this);
 
+    // An Attacker needs somewhere to live, so ordering one is refused outright while every barrack
+    // is spoken for.
+    public int BarrackCount => barrackTiles.Count;
+    public int FreeBarracks => freeBarracks;
+
     private Faction UnitFaction => owner == BaseOwner.Host ? Faction.Host : Faction.Client;
 
     // Placed by netId rather than map position - every base gets its own far-apart slot in a
     // dedicated interior row, regardless of how close together bases happen to be on the map.
     // netId is server-assigned and identical on every peer, so this stays consistent for everyone.
     public Vector3 InteriorCenter => new Vector3(netId * interiorSlotSpacing, interiorRowY, 0f);
-    public Vector2 InteriorHalfSize => interiorHalfSize;
-    public Vector3 InteriorExitPoint => InteriorCenter + new Vector3(0f, interiorHalfSize.y, 0f);
 
-    // The base's interior is tiled by a simple N x M grid of buildable tiles, all the same size,
-    // fully covering the interior room and centered on InteriorCenter.
+    // The room is exactly its tile map, so its footprint follows the layout rather than being
+    // dialled in separately. Used to clamp camera panning while inside this base.
+    public Vector2 InteriorHalfSize => new Vector2(columns * tileSize * 0.5f, rows * tileSize * 0.5f);
+
+    // Where units warp in and out of the interior - the gap the layout's E tile marks in the wall.
+    public Vector3 InteriorExitPoint => hasEntryTile
+        ? TileCenter(entryTile)
+        : InteriorCenter + new Vector3(0f, InteriorHalfSize.y - tileSize * 0.5f, 0f);
+
+    // The Queen straddles the seam between her two tiles, so this is their shared midpoint rather
+    // than the interior's center - everything that used to aim at the middle of the room aims here.
+    public Vector3 QueenPoint
+    {
+        get
+        {
+            if (queenTiles.Count == 0) return InteriorCenter;
+
+            Vector3 sum = Vector3.zero;
+            foreach (Vector2Int tile in queenTiles) sum += TileCenter(tile);
+            return sum / queenTiles.Count;
+        }
+    }
+
     public float TileSize => tileSize;
-    public int GridColumns => Mathf.Max(1, Mathf.FloorToInt((interiorHalfSize.x * 2f) / tileSize));
-    public int GridRows => Mathf.Max(1, Mathf.FloorToInt((interiorHalfSize.y * 2f) / tileSize));
-    public Vector3 GridOrigin => InteriorCenter - new Vector3(GridColumns * tileSize * 0.5f, GridRows * tileSize * 0.5f, 0f);
+    public int GridColumns => columns;
+    public int GridRows => rows;
+    public Vector3 GridOrigin => InteriorCenter - new Vector3(columns * tileSize * 0.5f, rows * tileSize * 0.5f, 0f);
+
+    public bool InBounds(Vector2Int tile) => tile.x >= 0 && tile.x < columns && tile.y >= 0 && tile.y < rows;
+
+    // Out-of-bounds reads as solid, so anything asking "can I walk here?" about a point outside the
+    // room gets told no rather than an index error.
+    public TileType TileAt(Vector2Int tile)
+    {
+        if (layoutTiles == null || !InBounds(tile)) return TileType.Obstacle;
+
+        int index = tile.y * columns + tile.x;
+
+        // Before the synced grid has arrived (or on a peer that never got one), the layout it was
+        // seeded from is the same answer.
+        if (tileTypes.Count == layoutTiles.Length) return (TileType)tileTypes[index];
+        return layoutTiles[index];
+    }
+
+    public bool IsWalkable(Vector2Int tile) => TileAt(tile) != TileType.Obstacle;
 
     public Vector2Int WorldToTile(Vector3 worldPosition)
     {
         Vector3 local = worldPosition - GridOrigin;
-        int x = Mathf.Clamp(Mathf.FloorToInt(local.x / tileSize), 0, GridColumns - 1);
-        int y = Mathf.Clamp(Mathf.FloorToInt(local.y / tileSize), 0, GridRows - 1);
+        int x = Mathf.Clamp(Mathf.FloorToInt(local.x / tileSize), 0, columns - 1);
+        int y = Mathf.Clamp(Mathf.FloorToInt(local.y / tileSize), 0, rows - 1);
         return new Vector2Int(x, y);
     }
 
@@ -135,40 +202,122 @@ public class PlayerBase : NetworkBehaviour
         return GridOrigin + new Vector3((tile.x + 0.5f) * tileSize, (tile.y + 0.5f) * tileSize, 0f);
     }
 
-    // Growth tiles are just a run of ordinary grid tiles offset from the Queen's own tile - nothing
-    // is built on them, they're the spots Children stand on while growing.
-    public int GrowthTileCount => Mathf.Max(0, growthTileCount);
+    public bool ContainsInterior(Vector3 worldPosition)
+    {
+        Vector3 origin = GridOrigin;
+        return worldPosition.x >= origin.x && worldPosition.x <= origin.x + columns * tileSize
+            && worldPosition.y >= origin.y && worldPosition.y <= origin.y + rows * tileSize;
+    }
+
+    // Where a unit actually ends up after trying to move from -> to inside this interior. Obstacles
+    // block, and a diagonal blocked on one axis slides along the other so a unit brushing a wall
+    // keeps going instead of sticking to it. Deliberately not pathfinding: obstacles are only ever
+    // the outer walls today, so nothing can be boxed in behind one.
+    public Vector3 ResolveMovement(Vector3 from, Vector3 to)
+    {
+        // Nothing walks out of the room - the only way out is the warp at the entry tile.
+        to = ClampToInterior(to);
+
+        if (IsWalkable(WorldToTile(to))) return to;
+
+        Vector3 alongX = new Vector3(to.x, from.y, to.z);
+        if (IsWalkable(WorldToTile(alongX))) return alongX;
+
+        Vector3 alongY = new Vector3(from.x, to.y, to.z);
+        if (IsWalkable(WorldToTile(alongY))) return alongY;
+
+        return from;
+    }
+
+    // Pulls a point onto somewhere a unit can actually stand - used for wander destinations and
+    // spawn offsets, so nothing is ever sent walking into a wall it can't reach.
+    public Vector3 NearestWalkablePoint(Vector3 position)
+    {
+        Vector3 clamped = ClampToInterior(position);
+        Vector2Int tile = WorldToTile(clamped);
+        if (IsWalkable(tile)) return clamped;
+
+        for (int radius = 1; radius <= Mathf.Max(columns, rows); radius++)
+        {
+            for (int y = -radius; y <= radius; y++)
+            {
+                for (int x = -radius; x <= radius; x++)
+                {
+                    // Only the ring itself - everything inside it was covered by a smaller radius.
+                    if (Mathf.Abs(x) != radius && Mathf.Abs(y) != radius) continue;
+
+                    Vector2Int candidate = tile + new Vector2Int(x, y);
+                    if (InBounds(candidate) && IsWalkable(candidate)) return TileCenter(candidate);
+                }
+            }
+        }
+
+        return TileCenter(tile);
+    }
+
+    public Vector3 ClampToInterior(Vector3 position)
+    {
+        Vector3 origin = GridOrigin;
+        return new Vector3(
+            Mathf.Clamp(position.x, origin.x, origin.x + columns * tileSize),
+            Mathf.Clamp(position.y, origin.y, origin.y + rows * tileSize),
+            position.z);
+    }
+
+    // Growth tiles come straight out of the layout's G letters, in grid order.
+    public int GrowthTileCount => growthTiles.Count;
     public float ChildIdleTime => childIdleTime;
     public float GrowthTime => growthTime;
-    public Vector2Int GrowthTile(int slot) => WorldToTile(InteriorCenter) + growthTileOffset + new Vector2Int(slot, 0);
-    public Vector3 GrowthTileCenter(int slot) => TileCenter(GrowthTile(slot));
+    public Vector3 GrowthTileCenter(int slot) => slot >= 0 && slot < growthTiles.Count ? TileCenter(growthTiles[slot]) : QueenPoint;
+    public Vector3 BarrackCenter(int slot) => slot >= 0 && slot < barrackTiles.Count ? TileCenter(barrackTiles[slot]) : QueenPoint;
 
-    public bool IsGrowthTile(Vector2Int tile)
+    // Where a Gatherer deposits and a Builder loads up: the nearest stock tile, or the Queen's own
+    // spot if this base has none. Only floor tiles are ever built on, so this is recomputed from the
+    // live grid rather than cached.
+    public Vector3 DepositPoint(Vector3 from)
     {
-        for (int slot = 0; slot < GrowthTileCount; slot++)
+        Vector3 nearest = QueenPoint;
+        float nearestDistance = float.MaxValue;
+
+        for (int y = 0; y < rows; y++)
         {
-            if (GrowthTile(slot) == tile) return true;
+            for (int x = 0; x < columns; x++)
+            {
+                if (TileAt(new Vector2Int(x, y)) != TileType.ResourceStock) continue;
+
+                Vector3 center = TileCenter(new Vector2Int(x, y));
+                float distance = Vector3.Distance(center, from);
+                if (distance >= nearestDistance) continue;
+
+                nearestDistance = distance;
+                nearest = center;
+            }
         }
-        return false;
+
+        return nearest;
     }
 
-    // Safe to call on any peer (build-mode preview) as well as the server (authoritative check
-    // before actually building) - both need exactly the same rule.
-    public bool IsTileBuildable(Vector2Int tile)
+    public bool HasResourceStock
     {
-        if (!HasResourceStockPrefab) return false;
-        if (tile.x < 0 || tile.x >= GridColumns || tile.y < 0 || tile.y >= GridRows) return false;
-
-        // Don't let a build sit right on top of the Queen parked at InteriorCenter.
-        if (queen != null && Vector3.Distance(TileCenter(tile), queen.transform.position) < tileSize * 0.5f) return false;
-
-        // Growth tiles are reserved for Children - a building there would block unit production.
-        if (IsGrowthTile(tile)) return false;
-
-        if (ResourceStock.AnyOccupiesTile(this, tile)) return false;
-
-        return true;
+        get
+        {
+            for (int y = 0; y < rows; y++)
+            {
+                for (int x = 0; x < columns; x++)
+                {
+                    if (TileAt(new Vector2Int(x, y)) == TileType.ResourceStock) return true;
+                }
+            }
+            return false;
+        }
     }
+
+    public bool CanBuildStock => tilePrefabs != null && tilePrefabs.resourceStock != null;
+
+    // The single source of truth for whether a tile can be built on, called client-side for the
+    // build preview and server-side again as the real authorization check. A plain floor tile is
+    // the only thing that's ever free - everything else already is something.
+    public bool IsTileBuildable(Vector2Int tile) => TileAt(tile) == TileType.Floor;
 
     // Every peer loads the same scene data, so the Host/Client split of "am I the owner"
     // can be read straight off NetworkServer.active - true only for the host's own process.
@@ -181,6 +330,51 @@ public class PlayerBase : NetworkBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         selectionCollider = GetComponent<Collider2D>();
         if (spriteRenderer != null) normalColor = spriteRenderer.color;
+
+        ParseLayout();
+    }
+
+    // Turns the authored letter grid into the tile array plus the handful of "where is X" lookups
+    // the rest of the base needs. Runs on every peer, from prefab data, so all of them agree.
+    private void ParseLayout()
+    {
+        if (!BaseLayout.TryParse(layout, out TileType[] parsed, out int parsedColumns, out int parsedRows, out string error))
+        {
+            Debug.LogError($"{name}: interior layout is invalid ({error}) - falling back to a single floor tile.", this);
+            parsed = new[] { TileType.Floor };
+            parsedColumns = 1;
+            parsedRows = 1;
+        }
+
+        layoutTiles = parsed;
+        columns = parsedColumns;
+        rows = parsedRows;
+
+        growthTiles.Clear();
+        barrackTiles.Clear();
+        queenTiles.Clear();
+        hasEntryTile = false;
+
+        for (int y = 0; y < rows; y++)
+        {
+            for (int x = 0; x < columns; x++)
+            {
+                Vector2Int tile = new Vector2Int(x, y);
+                switch (layoutTiles[y * columns + x])
+                {
+                    case TileType.GrowthTile: growthTiles.Add(tile); break;
+                    case TileType.Barrack: barrackTiles.Add(tile); break;
+                    case TileType.Queen: queenTiles.Add(tile); break;
+                    case TileType.Entry:
+                        if (!hasEntryTile)
+                        {
+                            entryTile = tile;
+                            hasEntryTile = true;
+                        }
+                        break;
+                }
+            }
+        }
     }
 
     private void OnEnable()
@@ -217,28 +411,69 @@ public class PlayerBase : NetworkBehaviour
     public override void OnStartServer()
     {
         base.OnStartServer();
-        growthSlots = new UnitController[GrowthTileCount];
+
+        // Seed the synced grid from the authored layout. Runs before OnStartClient, so the host
+        // builds its interior from a grid that's already filled in.
+        tileTypes.Clear();
+        foreach (TileType type in layoutTiles) tileTypes.Add((byte)type);
+
+        growthSlots = new UnitController[growthTiles.Count];
+        barrackTaken = new bool[barrackTiles.Count];
+        freeBarracks = barrackTiles.Count;
+
         SpawnQueen();
         SpawnStartingLoadout();
     }
 
-    // A base doesn't start from nothing: it gets one ResourceStock for its Gatherers to fill and its
-    // Builders to fetch from, plus its starting units. Runs after SpawnQueen because the stock's
-    // buildable check needs to know where the Queen is standing.
+    public override void OnStartClient()
+    {
+        base.OnStartClient();
+
+        tileTypes.Callback += OnTileTypesChanged;
+
+        interior = new BaseInterior(this, tilePrefabs);
+        interior.ShowStoredResources(storedResources);
+    }
+
+    public override void OnStopClient()
+    {
+        base.OnStopClient();
+
+        tileTypes.Callback -= OnTileTypesChanged;
+
+        if (interior != null)
+        {
+            interior.Destroy();
+            interior = null;
+        }
+    }
+
+    // Fires on every peer, the server included - so a build swaps the tile object out everywhere
+    // through exactly one code path.
+    private void OnTileTypesChanged(SyncList<byte>.Operation op, int index, byte oldType, byte newType)
+    {
+        if (interior == null || op != SyncList<byte>.Operation.OP_SET) return;
+
+        interior.BuildTile(new Vector2Int(index % columns, index / columns));
+        interior.ShowStoredResources(storedResources);
+    }
+
+    private void OnStoredResourcesChanged(int oldValue, int newValue)
+    {
+        interior?.ShowStoredResources(newValue);
+    }
+
+    // A base doesn't start from nothing: the layout already gives it its stocks, so all that's left
+    // is its starting units. Runs after SpawnQueen because their spots are picked around her.
     [Server]
     private void SpawnStartingLoadout()
     {
-        if (resourceStockPrefab != null)
-        {
-            ServerBuildResourceStock(WorldToTile(InteriorCenter) + startingStockOffset);
-        }
-
         if (startingUnitPrefabs == null) return;
 
         for (int i = 0; i < startingUnitPrefabs.Length; i++)
         {
             if (startingUnitPrefabs[i] == null) continue;
-            SpawnGrownUnit(startingUnitPrefabs[i], StartingUnitPosition(i, startingUnitPrefabs.Length));
+            SpawnGrownUnit(startingUnitPrefabs[i], StartingUnitPosition(i));
         }
     }
 
@@ -253,15 +488,34 @@ public class PlayerBase : NetworkBehaviour
         {
             unit.HomeBase = this;
             unit.Faction = UnitFaction;
+
+            // A starting Attacker still needs somewhere to live, same as an ordered one.
+            if (unit.Type == UnitType.Attacker) unit.BarrackSlot = ClaimBarrack();
         }
 
         NetworkServer.Spawn(unitObject);
     }
 
-    private Vector3 StartingUnitPosition(int index, int count)
+    // Floor tiles nearest the Queen, so a starting unit never lands in a wall or on a growth tile.
+    [Server]
+    private Vector3 StartingUnitPosition(int index)
     {
-        float angle = count > 0 ? (Mathf.PI * 2f * index) / count : 0f;
-        return InteriorCenter + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f) * startingUnitRadius;
+        List<Vector2Int> floors = new List<Vector2Int>();
+        for (int y = 0; y < rows; y++)
+        {
+            for (int x = 0; x < columns; x++)
+            {
+                Vector2Int tile = new Vector2Int(x, y);
+                if (TileAt(tile) == TileType.Floor) floors.Add(tile);
+            }
+        }
+
+        if (floors.Count == 0) return QueenPoint;
+
+        Vector3 queenPoint = QueenPoint;
+        floors.Sort((a, b) => Vector3.Distance(TileCenter(a), queenPoint).CompareTo(Vector3.Distance(TileCenter(b), queenPoint)));
+
+        return TileCenter(floors[index % floors.Count]);
     }
 
     [Server]
@@ -269,7 +523,7 @@ public class PlayerBase : NetworkBehaviour
     {
         if (queenPrefab == null) return;
 
-        GameObject queenObject = Instantiate(queenPrefab, InteriorCenter, Quaternion.identity);
+        GameObject queenObject = Instantiate(queenPrefab, QueenPoint, Quaternion.identity);
         UnitController controller = queenObject.GetComponent<UnitController>();
         if (controller != null)
         {
@@ -283,25 +537,25 @@ public class PlayerBase : NetworkBehaviour
 
     // Same authorization rules as CmdRequestSpawn - see its comment.
     [Command(requiresAuthority = false)]
-    public void CmdBuildResourceStock(Vector2Int tile, NetworkConnectionToClient sender = null)
+    public void CmdBuildTile(Vector2Int tile, TileType type, NetworkConnectionToClient sender = null)
     {
         bool senderIsHost = sender != null && sender == NetworkServer.localConnection;
         bool authorized = senderIsHost ? owner == BaseOwner.Host : owner == BaseOwner.Client;
         if (!authorized) return;
 
-        ServerBuildResourceStock(tile);
+        ServerBuildTile(tile, type);
     }
 
     [Server]
-    public void ServerBuildResourceStock(Vector2Int tile)
+    public void ServerBuildTile(Vector2Int tile, TileType type)
     {
+        // A ResourceStock is the only thing that can be put up during play. Growth tiles and
+        // barracks are counted once at startup, so letting one appear later would leave the
+        // server's slot bookkeeping out of step with the grid.
+        if (type != TileType.ResourceStock) return;
         if (!IsTileBuildable(tile)) return;
 
-        GameObject stockObject = Instantiate(resourceStockPrefab, TileCenter(tile), Quaternion.identity);
-        ResourceStock stock = stockObject.GetComponent<ResourceStock>();
-        if (stock != null) stock.HomeBase = this;
-
-        NetworkServer.Spawn(stockObject);
+        tileTypes[tile.y * columns + tile.x] = (byte)type;
     }
 
     // Called by our own Queen's UnitController when its HP reaches 0.
@@ -312,7 +566,7 @@ public class PlayerBase : NetworkBehaviour
 
         // Nobody left to give birth - drop the backlog and abandon the spawn in progress. Children
         // already out on a growth tile are real units in the world, so they're left to finish.
-        spawnQueue.Clear();
+        while (spawnQueue.Count > 0) ReleaseBarrack(spawnQueue.Dequeue().barrackSlot);
         CancelSpawnInProgress();
     }
 
@@ -377,7 +631,7 @@ public class PlayerBase : NetworkBehaviour
         GameObject unitPrefab = unitPrefabs[unitIndex];
         unitIndex = (unitIndex + 1) % unitPrefabs.Length;
 
-        spawnQueue.Enqueue(unitPrefab);
+        spawnQueue.Enqueue(new SpawnOrder { prefab = unitPrefab, barrackSlot = -1 });
     }
 
     // Same authorization rules as CmdRequestSpawn - see its comment.
@@ -397,7 +651,37 @@ public class PlayerBase : NetworkBehaviour
         if (!queenAlive) return;
         if (attackerPrefab == null) return;
 
-        spawnQueue.Enqueue(attackerPrefab);
+        // An Attacker lives in a barrack, so one is set aside the moment it's ordered - with every
+        // barrack spoken for there's nowhere to put it and the order is refused outright.
+        int slot = ClaimBarrack();
+        if (slot < 0) return;
+
+        spawnQueue.Enqueue(new SpawnOrder { prefab = attackerPrefab, barrackSlot = slot });
+    }
+
+    [Server]
+    private int ClaimBarrack()
+    {
+        for (int slot = 0; slot < barrackTaken.Length; slot++)
+        {
+            if (barrackTaken[slot]) continue;
+
+            barrackTaken[slot] = true;
+            freeBarracks--;
+            return slot;
+        }
+
+        return -1;
+    }
+
+    // Called when an Attacker dies, or when the order that reserved a barrack is abandoned.
+    [Server]
+    public void ReleaseBarrack(int slot)
+    {
+        if (slot < 0 || slot >= barrackTaken.Length || !barrackTaken[slot]) return;
+
+        barrackTaken[slot] = false;
+        freeBarracks++;
     }
 
     // Drives the one-Child-at-a-time production line: pull the next order off the queue once the
@@ -406,7 +690,7 @@ public class PlayerBase : NetworkBehaviour
     [Server]
     private void UpdateProduction()
     {
-        if (spawningPrefab != null)
+        if (isSpawning)
         {
             spawnTimer -= Time.deltaTime;
             if (spawnTimer <= 0f) FinishSpawn();
@@ -424,8 +708,9 @@ public class PlayerBase : NetworkBehaviour
         if (slot < 0) return;
 
         queenFood -= spawnCost;
-        spawningSlot = slot;
-        spawningPrefab = spawnQueue.Dequeue();
+        spawningOrder = spawnQueue.Dequeue();
+        spawningOrder.growthSlot = slot;
+        isSpawning = true;
         spawnTimer = spawnDuration;
         if (queen != null) queen.SetSpawning(true);
     }
@@ -435,36 +720,39 @@ public class PlayerBase : NetworkBehaviour
     {
         if (queen != null) queen.SetSpawning(false);
 
-        GameObject grownPrefab = spawningPrefab;
-        int slot = spawningSlot;
-        spawningPrefab = null;
-        spawningSlot = -1;
+        SpawnOrder order = spawningOrder;
+        isSpawning = false;
+        spawningOrder = default;
 
-        GameObject childObject = Instantiate(childPrefab, InteriorCenter + (Vector3)childSpawnOffset, Quaternion.identity);
+        Vector3 birthPoint = NearestWalkablePoint(QueenPoint + (Vector3)childSpawnOffset);
+        GameObject childObject = Instantiate(childPrefab, birthPoint, Quaternion.identity);
         UnitController child = childObject.GetComponent<UnitController>();
         if (child == null)
         {
             Destroy(childObject);
+            ReleaseBarrack(order.barrackSlot);
             return;
         }
 
         child.HomeBase = this;
         child.Faction = UnitFaction;
-        child.GrowsIntoPrefab = grownPrefab;
-        child.GrowthSlot = slot;
+        child.GrowsIntoPrefab = order.prefab;
+        child.GrowthSlot = order.growthSlot;
+        child.BarrackSlot = order.barrackSlot;
 
         NetworkServer.Spawn(childObject);
-        growthSlots[slot] = child;
+        growthSlots[order.growthSlot] = child;
     }
 
     [Server]
     private void CancelSpawnInProgress()
     {
-        if (spawningPrefab == null) return;
+        if (!isSpawning) return;
 
-        spawningPrefab = null;
-        if (spawningSlot >= 0) growthSlots[spawningSlot] = null;
-        spawningSlot = -1;
+        isSpawning = false;
+        if (spawningOrder.growthSlot >= 0) growthSlots[spawningOrder.growthSlot] = null;
+        ReleaseBarrack(spawningOrder.barrackSlot);
+        spawningOrder = default;
         if (queen != null) queen.SetSpawning(false);
     }
 
@@ -483,7 +771,8 @@ public class PlayerBase : NetworkBehaviour
 
     // Called by a Child once it's waited out childIdleTime: it's replaced, in place, by the unit it
     // was ordered as. That unit inherits the same growth tile and holds it while it plays its
-    // growth animation there, handing it back itself once it's fully grown.
+    // growth animation there, handing it back itself once it's fully grown. The barrack the order
+    // reserved (if any) travels with it too.
     [Server]
     public void CompleteGrowth(UnitController child)
     {
@@ -499,10 +788,14 @@ public class PlayerBase : NetworkBehaviour
                 grown.HomeBase = this;
                 grown.Faction = UnitFaction;
                 grown.GrowthSlot = slot;
+                grown.BarrackSlot = child.BarrackSlot;
             }
 
             NetworkServer.Spawn(unit);
         }
+
+        // Handed over to the grown unit - the Child mustn't give it back when it's destroyed below.
+        child.BarrackSlot = -1;
 
         if (slot >= 0 && slot < growthSlots.Length) growthSlots[slot] = grown;
 
@@ -538,7 +831,7 @@ public class PlayerBase : NetworkBehaviour
         if (!queenAlive) return;
         if (builderPrefab == null) return;
 
-        spawnQueue.Enqueue(builderPrefab);
+        spawnQueue.Enqueue(new SpawnOrder { prefab = builderPrefab, barrackSlot = -1 });
     }
 
     // Same authorization rules as CmdRequestSpawn - see its comment.
