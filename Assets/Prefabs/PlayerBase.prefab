@@ -149,7 +149,7 @@ MonoBehaviour:
     ORRRRRO
 
     OOOOOOO'
-  tileSize: 5
+  tileSize: 2
   tilePrefabs:
     floor: {fileID: 2173352239366689461, guid: 81b3383f46e4bef468eb7f4618416d67, type: 3}
     obstacle: {fileID: 4770186762279174531, guid: 03de82fc469e06642b9d82f89732af6f, type: 3}

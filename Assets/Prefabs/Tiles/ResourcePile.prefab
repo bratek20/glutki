@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.588, y: 0.702, z: 0}
-  m_LocalScale: {x: 0.15, y: 0.15, z: 1}
+  m_LocalScale: {x: 0.35, y: 0.35, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -82,12 +82,12 @@ SpriteRenderer:
   m_SortingLayer: 3
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 4030947202047017907, guid: 1e7310af9f3642346a13fe6301eb1a6c, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Sprite: {fileID: -2107068172178721220, guid: 88c5f92b82eeba64e97f00deeccf4932, type: 3}
+  m_Color: {r: 0.67054296, g: 0.5159012, b: 0.8867924, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1.86, y: 1.2701308}
+  m_Size: {x: 6.2905116, y: 5.2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -105,5 +105,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::StoredResource
   spriteRenderer: {fileID: 9142686113451927992}
-  singleSprite: {fileID: -5613012956983582310, guid: 21de45a379cb7a94db5475c26e5a0aaf, type: 3}
-  doubleSprite: {fileID: 4030947202047017907, guid: 1e7310af9f3642346a13fe6301eb1a6c, type: 3}
+  singleSprite: {fileID: -2107068172178721220, guid: 88c5f92b82eeba64e97f00deeccf4932, type: 3}
+  doubleSprite: {fileID: 2835832458941292491, guid: 88c5f92b82eeba64e97f00deeccf4932, type: 3}
