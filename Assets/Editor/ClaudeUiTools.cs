@@ -75,30 +75,54 @@ public static class ClaudeUiTools
     [MenuItem("Claude/Create New Build Button")]
     public static void CreateNewBuildButton()
     {
-        Transform canvas = FindCanvas();
-        if (canvas == null) return;
+        // Same anchor/pivot convention as SpawnUnit_Button/SpawnAttacker_Button - stacks above them.
+        CreateTileActionButton("NewBuild_Button", TileAction.Build, "New Build", 200f, report: true);
+    }
 
-        Transform existing = canvas.Find("NewBuild_Button");
+    // The Builder-driven pair: marking an obstacle to be dug out, and marking a floor tile to be
+    // filled in. Both are the same component as the New Build button, told apart by their action.
+    [MenuItem("Claude/Create Tile Work Buttons")]
+    public static void CreateTileWorkButtons()
+    {
+        bool dig = CreateTileActionButton("Destroy_Button", TileAction.Dig, "Destroy", 320f, report: false);
+        bool fill = CreateTileActionButton("Fill_Button", TileAction.Fill, "Fill", 380f, report: false);
+
+        string summary = dig || fill
+            ? $"Created:{(dig ? "\n- Destroy_Button" : "")}{(fill ? "\n- Fill_Button" : "")}"
+            : "Destroy_Button and Fill_Button already exist in this scene.";
+
+        EditorUtility.DisplayDialog("Claude", summary, "OK");
+    }
+
+    private static bool CreateTileActionButton(string name, TileAction action, string labelText, float y, bool report)
+    {
+        Transform canvas = FindCanvas();
+        if (canvas == null) return false;
+
+        Transform existing = canvas.Find(name);
         if (existing != null)
         {
-            EditorUtility.DisplayDialog("Claude", "NewBuild_Button already exists in this scene.", "OK");
+            if (report) EditorUtility.DisplayDialog("Claude", $"{name} already exists in this scene.", "OK");
             Selection.activeGameObject = existing.gameObject;
-            return;
+            return false;
         }
 
-        // Same anchor/pivot convention as SpawnUnit_Button/SpawnAttacker_Button - stacks above them.
-        GameObject root = CreateButton("NewBuild_Button", canvas, "New Build",
+        // The button relabels itself from its action at runtime; this is what shows in the Editor
+        // before the game is played.
+        GameObject root = CreateButton(name, canvas, labelText,
             anchorMin: new Vector2(0f, 0f), anchorMax: new Vector2(0f, 0f), pivot: new Vector2(0.5f, 0.5f),
-            anchoredPosition: new Vector2(200f, 200f), sizeDelta: new Vector2(300f, 50f),
+            anchoredPosition: new Vector2(200f, y), sizeDelta: new Vector2(300f, 50f),
             out Button button, out TMP_Text label);
 
-        NewBuildButton behaviour = Undo.AddComponent<NewBuildButton>(root);
+        TileActionButton behaviour = Undo.AddComponent<TileActionButton>(root);
         SerializedObject so = new SerializedObject(behaviour);
         so.FindProperty("button").objectReferenceValue = button;
         so.FindProperty("label").objectReferenceValue = label;
+        so.FindProperty("action").enumValueIndex = (int)action;
         so.ApplyModifiedPropertiesWithoutUndo();
 
-        FinishCreation(root, "Create New Build Button");
+        FinishCreation(root, $"Create {name}");
+        return true;
     }
 
     [MenuItem("Claude/Create Attack Order Popup")]

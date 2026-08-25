@@ -49,6 +49,35 @@ public class UnitController : NetworkBehaviour
         return count;
     }
 
+    // Called when a base's tile grid changes. A route was planned around the walls as they were, so
+    // anything walking one through this interior has to work out a new one - otherwise a unit whose
+    // way just got filled in would push into it forever, never arriving and so never re-planning.
+    [Server]
+    public static void RebuildPaths(PlayerBase homeBase)
+    {
+        foreach (UnitController unit in activeUnits)
+        {
+            if (unit.HomeBase != homeBase && unit.AttackTargetBase != homeBase) continue;
+            if (!unit.hasTarget) continue;
+
+            unit.BuildPath();
+        }
+    }
+
+    // Whether one of this base's Builders is already working the given tile. A job is claimed by the
+    // Builder doing it rather than in a list on the base, so the two can't disagree. Dying Builders
+    // don't count - a unit stays in the registry until it's actually destroyed (see CountAlive).
+    public static bool IsTileJobClaimed(PlayerBase homeBase, Vector2Int tile)
+    {
+        foreach (UnitController unit in activeUnits)
+        {
+            if (unit.HomeBase != homeBase || !unit.hasWork || !unit.IsAlive) continue;
+            if (unit.workTile == tile) return true;
+        }
+
+        return false;
+    }
+
     // Orders up to count available Attackers belonging to homeBase to march on target.
     public static void SendAttackers(PlayerBase homeBase, BotBase target, int count)
     {
@@ -83,7 +112,9 @@ public class UnitController : NetworkBehaviour
         Growing,
         WalkingToMagazine,
         LoadingFood,
-        CarryingFoodToQueen
+        CarryingFoodToQueen,
+        WalkingToTileWork,
+        WorkingOnTile
     }
 
     [SerializeField] private UnitType unitType = UnitType.Gatherer;
@@ -114,8 +145,10 @@ public class UnitController : NetworkBehaviour
     [SerializeField] private int feedCarryAmount = 5;
     [Tooltip("How long the Builder stands at the magazine loading up (playing the attack animation) before the resources actually leave it.")]
     [SerializeField] private float feedLoadDuration = 1f;
-    [Tooltip("How often an idle Builder re-checks whether the Queen needs feeding again.")]
+    [Tooltip("How often an idle Builder re-checks whether the Queen needs feeding again, or the player has marked a tile to work on.")]
     [SerializeField] private float feedScanInterval = 0.5f;
+    [Tooltip("How long a Builder works a tile (playing the attack animation) before the obstacle it's digging out is gone, or the floor tile it's filling in has become one.")]
+    [SerializeField] private float tileWorkDuration = 2f;
 
     [Header("Combat")]
     [Tooltip("Aggressive units actively hunt down enemies within aggroRadius and chase them. Non-aggressive units only fight back if something attacks them, and won't chase.")]
@@ -181,9 +214,21 @@ public class UnitController : NetworkBehaviour
     private float feedTimer;
     private float feedScanTimer;
 
+    // The tile job this Builder has taken on and which way it goes. This is the claim itself - a job
+    // is only ever handed to a Builder that hasn't got one, so no two ever work the same tile.
+    private Vector2Int workTile;
+    private bool workIsFill;
+    private bool hasWork;
+    private float workTimer;
+
     private float combatScanTimer;
     private float attackTimer;
     private float growthTimer;
+
+    // Whether this unit is in a fight. Tracked rather than derived from combatTarget because a
+    // target that dies leaves that reference null, and the fight still has to be wound up - see
+    // Update.
+    private bool inCombat;
 
     // Replicates movement state from Server to all connected Clients
     [SyncVar] private bool isWalkingServer;
@@ -299,7 +344,7 @@ public class UnitController : NetworkBehaviour
         // A Builder's whole life happens inside the base - it never walks out to the exit.
         if (unitType == UnitType.Builder)
         {
-            if (!TryStartFeedingTrip()) StartWandering();
+            StartBuilderWork();
             return;
         }
 
@@ -338,6 +383,12 @@ public class UnitController : NetworkBehaviour
             return;
         }
 
+        // The fight ended because whoever we were swinging at died, which nulls the reference out
+        // from under us - so UpdateCombat, the only place the attack animation is turned back off,
+        // never gets the chance. Close the fight out here instead, or the unit keeps swinging at
+        // nothing forever (most visibly the Queen, who does nothing but fight).
+        if (inCombat) EndCombat();
+
         if (unitType == UnitType.Queen) return;
 
         UpdateTask();
@@ -362,6 +413,20 @@ public class UnitController : NetworkBehaviour
         {
             UpdateLoadingFood();
             return;
+        }
+
+        if (state == UnitState.WorkingOnTile)
+        {
+            UpdateWorkingOnTile();
+            return;
+        }
+
+        // The tile stopped being worth working on while this Builder was walking over to it (someone
+        // built there, or a fill would now wall the Queen off) - drop it rather than finish the walk.
+        if (state == UnitState.WalkingToTileWork && (HomeBase == null || !HomeBase.IsTileWorkable(workTile, workIsFill)))
+        {
+            hasWork = false;
+            StartBuilderWork();
         }
 
         if (state == UnitState.WaitingToGrow)
@@ -418,15 +483,17 @@ public class UnitController : NetworkBehaviour
             return;
         }
 
-        // An idle Builder keeps an eye on the Queen - the moment an order is placed (or a Gatherer
-        // tops a magazine back up) it stops pottering about and starts carrying.
+        // An idle Builder keeps an eye on the Queen and on the tiles the player has marked - the
+        // moment there's something to do it stops pottering about and gets on with it. Deliberately
+        // not StartBuilderWork: that falls back to wandering, which would restart the wander this
+        // Builder is already in the middle of.
         if (unitType == UnitType.Builder && state == UnitState.Wandering)
         {
             feedScanTimer -= Time.deltaTime;
             if (feedScanTimer <= 0f)
             {
                 feedScanTimer = feedScanInterval;
-                TryStartFeedingTrip();
+                if (!TryStartFeedingTrip()) TryStartTileWork();
             }
         }
 
@@ -566,6 +633,9 @@ public class UnitController : NetworkBehaviour
                 break;
             case UnitState.WalkingToMagazine:
                 OnMagazineReachedToLoad();
+                break;
+            case UnitState.WalkingToTileWork:
+                OnTileWorkReached();
                 break;
             case UnitState.CarryingFoodToQueen:
                 OnQueenReachedWithFood();
@@ -856,6 +926,72 @@ public class UnitController : NetworkBehaviour
         SetTarget(BarrackPosition());
     }
 
+    // What a Builder does when it has nothing on: feed the Queen if she needs it, otherwise work
+    // through whatever tiles the player has marked, otherwise potter about. Feeding comes first -
+    // it's the base's lifeline, while digging and filling can always wait.
+    [Server]
+    private void StartBuilderWork()
+    {
+        if (TryStartFeedingTrip()) return;
+        if (TryStartTileWork()) return;
+
+        StartWandering();
+    }
+
+    // Takes on the next tile the player has marked, if there is one going. Same "returns false
+    // rather than wandering" contract as TryStartFeedingTrip, for the same reason.
+    [Server]
+    private bool TryStartTileWork()
+    {
+        if (unitType != UnitType.Builder || HomeBase == null) return false;
+        if (!HomeBase.TryTakeTileJob(transform.position, out Vector2Int tile, out bool fill, out Vector3 spot)) return false;
+
+        workTile = tile;
+        workIsFill = fill;
+        hasWork = true;
+
+        state = UnitState.WalkingToTileWork;
+        SetTarget(spot);
+        return true;
+    }
+
+    [Server]
+    private void OnTileWorkReached()
+    {
+        if (HomeBase == null)
+        {
+            hasWork = false;
+            StartWandering();
+            return;
+        }
+
+        state = UnitState.WorkingOnTile;
+        hasTarget = false;
+        workTimer = tileWorkDuration;
+        UpdateFacing(HomeBase.TileCenter(workTile));
+    }
+
+    // Digging and filling both look the same from here: the Builder stands beside the tile playing
+    // its attack animation, and the tile changes when the work is done.
+    [Server]
+    private void UpdateWorkingOnTile()
+    {
+        isWalkingServer = false;
+        isAttackingServer = true;
+
+        workTimer -= Time.deltaTime;
+        if (workTimer > 0f) return;
+
+        isAttackingServer = false;
+
+        if (HomeBase != null) HomeBase.CompleteTileJob(workTile, workIsFill);
+
+        // Done with it - and with the claim on it, which is what this flag is.
+        hasWork = false;
+
+        StartBuilderWork();
+    }
+
     // Starts a magazine -> Queen round trip if there's one worth making. Returns false when there's
     // nothing to do, leaving the caller to decide what to do with an idle Builder - which is why
     // this doesn't fall back to wandering itself: the idle re-check calls it every feedScanInterval
@@ -911,7 +1047,7 @@ public class UnitController : NetworkBehaviour
         carriedAmount = HomeBase != null ? HomeBase.WithdrawForFeedingAt(targetMagazine, feedCarryAmount) : 0;
         if (carriedAmount <= 0)
         {
-            if (!TryStartFeedingTrip()) StartWandering();
+            StartBuilderWork();
             return;
         }
 
@@ -928,7 +1064,7 @@ public class UnitController : NetworkBehaviour
         carriedAmount = 0;
         isCarryingResource = false;
 
-        if (!TryStartFeedingTrip()) StartWandering();
+        StartBuilderWork();
     }
 
     private Vector3 QueenPosition()
@@ -1101,6 +1237,8 @@ public class UnitController : NetworkBehaviour
             return;
         }
 
+        inCombat = true;
+
         float distance = Vector3.Distance(transform.position, combatTarget.transform.position);
 
         if (distance > attackRange)
@@ -1138,6 +1276,7 @@ public class UnitController : NetworkBehaviour
     private void EndCombat()
     {
         combatTarget = null;
+        inCombat = false;
         isAttackingServer = false;
 
         if (hasTarget) BuildPath();

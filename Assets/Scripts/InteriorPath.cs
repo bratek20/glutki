@@ -44,7 +44,7 @@ public static class InteriorPath
             return;
         }
 
-        Flood(interior, start, null, out _);
+        Flood(interior, start, null, NoTile, out _);
 
         int goalIndex = Index(interior, goal);
         int destination = cameFrom[goalIndex] != Unvisited ? goalIndex : ClosestVisited(interior, to);
@@ -80,7 +80,50 @@ public static class InteriorPath
             return true;
         }
 
-        return Flood(interior, start, accept, out found);
+        return Flood(interior, start, accept, NoTile, out found);
+    }
+
+    // Where a Builder stands to work on a tile: whichever walkable tile beside it is nearest the
+    // Builder. It can't stand on an obstacle it's digging out, and standing on the floor tile it's
+    // filling in would bury it. False when the tile has no walkable side at all.
+    public static bool TryFindWorkSpot(PlayerBase interior, Vector3 from, Vector2Int tile, out Vector3 spot)
+    {
+        spot = interior.TileCenter(tile);
+        float nearest = float.MaxValue;
+        bool found = false;
+
+        foreach (Vector2Int step in Neighbours)
+        {
+            Vector2Int side = tile + step;
+            if (!interior.InBounds(side) || !interior.IsWalkable(side)) continue;
+
+            Vector3 center = interior.TileCenter(side);
+            float distance = (center - from).sqrMagnitude;
+            if (distance >= nearest) continue;
+
+            nearest = distance;
+            spot = center;
+            found = true;
+        }
+
+        return found;
+    }
+
+    // Whether every tile in `required` can still be walked to from the first of them once `blocked`
+    // is walled off - what stops a player filling in the one tile their base's layout depends on.
+    public static bool StaysConnected(PlayerBase interior, Vector2Int blocked, List<Vector2Int> required)
+    {
+        if (required.Count == 0) return true;
+
+        Flood(interior, required[0], null, blocked, out _);
+
+        foreach (Vector2Int tile in required)
+        {
+            if (tile == blocked) return false;
+            if (cameFrom[Index(interior, tile)] == Unvisited) return false;
+        }
+
+        return true;
     }
 
     private const int Unvisited = -1;
@@ -88,6 +131,10 @@ public static class InteriorPath
     // Two boundary crossings this close together are the same crossing - the line is going through
     // the corner rather than past it.
     private const float CornerEpsilon = 1e-4f;
+
+    // Stands in for "no tile" where a flood is asked to pretend one is walled off. Outside any grid,
+    // so it can never match a real tile.
+    private static readonly Vector2Int NoTile = new Vector2Int(int.MinValue, int.MinValue);
 
     private static int Index(PlayerBase interior, Vector2Int tile) => tile.y * interior.GridColumns + tile.x;
 
@@ -107,7 +154,7 @@ public static class InteriorPath
     // it floods the whole reachable region - which is what routing wants, so an unreachable
     // destination can still be answered with the closest tile we did get to. With one it stops at
     // the first tile that satisfies it, which is therefore the nearest such tile by steps walked.
-    private static bool Flood(PlayerBase interior, Vector2Int start, Predicate<Vector2Int> accept, out Vector2Int found)
+    private static bool Flood(PlayerBase interior, Vector2Int start, Predicate<Vector2Int> accept, Vector2Int blocked, out Vector2Int found)
     {
         int columns = interior.GridColumns;
         Prepare(interior);
@@ -127,6 +174,7 @@ public static class InteriorPath
             foreach (Vector2Int step in Neighbours)
             {
                 Vector2Int next = tile + step;
+                if (next == blocked) continue;
                 if (!interior.InBounds(next) || !interior.IsWalkable(next)) continue;
 
                 int index = Index(interior, next);

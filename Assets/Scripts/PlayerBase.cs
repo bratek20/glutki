@@ -82,10 +82,20 @@ public class PlayerBase : NetworkBehaviour
     // its load actually went into.
     private readonly SyncList<int> tileResources = new SyncList<int>();
 
+    // Tiles the player has ordered work on - an obstacle to dig out, or a floor tile to fill in -
+    // each packed into one int (see EncodeJob) so this can be a plain SyncList like the grid itself.
+    // Synced because it's what marks the tile on every peer while it waits: ordering only queues the
+    // job, a Builder does the actual work. Which Builder is claimed on the Builder rather than here,
+    // so there's no second list to fall out of step with (see UnitController.IsTileJobClaimed).
+    private readonly SyncList<int> tileJobs = new SyncList<int>();
+
     private SpriteRenderer spriteRenderer;
     private Collider2D selectionCollider;
     private Color normalColor;
     private int unitIndex;
+
+    // Rebuilt on demand for the fill check - everything a working base has to be able to walk to.
+    private readonly List<Vector2Int> requiredTiles = new List<Vector2Int>();
 
     // Parsed from `layout` in Awake, on every peer. The grid's shape and its special tiles never
     // change during play (only floor tiles are ever built on), so this is worked out exactly once.
@@ -246,6 +256,11 @@ public class PlayerBase : NetworkBehaviour
         // Nothing walks out of the room - the only way out is the warp at the entry tile.
         to = ClampToInterior(to);
 
+        // Already standing in a wall, because the tile it was on got filled in under it. Nothing is
+        // blocked while it's in there, or a step too short to leave the tile would leave it walled in
+        // forever - its route (planned from an unwalkable tile outwards) leads back out.
+        if (!IsWalkable(WorldToTile(from))) return to;
+
         if (IsWalkable(WorldToTile(to))) return to;
 
         Vector3 alongX = new Vector3(to.x, from.y, to.z);
@@ -368,8 +383,79 @@ public class PlayerBase : NetworkBehaviour
 
     // The single source of truth for whether a tile can be built on, called client-side for the
     // build preview and server-side again as the real authorization check. A plain floor tile is
-    // the only thing that's ever free - everything else already is something.
-    public bool IsTileBuildable(Vector2Int tile) => TileAt(tile) == TileType.Floor;
+    // the only thing that's ever free - everything else already is something, and a tile already
+    // waiting to be filled in is spoken for too.
+    public bool IsTileBuildable(Vector2Int tile) => TileAt(tile) == TileType.Floor && !HasPendingJob(tile, out _);
+
+    // An obstacle can be dug out into floor, a floor tile filled in as an obstacle. Filling is
+    // refused where it would wall part of the interior off: with the entry cut off from the Queen,
+    // her magazines or her barracks, the base could never work again.
+    public bool IsTileDiggable(Vector2Int tile) => TileAt(tile) == TileType.Obstacle;
+
+    public bool IsTileFillable(Vector2Int tile)
+    {
+        if (TileAt(tile) != TileType.Floor) return false;
+
+        return InteriorPath.StaysConnected(this, tile, RequiredTiles());
+    }
+
+    public bool IsTileWorkable(Vector2Int tile, bool fill) => fill ? IsTileFillable(tile) : IsTileDiggable(tile);
+
+    // The single source of truth for whether work can be ordered on a tile - called client-side for
+    // the preview and server-side again as the real check, exactly like IsTileBuildable.
+    public bool CanOrderTileWork(Vector2Int tile, bool fill) => !HasPendingJob(tile, out _) && IsTileWorkable(tile, fill);
+
+    // Whether this tile is already waiting for a Builder, and which way the job goes. The overlay
+    // marks it, and nothing else can be ordered there in the meantime.
+    public bool HasPendingJob(Vector2Int tile, out bool fill)
+    {
+        fill = false;
+
+        int index = TileIndex(tile);
+        foreach (int job in tileJobs)
+        {
+            if (JobTileIndex(job) != index) continue;
+
+            fill = JobIsFill(job);
+            return true;
+        }
+
+        return false;
+    }
+
+    // Everything a base has to be able to walk to for it to work at all. Floor is deliberately not
+    // in here: walling a corner of the room off is the player's business, walling the Queen off
+    // isn't.
+    private List<Vector2Int> RequiredTiles()
+    {
+        requiredTiles.Clear();
+
+        if (hasEntryTile) requiredTiles.Add(entryTile);
+        requiredTiles.AddRange(queenTiles);
+        requiredTiles.AddRange(barrackTiles);
+        requiredTiles.AddRange(growthTiles);
+
+        for (int y = 0; y < rows; y++)
+        {
+            for (int x = 0; x < columns; x++)
+            {
+                Vector2Int tile = new Vector2Int(x, y);
+                if (IsMagazine(tile)) requiredTiles.Add(tile);
+            }
+        }
+
+        return requiredTiles;
+    }
+
+    // A job packs the tile it's on and which way it goes into a single int.
+    private int TileIndex(Vector2Int tile) => tile.y * columns + tile.x;
+    private int EncodeJob(Vector2Int tile, bool fill) => TileIndex(tile) * 2 + (fill ? 1 : 0);
+    private static int JobTileIndex(int job) => job >> 1;
+    private static bool JobIsFill(int job) => (job & 1) == 1;
+    private Vector2Int JobTile(int job) => new Vector2Int(JobTileIndex(job) % columns, JobTileIndex(job) / columns);
+
+    // Where a Builder stands to work on a tile - see InteriorPath.TryFindWorkSpot.
+    public bool TryFindWorkSpot(Vector3 from, Vector2Int tile, out Vector3 spot) => InteriorPath.TryFindWorkSpot(this, from, tile, out spot);
 
     // Every peer loads the same scene data, so the Host/Client split of "am I the owner"
     // can be read straight off NetworkServer.active - true only for the host's own process.
@@ -519,9 +605,13 @@ public class PlayerBase : NetworkBehaviour
     // through exactly one code path.
     private void OnTileTypesChanged(SyncList<byte>.Operation op, int index, byte oldType, byte newType)
     {
-        if (interior == null || op != SyncList<byte>.Operation.OP_SET) return;
+        if (op != SyncList<byte>.Operation.OP_SET) return;
 
-        interior.BuildTile(new Vector2Int(index % columns, index / columns));
+        // A wall that wasn't there when a unit set off would leave it pushing into it for good, so
+        // anything walking a route through this interior re-plans from where it stands.
+        if (isServer) UnitController.RebuildPaths(this);
+
+        interior?.BuildTile(new Vector2Int(index % columns, index / columns));
     }
 
     // Only ever one magazine's worth changes at a time, so only that tile's piles are redrawn.
@@ -624,7 +714,90 @@ public class PlayerBase : NetworkBehaviour
         if (type != TileType.Magazine) return;
         if (!IsTileBuildable(tile)) return;
 
-        tileTypes[tile.y * columns + tile.x] = (byte)type;
+        tileTypes[TileIndex(tile)] = (byte)type;
+    }
+
+    // Same authorization rules as CmdRequestSpawn - see its comment.
+    [Command(requiresAuthority = false)]
+    public void CmdOrderTileWork(Vector2Int tile, bool fill, NetworkConnectionToClient sender = null)
+    {
+        bool senderIsHost = sender != null && sender == NetworkServer.localConnection;
+        bool authorized = senderIsHost ? owner == BaseOwner.Host : owner == BaseOwner.Client;
+        if (!authorized) return;
+
+        ServerOrderTileWork(tile, fill);
+    }
+
+    // Ordering is free and instant, like ordering a unit - all it does is mark the tile. The wait is
+    // a Builder walking over and doing the work.
+    [Server]
+    public void ServerOrderTileWork(Vector2Int tile, bool fill)
+    {
+        if (!CanOrderTileWork(tile, fill)) return;
+
+        tileJobs.Add(EncodeJob(tile, fill));
+    }
+
+    // Hands out the oldest job no Builder has taken yet, along with where to stand to work it,
+    // dropping any whose tile has changed under it (something built there, another job already got
+    // to it).
+    [Server]
+    public bool TryTakeTileJob(Vector3 from, out Vector2Int tile, out bool fill, out Vector3 workSpot)
+    {
+        tile = default;
+        fill = false;
+        workSpot = default;
+
+        int i = 0;
+        while (i < tileJobs.Count)
+        {
+            Vector2Int jobTile = JobTile(tileJobs[i]);
+            bool jobFill = JobIsFill(tileJobs[i]);
+
+            if (!IsTileWorkable(jobTile, jobFill))
+            {
+                tileJobs.RemoveAt(i);
+                continue;
+            }
+
+            // Skipped rather than handed out: someone else is on it, or it's walled in on every side
+            // and nothing can be done about it until whatever surrounds it is dug out. Either way
+            // the jobs queued behind it mustn't be stuck waiting.
+            if (UnitController.IsTileJobClaimed(this, jobTile) || !TryFindWorkSpot(from, jobTile, out workSpot))
+            {
+                i++;
+                continue;
+            }
+
+            tile = jobTile;
+            fill = jobFill;
+            return true;
+        }
+
+        return false;
+    }
+
+    // Called by the Builder that just finished working a tile.
+    [Server]
+    public void CompleteTileJob(Vector2Int tile, bool fill)
+    {
+        DropTileJob(tile);
+
+        // The tile may have changed while the Builder was walking over or working on it - a fill
+        // that would now wall the Queen off included. The work simply comes to nothing.
+        if (!IsTileWorkable(tile, fill)) return;
+
+        tileTypes[TileIndex(tile)] = (byte)(fill ? TileType.Obstacle : TileType.Floor);
+    }
+
+    [Server]
+    private void DropTileJob(Vector2Int tile)
+    {
+        int index = TileIndex(tile);
+        for (int i = tileJobs.Count - 1; i >= 0; i--)
+        {
+            if (JobTileIndex(tileJobs[i]) == index) tileJobs.RemoveAt(i);
+        }
     }
 
     // Called by our own Queen's UnitController when its HP reaches 0.

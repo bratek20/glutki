@@ -83,6 +83,11 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   pulled onto a walkable tile (`NearestWalkablePoint`). "Nearest" for anything a unit walks to means
   nearest *by route* (`InteriorPath.TryFindNearest`) — a magazine behind a wall genuinely is further
   away than it looks.
+  Walls also *move* during play now (see **Tile actions**), so a route is only as good as the grid it
+  was planned on: a tile change re-plans every route through that interior
+  (`UnitController.RebuildPaths`), and a unit that ends up inside a wall — its tile filled in under
+  it — is exempt from `ResolveMovement` until it's out, since a step too short to leave the tile
+  would otherwise wall it in forever.
 - **Queen feeding** — resources don't buy units directly; the Queen has to be *fed* them. Placing an
   order (gatherer, Attacker, or Builder) is free and instant — it only enqueues a prefab. The Queen
   can't start a birth until she's been fed `spawnCost` worth of food, which only ever arrives on a
@@ -130,10 +135,14 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   spawned fully grown on the floor tiles nearest the Queen, the only path that bypasses the Child
   pipeline. Without it a new base would be deadlocked: no Builder to feed the Queen, so no way to
   produce one. (Its magazines it already has — they're in the layout.)
-  `UnitType.Builder` units never leave the interior. They shuttle resources from the nearest
-  magazine that has any to the Queen (`WalkingToMagazine` → `LoadingFood` → `CarryingFoodToQueen`) whenever
-  `PlayerBase.FoodShortfall` says an order is waiting on food, and otherwise just wander inside —
-  interior wandering is penned into the room and off the walls. Losing
+  `UnitType.Builder` units never leave the interior, and are the only units that *do* anything to it.
+  Their work has a fixed order of priority (`StartBuilderWork`): first feeding — shuttling resources
+  from the nearest magazine that has any to the Queen (`WalkingToMagazine` → `LoadingFood` →
+  `CarryingFoodToQueen`) whenever `PlayerBase.FoodShortfall` says an order is waiting on food —
+  then whatever tiles the player has marked for digging or filling (`WalkingToTileWork` →
+  `WorkingOnTile`, see **Tile actions**), and failing both they wander inside. Feeding comes first
+  because it's the base's lifeline; earthworks can always wait.
+  Interior wandering is penned into the room and off the walls. Losing
   every Builder ends a base exactly like losing its Queen (see **Game end**): the flag is *latched*
   when the last one dies rather than derived from a live count, so it can't trip on a count read
   before the starting loadout exists, and it never unlatches. Player-owned
@@ -154,6 +163,11 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   whatever task a unit was otherwise doing - it resumes that task afterward. Death
   (`NetworkServer.Destroy`) is immediate at 0 HP; a dying Queen calls back into its `PlayerBase` to
   flip `IsQueenAlive` off.
+  **Gotcha:** a fight normally ends in `UpdateCombat`, which is also the only place the attack
+  animation is switched back off — but a target that dies leaves `combatTarget` null, so that never
+  runs. Being *in* a fight is therefore tracked separately, so the end of one can be noticed and
+  wound up; without that a unit (the Queen especially, who does nothing but fight) keeps swinging at
+  nothing for the rest of the game.
 - **Animation** — all animator state is server-driven: a `[SyncVar]` per animator bool
   (`IsWalking`/`IsAttacking`/`IsSpawning`/`IsGrowing`), pushed to the local `Animator` every frame
   on every peer. Each unit type has its own Animator Controller declaring only the parameters it
@@ -188,26 +202,43 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   reports how much that was: a full magazine turns a Gatherer away, and two Gatherers arriving at
   the same one sort themselves out because whoever gets there second is told how little fit. The
   piles are placed by hand in the prefab; `Magazine` finds them under itself.
-- **Build mode** — `NewBuildButton` drives client-local "build mode" for the viewed base: while
-  active it draws the interior grid and a green/red hover-tile highlight straight to the screen via
-  `GL` calls, and a left-click on a buildable tile calls `PlayerBase.CmdBuildTile`; right-click,
-  Escape, or clicking the button again cancel instead. `PlayerBase.IsTileBuildable` is the single
-  source of truth for whether a tile can be built on — a plain `Floor` tile and nothing else —
-  called client-side for the preview and server-side (again) as the actual authorization check, so
-  they can never disagree. Only a `Magazine` can go up during play: growth tiles and barracks
-  are counted once at startup, so letting one appear later would put the server's slot bookkeeping
-  out of step with the grid. **Gotcha:** the project renders via URP (see
+- **Tile actions** — three things a player can do to their own base's interior, all driven by the
+  same component (`TileActionButton`, one instance per `TileAction`): **New Build** puts a magazine
+  up on a floor tile, **Destroy** has a Builder dig an obstacle out, **Fill** has one fill a floor
+  tile in as an obstacle. Clicking a button *arms* it; while armed it draws the interior grid, a
+  green/red hover-tile highlight and a marker per pending job straight to the screen via `GL` calls,
+  and a left-click on an allowed tile acts on it. Right-click, Escape, or clicking the button again
+  cancel. Only one button can be armed at a time (they share that state, which is client-local and
+  unsynced like the rest of the viewing state), so a tile click is never ambiguous.
+  Building is instant and free, and disarms; digging and filling are *orders* — they only mark the
+  tile, so those two stay armed and several tiles can be marked in a row. A marked tile waits in a
+  synced list on `PlayerBase` until a Builder walks over and works on it (see **Units**), which is
+  what the markers are for: a click that queues work half a room away has to look like it did
+  something. Which Builder has a job is stored on the Builder, not in a second list on the base, so
+  the two can't fall out of step — and a Builder that dies mid-job simply releases it.
+  `PlayerBase` is the single source of truth for what's allowed on a tile, called client-side for the
+  preview and server-side again as the real authorization check, so the two can never disagree:
+  building and filling want a plain `Floor` tile, digging an `Obstacle`, and nothing can be ordered
+  on a tile already marked. Filling has one extra rule — it's refused where it would wall part of
+  the interior off (`InteriorPath.StaysConnected`): the player is welcome to close off a corner, but
+  not to cut the entry off from the Queen, her magazines or her barracks, which would brick the base
+  with no way back. Digging an *outer wall* tile is deliberately allowed; nothing escapes through it,
+  since movement is clamped to the room either way.
+  Only a `Magazine` can be *built* during play: growth tiles and barracks are counted once at
+  startup, so letting one appear later would put the server's slot bookkeeping out of step with the
+  grid. For the same reason digging and filling only ever swap floor and obstacle — the tiles nothing
+  is counted from. **Gotcha:** the project renders via URP (see
   `ProjectSettings/QualitySettings.asset`'s `customRenderPipeline`), which never invokes the
   legacy `OnRenderObject` callback — GL-based overlays like this one have to hook
   `RenderPipelineManager.endCameraRendering` instead and set up `GL.LoadProjectionMatrix`/
   `GL.modelview` by hand, since URP doesn't do that implicitly the way the built-in pipeline does.
 - **UI** — `ResourceHud`, `UnitsHud`, `SpawnUnitButton`, `SpawnAttackerButton`, `SpawnBuilderButton`,
-  `ViewToggleButton`, `NewBuildButton`, and `AttackOrderPopup` all read/act on
+  `ViewToggleButton`, `TileActionButton`, and `AttackOrderPopup` all read/act on
   `BaseSelectionManager.SelectedBase` /
   `ViewManager`, never a global base reference. Each is a plain `MonoBehaviour` added to its
   corresponding pre-built GameObject in `GameScene` (`Resource_Hud`, `Units_Hud`, `SpawnUnit_Button`,
   `SpawnAttacker_Button`, `SpawnBuilder_Button`, `ViewToggle_Button`, `NewBuild_Button`,
-  `AttackOrder_Popup`) with its
+  `Destroy_Button`, `Fill_Button`, `AttackOrder_Popup`) with its
   `TMP_Text`/`Button`/`Slider` references wired in the Inspector — UI is laid out by hand in the
   scene, never built at runtime. `UnitsHud` counts gatherers/builders/attackers via
   `UnitController.CountActive`, scoped to the selected base's `HomeBase` (bot-wave units have no
