@@ -15,8 +15,9 @@ public enum TileType
     // B - home of exactly one Attacker. An Attacker can only be ordered while a barrack is free.
     Barrack,
 
-    // R - a deposit point holding up to eight resources, shown as four StoredResource piles.
-    ResourceStock,
+    // M - a magazine: a deposit point holding up to eight resources (four StoredResource piles of
+    // two), and nothing beyond that - a full one turns Gatherers away.
+    Magazine,
 
     // G - where exactly one unit at a time grows up.
     GrowthTile,

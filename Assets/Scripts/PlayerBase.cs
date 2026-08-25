@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Mirror;
 using UnityEngine;
@@ -15,8 +16,12 @@ public class PlayerBase : NetworkBehaviour
     [SerializeField] private BaseOwner owner = BaseOwner.Host;
 
     [Header("Queen Feeding")]
-    [Tooltip("How much food the Queen must have been fed before she can start one birth. Ordering a unit is free and instant; the wait is a Builder shuttling this much from a ResourceStock to her.")]
+    [Tooltip("How much food the Queen must have been fed before she can start one birth. Ordering a unit is free and instant; the wait is a Builder shuttling this much from a magazine to her.")]
     [SerializeField] private int spawnCost = 5;
+
+    [Header("Storage")]
+    [Tooltip("Resources this base starts with, dealt out over its magazines in grid order - anything beyond what they can hold is dropped.")]
+    [SerializeField] private int startingResources = 5;
 
     [Header("Starting Loadout")]
     [Tooltip("Units this base is given for free, fully grown (skipping the Child/growth pipeline), the moment the game starts. One Builder and one Gatherer by default - with no Builder the Queen could never be fed, so the base could never produce anything.")]
@@ -45,7 +50,6 @@ public class PlayerBase : NetworkBehaviour
     [Tooltip("How long that transformed unit then plays its growth animation (IsGrowing) on the tile before it comes to life. Set this to match the animation's length.")]
     [SerializeField] private float growthTime = 5f;
 
-    [SyncVar(hook = nameof(OnStoredResourcesChanged))] private int storedResources = 5;
     [SyncVar] private UnitController queen;
     [SyncVar] private bool queenAlive = true;
 
@@ -69,6 +73,15 @@ public class PlayerBase : NetworkBehaviour
     // can't shift under a reordered TileType.
     private readonly SyncList<byte> tileTypes = new SyncList<byte>();
 
+    // What's actually sitting in each of this base's magazines, one entry per tile so an index can
+    // never shift under a magazine that was built mid-game (everything that isn't one stays 0).
+    //
+    // Design decision: storage used to be a single pool on the base, drawn over the magazines in
+    // grid order. Magazines each having their own limit is what forced this apart - a Gatherer has
+    // to be told which magazine still has room, and the piles it walks up to have to be the ones
+    // its load actually went into.
+    private readonly SyncList<int> tileResources = new SyncList<int>();
+
     private SpriteRenderer spriteRenderer;
     private Collider2D selectionCollider;
     private Color normalColor;
@@ -87,6 +100,14 @@ public class PlayerBase : NetworkBehaviour
 
     // Local view of the interior - the actual tile GameObjects. Null on a peer that never renders.
     private BaseInterior interior;
+
+    // How much one magazine holds, measured off the magazine prefab in Awake (see Magazine) so the
+    // limit and the piles that display it can't disagree. Every peer reads the same prefab.
+    private int magazineCapacity;
+
+    // Cached so asking for the nearest magazine doesn't allocate a delegate every trip.
+    private Predicate<Vector2Int> magazineHasSpace;
+    private Predicate<Vector2Int> magazineHasResources;
 
     // Server-only production state. A spawn order is only ever a prefab waiting in this queue until
     // a growth tile frees up; the Queen then plays her spawn animation for spawnDuration and a Child
@@ -109,7 +130,6 @@ public class PlayerBase : NetworkBehaviour
         public int growthSlot;
     }
 
-    public int StoredResources => storedResources;
     public int SpawnCost => spawnCost;
     public int QueenFood => queenFood;
     public BaseOwner Owner => owner;
@@ -209,10 +229,18 @@ public class PlayerBase : NetworkBehaviour
             && worldPosition.y >= origin.y && worldPosition.y <= origin.y + rows * tileSize;
     }
 
+    // The route a unit inside this interior should walk to reach `to`, as a list of waypoints ending
+    // at the destination - see InteriorPath. Rooms can wall a magazine off behind an obstacle, so a
+    // unit has to be routed around rather than aimed straight at where it's going.
+    public void FindInteriorPath(Vector3 from, Vector3 to, List<Vector3> waypoints)
+    {
+        InteriorPath.Find(this, from, to, waypoints);
+    }
+
     // Where a unit actually ends up after trying to move from -> to inside this interior. Obstacles
     // block, and a diagonal blocked on one axis slides along the other so a unit brushing a wall
-    // keeps going instead of sticking to it. Deliberately not pathfinding: obstacles are only ever
-    // the outer walls today, so nothing can be boxed in behind one.
+    // keeps going instead of sticking to it. Routing is InteriorPath's job - this is the backstop
+    // that keeps anything nudged off its route (a fight, a corner grazed) out of the walls.
     public Vector3 ResolveMovement(Vector3 from, Vector3 to)
     {
         // Nothing walks out of the room - the only way out is the warp at the entry tile.
@@ -271,33 +299,50 @@ public class PlayerBase : NetworkBehaviour
     public Vector3 GrowthTileCenter(int slot) => slot >= 0 && slot < growthTiles.Count ? TileCenter(growthTiles[slot]) : QueenPoint;
     public Vector3 BarrackCenter(int slot) => slot >= 0 && slot < barrackTiles.Count ? TileCenter(barrackTiles[slot]) : QueenPoint;
 
-    // Where a Gatherer deposits and a Builder loads up: the nearest stock tile, or the Queen's own
-    // spot if this base has none. Only floor tiles are ever built on, so this is recomputed from the
-    // live grid rather than cached.
-    public Vector3 DepositPoint(Vector3 from)
+    // How much this base can hold in total: exactly the magazines it has built, times what one of
+    // them holds. There is nowhere else to put anything.
+    public int StorageCapacity => MagazineCount * magazineCapacity;
+
+    public int StoredResources
     {
-        Vector3 nearest = QueenPoint;
-        float nearestDistance = float.MaxValue;
-
-        for (int y = 0; y < rows; y++)
+        get
         {
-            for (int x = 0; x < columns; x++)
-            {
-                if (TileAt(new Vector2Int(x, y)) != TileType.ResourceStock) continue;
-
-                Vector3 center = TileCenter(new Vector2Int(x, y));
-                float distance = Vector3.Distance(center, from);
-                if (distance >= nearestDistance) continue;
-
-                nearestDistance = distance;
-                nearest = center;
-            }
+            int total = 0;
+            foreach (int amount in tileResources) total += amount;
+            return total;
         }
-
-        return nearest;
     }
 
-    public bool HasResourceStock
+    public int MagazineCount
+    {
+        get
+        {
+            int count = 0;
+            for (int y = 0; y < rows; y++)
+            {
+                for (int x = 0; x < columns; x++)
+                {
+                    if (IsMagazine(new Vector2Int(x, y))) count++;
+                }
+            }
+            return count;
+        }
+    }
+
+    public bool IsMagazine(Vector2Int tile) => TileAt(tile) == TileType.Magazine;
+
+    // 0 for anything that isn't a magazine, so a caller never has to check the tile type first.
+    public int MagazineAmount(Vector2Int tile)
+    {
+        if (!IsMagazine(tile) || tileResources.Count != columns * rows) return 0;
+        return tileResources[tile.y * columns + tile.x];
+    }
+
+    public int MagazineFreeSpace(Vector2Int tile) => IsMagazine(tile) ? Mathf.Max(0, magazineCapacity - MagazineAmount(tile)) : 0;
+
+    // Whether there's room anywhere in the base. A Gatherer with a full load and nowhere to put it
+    // waits outside rather than walking a pointless round trip.
+    public bool HasStorageSpace
     {
         get
         {
@@ -305,14 +350,21 @@ public class PlayerBase : NetworkBehaviour
             {
                 for (int x = 0; x < columns; x++)
                 {
-                    if (TileAt(new Vector2Int(x, y)) == TileType.ResourceStock) return true;
+                    if (MagazineFreeSpace(new Vector2Int(x, y)) > 0) return true;
                 }
             }
             return false;
         }
     }
 
-    public bool CanBuildStock => tilePrefabs != null && tilePrefabs.resourceStock != null;
+    // The magazine a unit standing at `from` should walk to - nearest by the route it would actually
+    // walk, so one behind a wall doesn't look closer than it is. False when there's none worth going
+    // to: every magazine full (depositing) or every magazine empty (loading up).
+    public bool TryFindMagazineWithSpace(Vector3 from, out Vector2Int tile) => InteriorPath.TryFindNearest(this, from, magazineHasSpace, out tile);
+
+    public bool TryFindMagazineWithResources(Vector3 from, out Vector2Int tile) => InteriorPath.TryFindNearest(this, from, magazineHasResources, out tile);
+
+    public bool CanBuildMagazine => tilePrefabs != null && tilePrefabs.magazine != null;
 
     // The single source of truth for whether a tile can be built on, called client-side for the
     // build preview and server-side again as the real authorization check. A plain floor tile is
@@ -330,6 +382,14 @@ public class PlayerBase : NetworkBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
         selectionCollider = GetComponent<Collider2D>();
         if (spriteRenderer != null) normalColor = spriteRenderer.color;
+
+        magazineHasSpace = tile => MagazineFreeSpace(tile) > 0;
+        magazineHasResources = tile => MagazineAmount(tile) > 0;
+
+        // Derived from the prefab's piles rather than dialled in here, so a magazine can never claim
+        // to hold more than it's able to show. A base with no magazine prefab still needs a number.
+        magazineCapacity = Magazine.CapacityOf(tilePrefabs != null ? tilePrefabs.magazine : null);
+        if (magazineCapacity <= 0) magazineCapacity = Magazine.DefaultCapacity;
 
         ParseLayout();
     }
@@ -417,6 +477,10 @@ public class PlayerBase : NetworkBehaviour
         tileTypes.Clear();
         foreach (TileType type in layoutTiles) tileTypes.Add((byte)type);
 
+        tileResources.Clear();
+        for (int i = 0; i < layoutTiles.Length; i++) tileResources.Add(0);
+        FillMagazines(startingResources);
+
         growthSlots = new UnitController[growthTiles.Count];
         barrackTaken = new bool[barrackTiles.Count];
         freeBarracks = barrackTiles.Count;
@@ -430,9 +494,11 @@ public class PlayerBase : NetworkBehaviour
         base.OnStartClient();
 
         tileTypes.Callback += OnTileTypesChanged;
+        tileResources.Callback += OnTileResourcesChanged;
 
+        // Building the interior draws each magazine's piles as it goes, from a grid that's already
+        // been synced - so there's nothing left to refresh here.
         interior = new BaseInterior(this, tilePrefabs);
-        interior.ShowStoredResources(storedResources);
     }
 
     public override void OnStopClient()
@@ -440,6 +506,7 @@ public class PlayerBase : NetworkBehaviour
         base.OnStopClient();
 
         tileTypes.Callback -= OnTileTypesChanged;
+        tileResources.Callback -= OnTileResourcesChanged;
 
         if (interior != null)
         {
@@ -455,15 +522,17 @@ public class PlayerBase : NetworkBehaviour
         if (interior == null || op != SyncList<byte>.Operation.OP_SET) return;
 
         interior.BuildTile(new Vector2Int(index % columns, index / columns));
-        interior.ShowStoredResources(storedResources);
     }
 
-    private void OnStoredResourcesChanged(int oldValue, int newValue)
+    // Only ever one magazine's worth changes at a time, so only that tile's piles are redrawn.
+    private void OnTileResourcesChanged(SyncList<int>.Operation op, int index, int oldAmount, int newAmount)
     {
-        interior?.ShowStoredResources(newValue);
+        if (interior == null || op != SyncList<int>.Operation.OP_SET) return;
+
+        interior.ShowMagazineFill(new Vector2Int(index % columns, index / columns));
     }
 
-    // A base doesn't start from nothing: the layout already gives it its stocks, so all that's left
+    // A base doesn't start from nothing: the layout already gives it its magazines, so all that's left
     // is its starting units. Runs after SpawnQueen because their spots are picked around her.
     [Server]
     private void SpawnStartingLoadout()
@@ -549,10 +618,10 @@ public class PlayerBase : NetworkBehaviour
     [Server]
     public void ServerBuildTile(Vector2Int tile, TileType type)
     {
-        // A ResourceStock is the only thing that can be put up during play. Growth tiles and
-        // barracks are counted once at startup, so letting one appear later would leave the
-        // server's slot bookkeeping out of step with the grid.
-        if (type != TileType.ResourceStock) return;
+        // A magazine is the only thing that can be put up during play. Growth tiles and barracks are
+        // counted once at startup, so letting one appear later would leave the server's slot
+        // bookkeeping out of step with the grid.
+        if (type != TileType.Magazine) return;
         if (!IsTileBuildable(tile)) return;
 
         tileTypes[tile.y * columns + tile.x] = (byte)type;
@@ -581,21 +650,47 @@ public class PlayerBase : NetworkBehaviour
         buildersLost = true;
     }
 
+    // Puts as much of `amount` into one magazine as it has room for and returns how much went in -
+    // a Gatherer carrying more than the magazine can take leaves the rest on its back and walks to
+    // another one. Two Gatherers arriving at the same magazine sort themselves out through exactly
+    // this: whoever gets there second is told how little (or nothing) fit.
     [Server]
-    public void DepositResource(int resourceAmount)
+    public int DepositResourceAt(Vector2Int tile, int amount)
     {
-        storedResources += resourceAmount;
+        if (amount <= 0) return 0;
+
+        int stored = Mathf.Min(amount, MagazineFreeSpace(tile));
+        if (stored <= 0) return 0;
+
+        tileResources[tile.y * columns + tile.x] += stored;
+        return stored;
     }
 
-    // Taken by a Builder loading up at a stock. The base's pool is the single source of truth for
-    // resource accounting - a ResourceStock is the physical place a Builder walks to, not a separate
-    // container - so a Builder that never makes it to the Queen loses what it was carrying.
+    // Taken by a Builder loading up at one magazine. What it's carrying is out of storage from here
+    // on, so a Builder that dies before reaching the Queen loses its load.
     [Server]
-    public int WithdrawForFeeding(int amount)
+    public int WithdrawForFeedingAt(Vector2Int tile, int amount)
     {
-        int taken = Mathf.Min(amount, storedResources);
-        storedResources -= taken;
+        int taken = Mathf.Min(amount, MagazineAmount(tile));
+        if (taken <= 0) return 0;
+
+        tileResources[tile.y * columns + tile.x] -= taken;
         return taken;
+    }
+
+    // Deals resources out over the magazines in grid order, each filled to its limit before the next
+    // gets anything. Only the starting stock goes in this way - everything after it arrives on a
+    // Gatherer's back, one magazine at a time.
+    [Server]
+    private void FillMagazines(int amount)
+    {
+        for (int y = 0; y < rows && amount > 0; y++)
+        {
+            for (int x = 0; x < columns && amount > 0; x++)
+            {
+                amount -= DepositResourceAt(new Vector2Int(x, y), amount);
+            }
+        }
     }
 
     // Called by a Builder that just delivered a load to the Queen. Overshooting the current orders

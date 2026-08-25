@@ -10,7 +10,7 @@ public static class BaseLayout
         "OFBFBFO\n" +
         "OQQFGGO\n" +
         "OFFFFFO\n" +
-        "ORRRRRO\n" +
+        "OMMMMMO\n" +
         "OOOOOOO";
 
     // Row-major from the bottom-left: index = y * columns + x. Returns false with a human-readable
@@ -72,7 +72,10 @@ public static class BaseLayout
             case 'O': type = TileType.Obstacle; return true;
             case 'Q': type = TileType.Queen; return true;
             case 'B': type = TileType.Barrack; return true;
-            case 'R': type = TileType.ResourceStock; return true;
+            case 'M': type = TileType.Magazine; return true;
+            // R is what a magazine used to be written as. Still accepted so an already-authored
+            // layout keeps parsing rather than collapsing the room to a single floor tile.
+            case 'R': type = TileType.Magazine; return true;
             case 'G': type = TileType.GrowthTile; return true;
             case 'E': type = TileType.Entry; return true;
             default: type = TileType.Floor; return false;

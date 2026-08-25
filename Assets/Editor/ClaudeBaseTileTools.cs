@@ -9,7 +9,7 @@ using UnityEngine;
 // Claude writes the menu action, the user clicks it so the resulting asset changes are theirs.
 //
 // It does the whole job in one click: makes a placeholder square sprite, builds a prefab per tile
-// type from it, converts the existing ResourceStock into a plain (non-networked) tile with four
+// type from it, converts the existing Magazine into a plain (non-networked) tile with four
 // StoredResource piles on it, and wires all of that into PlayerBase.prefab. Re-runnable - it only
 // ever fills in what's missing, and never overwrites a prefab or a reference already there.
 public static class ClaudeBaseTileTools
@@ -17,15 +17,11 @@ public static class ClaudeBaseTileTools
     private const string TilesFolder = "Assets/Prefabs/Tiles";
     private const string GeneratedSpritesFolder = "Assets/Sprites/Generated";
     private const string TileSpritePath = GeneratedSpritesFolder + "/TileSquare.png";
-    private const string ResourceStockPrefabPath = "Assets/Prefabs/ResourceStock.prefab";
+    private const string MagazinePrefabPath = TilesFolder + "/Magazine.prefab";
     private const string PlayerBasePrefabPath = "Assets/Prefabs/PlayerBase.prefab";
     private const string NetworkManagerPrefabPath = "Assets/Prefabs/NetworkManager.prefab";
 
     private const int TilePixels = 64;
-
-    // How many StoredResource piles a stock tile gets, and therefore its capacity of eight. Kept in
-    // step with what ResourceStock.Capacity derives from the prefab.
-    private const int PilesPerStock = 4;
 
     private struct TileSpec
     {
@@ -36,7 +32,7 @@ public static class ClaudeBaseTileTools
         public string sortingLayer;
     }
 
-    // ResourceStock is deliberately absent - it already exists as a hand-made prefab and is wired
+    // Magazine is deliberately absent - it already exists as a hand-made prefab and is wired
     // up rather than generated.
     private static readonly TileSpec[] TileSpecs =
     {
@@ -57,8 +53,8 @@ public static class ClaudeBaseTileTools
         Sprite tileSprite = EnsureTileSprite(changes);
         Dictionary<string, GameObject> prefabs = EnsureTilePrefabs(tileSprite, changes);
 
-        GameObject stock = ConvertResourceStockPrefab(changes);
-        if (stock != null) prefabs["resourceStock"] = stock;
+        GameObject magazine = ConvertMagazinePrefab(changes);
+        if (magazine != null) prefabs["magazine"] = magazine;
 
         WirePlayerBase(prefabs, changes, notes);
         CleanSpawnablePrefabLists(changes);
@@ -152,26 +148,26 @@ public static class ClaudeBaseTileTools
         return prefabs;
     }
 
-    // Turns the old networked ResourceStock into an ordinary tile prefab: no NetworkIdentity (the
+    // Turns the old networked magazine into an ordinary tile prefab: no NetworkIdentity (the
     // tile map is built locally on every peer from PlayerBase's synced grid), plus the four
     // StoredResource piles that show how full it is.
-    private static GameObject ConvertResourceStockPrefab(List<string> changes)
+    private static GameObject ConvertMagazinePrefab(List<string> changes)
     {
-        GameObject asset = AssetDatabase.LoadAssetAtPath<GameObject>(ResourceStockPrefabPath);
+        GameObject asset = AssetDatabase.LoadAssetAtPath<GameObject>(MagazinePrefabPath);
         if (asset == null)
         {
-            Debug.LogError($"Claude: could not load {ResourceStockPrefabPath}.");
+            Debug.LogError($"Claude: could not load {MagazinePrefabPath}.");
             return null;
         }
 
-        GameObject contents = PrefabUtility.LoadPrefabContents(ResourceStockPrefabPath);
+        GameObject contents = PrefabUtility.LoadPrefabContents(MagazinePrefabPath);
         bool dirty = false;
 
         NetworkIdentity identity = contents.GetComponent<NetworkIdentity>();
         if (identity != null)
         {
             Object.DestroyImmediate(identity, true);
-            changes.Add("ResourceStock.prefab: removed NetworkIdentity (tiles are local now)");
+            changes.Add("Magazine.prefab: removed NetworkIdentity (tiles are local now)");
             dirty = true;
         }
 
@@ -182,26 +178,26 @@ public static class ClaudeBaseTileTools
                 : null;
 
             AddPiles(contents, placeholder);
-            changes.Add($"ResourceStock.prefab: added {PilesPerStock} StoredResource piles (capacity {PilesPerStock * StoredResource.MaxAmount})");
+            changes.Add($"Magazine.prefab: added {Magazine.DefaultPiles} StoredResource piles (limit {Magazine.DefaultCapacity})");
             dirty = true;
         }
 
-        if (dirty) PrefabUtility.SaveAsPrefabAsset(contents, ResourceStockPrefabPath);
+        if (dirty) PrefabUtility.SaveAsPrefabAsset(contents, MagazinePrefabPath);
         PrefabUtility.UnloadPrefabContents(contents);
 
-        return AssetDatabase.LoadAssetAtPath<GameObject>(ResourceStockPrefabPath);
+        return AssetDatabase.LoadAssetAtPath<GameObject>(MagazinePrefabPath);
     }
 
     // Laid out left to right with a slight downward drift, so the Y sort draws the right-hand piles
     // in front rather than leaving same-Y sprites to fight over the order.
-    private static void AddPiles(GameObject stock, Sprite placeholder)
+    private static void AddPiles(GameObject magazine, Sprite placeholder)
     {
-        for (int i = 0; i < PilesPerStock; i++)
+        for (int i = 0; i < Magazine.DefaultPiles; i++)
         {
             GameObject pile = new GameObject($"Pile_{i + 1}");
-            pile.transform.SetParent(stock.transform, false);
+            pile.transform.SetParent(magazine.transform, false);
 
-            float t = PilesPerStock > 1 ? i / (float)(PilesPerStock - 1) : 0.5f;
+            float t = Magazine.DefaultPiles > 1 ? i / (float)(Magazine.DefaultPiles - 1) : 0.5f;
             pile.transform.localPosition = new Vector3(Mathf.Lerp(-0.3f, 0.3f, t), Mathf.Lerp(0.08f, -0.08f, t), 0f);
             pile.transform.localScale = Vector3.one * 0.35f;
 
@@ -285,7 +281,7 @@ public static class ClaudeBaseTileTools
                     "world units. Tune Tile Size (and the camera's Base View Orthographic Size) to taste.");
     }
 
-    // ResourceStock no longer has a NetworkIdentity, so leaving it in a NetworkManager's spawnable
+    // A magazine tile no longer has a NetworkIdentity, so leaving it in a NetworkManager's spawnable
     // list would just make Mirror log an error at startup.
     private static void CleanSpawnablePrefabLists(List<string> changes)
     {

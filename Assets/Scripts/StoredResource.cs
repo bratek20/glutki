@@ -1,11 +1,11 @@
 using UnityEngine;
 
-// One physical pile of resources sitting on a ResourceStock tile. A pile holds either one or two
+// One physical pile of resources sitting on a Magazine tile. A pile holds either one or two
 // resources and has a sprite for each; holding none means it isn't there at all, so the object
-// simply switches itself off. Four piles on a tile is where a stock's capacity of eight comes from.
+// simply switches itself off. Four piles on a tile is where a magazine's limit of eight comes from.
 //
-// Placed by hand in the ResourceStock prefab - this only decides whether a pile is visible and
-// which of its two sprites it shows.
+// Placed by hand in the Magazine prefab - this only decides whether a pile is visible and which of
+// its two sprites it shows.
 public class StoredResource : MonoBehaviour
 {
     public const int MaxAmount = 2;

@@ -49,39 +49,49 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   in a dedicated row, so bases sitting close together on the map never bleed into each other's
   interior view.
 - **Interior tile map** — a base interior *is* a grid of tiles, one `TileType` each: `Floor`,
-  `Obstacle`, `Queen`, `Barrack`, `ResourceStock`, `GrowthTile`, `Entry`. It's authored as a letter
-  grid on the `PlayerBase` prefab (`layout`, parsed by `BaseLayout`) — `F O Q B R G E`, top row
+  `Obstacle`, `Queen`, `Barrack`, `Magazine`, `GrowthTile`, `Entry`. It's authored as a letter
+  grid on the `PlayerBase` prefab (`layout`, parsed by `BaseLayout`) — `F O Q B M G E`, top row
   first, every row the same width — and the room's whole footprint follows from it (`tileSize` x the
-  layout's dimensions), rather than being dialled in separately. The default is a 7x6 walled room
-  with the entry in the top wall, two barracks, two growth tiles and a row of five stocks.
+  layout's dimensions), rather than being dialled in separately. (`R`, what a magazine used to be
+  written as, still parses — an already-authored layout shouldn't stop loading over a rename.) The
+  default is a 7x6 walled room with the entry in the top wall, two barracks, two growth tiles and a
+  row of five magazines.
   Each type has its own prefab (`BaseInterior.Prefabs`, floor as the fallback), authored **one world
   unit square** and scaled to the base's `tileSize`.
   **Design decision:** the tile *objects* are built locally on every peer (`BaseInterior`), not
   networked — a few dozen `NetworkIdentity`s per base to say the same thing twice would be absurd
   when every peer can derive them. What *is* synced is the grid itself, a `SyncList<byte>` of tile
-  types on `PlayerBase`, because a player can change it during play by building. Everything else
+  types on `PlayerBase` (because a player can change it during play by building), plus a parallel
+  `SyncList<int>` of what each magazine holds. Everything else
   about the interior (where the Queen stands, which tiles are growth tiles or barracks, where the
   entry is) is parsed once from the layout in `Awake` and never changes.
   The **Queen** always covers exactly two side-by-side `Q` tiles and parks on the seam between them
   (`PlayerBase.QueenPoint`) — that, not `InteriorCenter`, is what units aim at. The **entry** tile is
   the gap in the wall units warp in and out through (`InteriorExitPoint`).
-- **Obstacles** — units can't walk through an `Obstacle` tile. Enforced in
-  `PlayerBase.ResolveMovement`, which every unit's movement step goes through while it's standing in
-  some base's interior: it clamps the step into the room and slides along a wall rather than through
-  it. Deliberately **not** pathfinding — obstacles are only ever the outer walls today, so nothing
-  can be boxed in behind one. Interior wander destinations are pulled onto a walkable tile
-  (`NearestWalkablePoint`) so nothing is ever sent toward a target it can't reach. Adding obstacles
-  *inside* a room is what would force real pathfinding, and that's out of scope.
+- **Obstacles and pathfinding** — units can't walk through an `Obstacle` tile, and a layout is free
+  to put walls in the middle of a room (a magazine reachable only down a corridor, say), so units
+  are *routed* rather than aimed. `InteriorPath` breadth-firsts the tile grid — a room is a few dozen
+  tiles, so the cheapest search there is beats anything cleverer, and with uniform step costs its
+  answer is the shortest route anyway — then string-pulls the result so units cut across open floor
+  instead of stepping centre to centre. Every interior destination a unit is given
+  (`UnitController.SetTarget`) becomes a list of waypoints it walks in turn; re-aiming at
+  practically the same spot deliberately keeps the route it's already walking, since a couple of
+  states re-issue their target every frame. An unreachable destination gets the closest reachable
+  point instead — walking as far as it can beats standing still forever.
+  `PlayerBase.ResolveMovement` is still there, but only as the backstop that keeps a unit knocked
+  off its route (by a fight, or a corner grazed) out of the walls; wander destinations are still
+  pulled onto a walkable tile (`NearestWalkablePoint`). "Nearest" for anything a unit walks to means
+  nearest *by route* (`InteriorPath.TryFindNearest`) — a magazine behind a wall genuinely is further
+  away than it looks.
 - **Queen feeding** — resources don't buy units directly; the Queen has to be *fed* them. Placing an
   order (gatherer, Attacker, or Builder) is free and instant — it only enqueues a prefab. The Queen
   can't start a birth until she's been fed `spawnCost` worth of food, which only ever arrives on a
   **Builder**'s back. So the real cost of a unit is a Builder round trip, and a base with no Builder
   can't produce at all. Surplus food banks toward whatever is ordered next; over-delivery is
-  harmless. The player's read on all this is `ResourceHud`, which shows storage *and* `queenFood`.
-  **Design decision:** a `ResourceStock` is the physical place a Builder walks to, not a container —
-  the resource count itself stays a single pool on `PlayerBase`. One authoritative counter beats
-  reconciling N per-stock balances, and it keeps the no-stock-built deposit fallback meaningful.
-  A Builder that dies mid-trip loses what it was carrying, which follows from that same choice.
+  harmless. The player's read on all this is `ResourceHud`, which shows storage against its limit
+  (`5 / 16`) *and* `queenFood`.
+  A Builder loads from one specific magazine and what it picks up is out of storage from the moment
+  it does, so a Builder that dies mid-trip loses what it was carrying.
 - **Unit production** — spawning is never instant. A spawn request only *enqueues* a prefab on its
   `PlayerBase`; the base then runs a strictly one-at-a-time production line, server-side. When the
   Queen has enough food and a growth tile is free it starts a birth: the Queen's `IsSpawning` animator bool goes true for a configurable `spawnDuration` (a
@@ -102,8 +112,11 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   onto the world map) → `Wandering` → `SeekingResource` → `Gathering` (stands at the resource for
   `gatherDuration`, playing the attack animation, before actually drawing from it via
   `Resource.TryGather`) → `ReturningToBase` (world map, walking toward the base) → warps into the
-  interior → `EnteringBase` (walking to the nearest `ResourceStock` tile, or the Queen's spot if the
-  base has none, and depositing there) → back to `ExitingBase`. Bot wave units instead run `MarchingToBase` →
+  interior → `DeliveringToMagazine` (walking to the nearest magazine with room and unloading into it)
+  → back to `ExitingBase`. A load bigger than that magazine's remaining room is split across
+  several of them, one walk at a time, and a Gatherer that can't place all of it walks back out into
+  `WaitingForStorage` — loitering just outside the base until a magazine frees up, rather than
+  standing in the doorway or throwing the load away. Bot wave units instead run `MarchingToBase` →
   `MarchingToQueen`, following the same interior-warp mechanic to reach their target's Queen. The
   **Queen** (`UnitType.Queen`) is a special stationary unit permanently parked on her two tiles at
   each base (`QueenPoint`) — she never runs the task state machine, only combat. Growing up takes two timed
@@ -116,9 +129,9 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   **starting loadout** the instant it spawns — its `startingUnitPrefabs` (one Builder, one Gatherer),
   spawned fully grown on the floor tiles nearest the Queen, the only path that bypasses the Child
   pipeline. Without it a new base would be deadlocked: no Builder to feed the Queen, so no way to
-  produce one. (Its stocks it already has — they're in the layout.)
+  produce one. (Its magazines it already has — they're in the layout.)
   `UnitType.Builder` units never leave the interior. They shuttle resources from the nearest
-  `ResourceStock` tile to the Queen (`WalkingToStock` → `LoadingFood` → `CarryingFoodToQueen`) whenever
+  magazine that has any to the Queen (`WalkingToMagazine` → `LoadingFood` → `CarryingFoodToQueen`) whenever
   `PlayerBase.FoodShortfall` says an order is waiting on food, and otherwise just wander inside —
   interior wandering is penned into the room and off the walls. Losing
   every Builder ends a base exactly like losing its Queen (see **Game end**): the flag is *latched*
@@ -159,23 +172,29 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   destroyed. Code that needs to know whether a resource is still up for grabs must check
   `Resource.IsAvailable`, not `== null` — a held reference to a depleted `Resource` never becomes
   null.
-- **ResourceStock** (`ResourceStock.cs`) — the `R` tile: where a Gatherer deposits and a Builder
-  loads up. A base starts with whatever its layout gives it and can build more. It holds **no count
-  of its own** — the resource count is still one pool on `PlayerBase` (see **Queen feeding**), and
-  the deposit/withdraw calls go straight there. What the component does is *show* how full the base
-  is: a tile carries four `StoredResource` piles, each holding one or two resources (a sprite for
-  each amount, hidden entirely at zero), so a stock reads up to 8. `PlayerBase` spreads its pool
-  over its stocks in grid order, each filled to capacity before the next shows anything — one pool,
-  a deterministic way to draw it, so every peer sees the same thing and no per-stock balance can
-  ever drift from the HUD. The piles are placed by hand in the prefab; `ResourceStock` finds them
-  under itself and derives its capacity from how many there are.
+- **Magazines** (`Magazine.cs`) — the `M` tile: where a Gatherer deposits and a Builder loads up. A
+  base starts with whatever its layout gives it and can build more. A magazine carries four
+  `StoredResource` piles, each holding one or two resources (a sprite for each amount, hidden
+  entirely at zero), so **one magazine holds 8** and a base's whole storage limit is its magazine
+  count times that — the number `ResourceHud` shows storage against. The limit is *measured off the
+  prefab's piles* (`Magazine.CapacityOf`) rather than configured separately, so a magazine can never
+  claim to hold more than it's able to draw.
+  **Design decision:** what's in each magazine is its own synced number, not a slice of one pool on
+  the base. Per-magazine limits are what forced that apart — a Gatherer has to be told which
+  magazine still has room, and the piles it walks up to have to be the ones its load actually went
+  into. So `PlayerBase` owns a `SyncList<int>` parallel to the tile grid (0 on anything that isn't a
+  magazine) and `Magazine` itself holds no count, only the job of turning the number it's handed
+  into piles. Deposits go through `PlayerBase.DepositResourceAt`, which takes only what fits and
+  reports how much that was: a full magazine turns a Gatherer away, and two Gatherers arriving at
+  the same one sort themselves out because whoever gets there second is told how little fit. The
+  piles are placed by hand in the prefab; `Magazine` finds them under itself.
 - **Build mode** — `NewBuildButton` drives client-local "build mode" for the viewed base: while
   active it draws the interior grid and a green/red hover-tile highlight straight to the screen via
   `GL` calls, and a left-click on a buildable tile calls `PlayerBase.CmdBuildTile`; right-click,
   Escape, or clicking the button again cancel instead. `PlayerBase.IsTileBuildable` is the single
   source of truth for whether a tile can be built on — a plain `Floor` tile and nothing else —
   called client-side for the preview and server-side (again) as the actual authorization check, so
-  they can never disagree. Only a `ResourceStock` can go up during play: growth tiles and barracks
+  they can never disagree. Only a `Magazine` can go up during play: growth tiles and barracks
   are counted once at startup, so letting one appear later would put the server's slot bookkeeping
   out of step with the grid. **Gotcha:** the project renders via URP (see
   `ProjectSettings/QualitySettings.asset`'s `customRenderPipeline`), which never invokes the
@@ -237,7 +256,7 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   is `Custom Axis (0,1,0)`, so sprites sort by world Y — whatever stands lower on screen draws in
   front. Nothing per-frame, and it applies to every sprite automatically.
 - Everything that shares the world and should overlap by position — units, Queens, bases,
-  resources, resource stocks, interior obstacles and barracks — lives together on `Entities`
+  resources, magazines, interior obstacles and barracks — lives together on `Entities`
   **on purpose**: a unit walking below a base overlaps it, walking above it goes behind. Splitting
   buildings into their own layer would make one of those two cases always wrong.
 - Interior tiles that are literally the ground (`Tile_Floor`, `Tile_Queen`, `Tile_GrowthTile`,
@@ -272,7 +291,7 @@ periodic bot waves march out to try to kill each PlayerBase's Queen.
   split: Claude owns the gameplay/UI *scripts*, the user owns what actually lands in the scene.
 - The same rule covers **generated prefabs**: `Claude -> Setup Base Tiles`
   (`ClaudeBaseTileTools.cs`) is what creates the placeholder tile sprite and the per-`TileType`
-  prefabs, converts `ResourceStock.prefab` into a plain (non-networked) tile with its
+  prefabs, converts `Magazine.prefab` into a plain (non-networked) tile with its
   `StoredResource` piles, and wires all of it into `PlayerBase.prefab`. It only ever fills in what's
   missing — a prefab or reference the user has already chosen is never overwritten.
 - The same split applies to **prefab and project-settings wiring** a new feature needs before it

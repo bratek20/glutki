@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 // Builds and owns the GameObjects that make one base's interior visible: a tile prefab per grid
 // cell, parented under a single container.
@@ -17,7 +17,7 @@ public class BaseInterior
         public GameObject obstacle;
         public GameObject queen;
         public GameObject barrack;
-        public GameObject resourceStock;
+        [FormerlySerializedAs("resourceStock")] public GameObject magazine;
         public GameObject growthTile;
         public GameObject entry;
 
@@ -31,7 +31,7 @@ public class BaseInterior
                 case TileType.Obstacle: prefab = obstacle; break;
                 case TileType.Queen: prefab = queen; break;
                 case TileType.Barrack: prefab = barrack; break;
-                case TileType.ResourceStock: prefab = resourceStock; break;
+                case TileType.Magazine: prefab = magazine; break;
                 case TileType.GrowthTile: prefab = growthTile; break;
                 case TileType.Entry: prefab = entry; break;
                 default: prefab = floor; break;
@@ -45,10 +45,6 @@ public class BaseInterior
     private readonly Prefabs prefabs;
     private readonly Transform root;
     private readonly GameObject[] tileObjects;
-
-    // Kept in grid order (rebuilt from tileObjects, never appended to) so every peer spreads the
-    // base's resource pool over its stocks the same way.
-    private readonly List<ResourceStock> stocks = new List<ResourceStock>();
 
     public BaseInterior(PlayerBase homeBase, Prefabs prefabs)
     {
@@ -65,11 +61,9 @@ public class BaseInterior
         {
             for (int x = 0; x < homeBase.GridColumns; x++)
             {
-                BuildTile(new Vector2Int(x, y), refreshStocks: false);
+                BuildTile(new Vector2Int(x, y));
             }
         }
-
-        RefreshStocks();
     }
 
     public void Destroy()
@@ -79,7 +73,7 @@ public class BaseInterior
 
     // (Re)builds a single tile from whatever PlayerBase currently says is there - used both to lay
     // the interior out at startup and to swap one tile when a player builds on it.
-    public void BuildTile(Vector2Int coords, bool refreshStocks = true)
+    public void BuildTile(Vector2Int coords)
     {
         int index = coords.y * homeBase.GridColumns + coords.x;
         if (index < 0 || index >= tileObjects.Length) return;
@@ -105,31 +99,17 @@ public class BaseInterior
             tileObjects[index] = tile;
         }
 
-        if (refreshStocks) RefreshStocks();
+        ShowMagazineFill(coords);
     }
 
-    // Spreads the base's single resource pool across its stocks in grid order, each filled to
-    // capacity before the next one shows anything.
-    public void ShowStoredResources(int amount)
+    // Draws one magazine's piles from what the base says is in it. Anything that isn't a magazine
+    // has nothing to show, so this is safe to call for any tile.
+    public void ShowMagazineFill(Vector2Int coords)
     {
-        foreach (ResourceStock stock in stocks)
-        {
-            int shown = Mathf.Clamp(amount, 0, stock.Capacity);
-            stock.SetFill(shown);
-            amount -= shown;
-        }
-    }
+        int index = coords.y * homeBase.GridColumns + coords.x;
+        if (index < 0 || index >= tileObjects.Length || tileObjects[index] == null) return;
 
-    private void RefreshStocks()
-    {
-        stocks.Clear();
-
-        foreach (GameObject tile in tileObjects)
-        {
-            if (tile == null) continue;
-
-            ResourceStock stock = tile.GetComponent<ResourceStock>();
-            if (stock != null) stocks.Add(stock);
-        }
+        Magazine magazine = tileObjects[index].GetComponent<Magazine>();
+        if (magazine != null) magazine.SetFill(homeBase.MagazineAmount(coords));
     }
 }

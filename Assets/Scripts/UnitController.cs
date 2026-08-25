@@ -70,7 +70,8 @@ public class UnitController : NetworkBehaviour
         SeekingResource,
         Gathering,
         ReturningToBase,
-        EnteringBase,
+        DeliveringToMagazine,
+        WaitingForStorage,
         MarchingToBase,
         MarchingToQueen,
         InBarrack,
@@ -80,7 +81,7 @@ public class UnitController : NetworkBehaviour
         WalkingToGrowthTile,
         WaitingToGrow,
         Growing,
-        WalkingToStock,
+        WalkingToMagazine,
         LoadingFood,
         CarryingFoodToQueen
     }
@@ -103,11 +104,15 @@ public class UnitController : NetworkBehaviour
     [Tooltip("How much a Gatherer takes out of a resource per trip. A resource holding less than this gives up whatever it has left.")]
     [SerializeField] private int gatherAmount = 10;
     [SerializeField] private Color carryingTintColor = new Color(1f, 0.85f, 0.35f);
+    [Tooltip("How far from its home base a loaded Gatherer loiters while every magazine is full - it waits outside rather than blocking the interior.")]
+    [SerializeField] private float storageWaitRadius = 1.5f;
+    [Tooltip("How often a Gatherer waiting outside re-checks whether a magazine has room for its load.")]
+    [SerializeField] private float storageScanInterval = 0.5f;
 
     [Header("Feeding (Builder only)")]
-    [Tooltip("How much the Builder carries from a ResourceStock to the Queen per trip. Bigger loads mean fewer, slower round trips.")]
+    [Tooltip("How much the Builder carries from one magazine to the Queen per trip. Bigger loads mean fewer, slower round trips.")]
     [SerializeField] private int feedCarryAmount = 5;
-    [Tooltip("How long the Builder stands at the stock loading up (playing the attack animation) before the resources actually leave storage.")]
+    [Tooltip("How long the Builder stands at the magazine loading up (playing the attack animation) before the resources actually leave it.")]
     [SerializeField] private float feedLoadDuration = 1f;
     [Tooltip("How often an idle Builder re-checks whether the Queen needs feeding again.")]
     [SerializeField] private float feedScanInterval = 0.5f;
@@ -163,6 +168,16 @@ public class UnitController : NetworkBehaviour
     private float gatherTimer;
     private int carriedAmount;
 
+    // Which magazine this unit is walking to: the one a Gatherer is delivering into, or the one a
+    // Builder is loading from. Server-only, like the rest of the task state.
+    private Vector2Int targetMagazine;
+    private float storageScanTimer;
+
+    // The route being walked, and how far along it we are. Only ever filled inside a base interior -
+    // out on the world map nothing is in the way, so units head straight for their target.
+    private readonly List<Vector3> path = new List<Vector3>();
+    private int pathIndex;
+
     private float feedTimer;
     private float feedScanTimer;
 
@@ -191,6 +206,9 @@ public class UnitController : NetworkBehaviour
     [SyncVar] private bool isGrowingServer;
 
     private HashSet<string> animatorParameters;
+
+    // How far a new target has to be from the current one before it's worth re-routing to.
+    private const float RetargetThreshold = 0.05f;
 
     private void Awake()
     {
@@ -373,6 +391,7 @@ public class UnitController : NetworkBehaviour
             if (state != UnitState.ExitingBase && state != UnitState.Wandering)
             {
                 targetResource = null;
+                carriedAmount = 0;
                 isCarryingResource = false;
                 StartWandering();
             }
@@ -382,8 +401,25 @@ public class UnitController : NetworkBehaviour
             ScanForResource();
         }
 
+        // The magazine this Gatherer set out for may have been filled by another one while it was on
+        // its way - switch to one that still has room rather than walking all the way there to find
+        // out. Arriving at a full one is handled too (see OnMagazineReachedWithLoad); this just saves
+        // the wasted trip.
+        if (state == UnitState.DeliveringToMagazine && HomeBase != null
+            && HomeBase.MagazineFreeSpace(targetMagazine) <= 0 && HomeBase.HasStorageSpace)
+        {
+            TryDeliverToMagazine();
+        }
+
+        // Loaded up with every magazine full - loitering outside until one has room again.
+        if (state == UnitState.WaitingForStorage)
+        {
+            UpdateWaitingForStorage();
+            return;
+        }
+
         // An idle Builder keeps an eye on the Queen - the moment an order is placed (or a Gatherer
-        // tops the stock back up) it stops pottering about and starts carrying.
+        // tops a magazine back up) it stops pottering about and starts carrying.
         if (unitType == UnitType.Builder && state == UnitState.Wandering)
         {
             feedScanTimer -= Time.deltaTime;
@@ -453,24 +489,42 @@ public class UnitController : NetworkBehaviour
     {
         if (!hasTarget) return;
 
-        Vector3 from = transform.position;
-        Vector3 to = Vector3.MoveTowards(from, targetPosition, moveSpeed * Time.deltaTime);
+        // Inside a base the target is reached one waypoint at a time (see SetTarget); out on the
+        // world map the route is always just the target itself.
+        Vector3 step = pathIndex < path.Count ? path[pathIndex] : targetPosition;
+        Vector3 to = Vector3.MoveTowards(transform.position, step, moveSpeed * Time.deltaTime);
+        transform.position = MoveResolved(to);
 
-        // Inside a base, obstacle tiles are solid - the interior decides where the step actually
-        // lands, sliding along a wall rather than passing through it.
-        PlayerBase interiorBase = CurrentInteriorBase();
-        transform.position = interiorBase != null ? interiorBase.ResolveMovement(from, to) : to;
-
-        if (Vector3.Distance(transform.position, targetPosition) <= stoppingDistance)
-        {
-            isWalkingServer = false;
-            hasTarget = false;
-            OnTargetReached();
-        }
-        else
+        if (Vector3.Distance(transform.position, step) > stoppingDistance)
         {
             isWalkingServer = true;
+            return;
         }
+
+        // Another leg of the route to walk - carry straight on to it.
+        if (pathIndex + 1 < path.Count)
+        {
+            pathIndex++;
+            UpdateFacing(path[pathIndex]);
+            isWalkingServer = true;
+            return;
+        }
+
+        isWalkingServer = false;
+        hasTarget = false;
+        path.Clear();
+        pathIndex = 0;
+        OnTargetReached();
+    }
+
+    // Inside a base, obstacle tiles are solid - the interior decides where a step actually lands,
+    // sliding along a wall rather than passing through it. Routes are planned around walls already,
+    // so this only ever catches a unit that's been nudged off its route.
+    [Server]
+    private Vector3 MoveResolved(Vector3 to)
+    {
+        PlayerBase interiorBase = CurrentInteriorBase();
+        return interiorBase != null ? interiorBase.ResolveMovement(transform.position, to) : to;
     }
 
     [Server]
@@ -487,8 +541,12 @@ public class UnitController : NetworkBehaviour
             case UnitState.ReturningToBase:
                 OnBaseReached();
                 break;
-            case UnitState.EnteringBase:
-                OnEntryReached();
+            case UnitState.DeliveringToMagazine:
+                OnMagazineReachedWithLoad();
+                break;
+            case UnitState.WaitingForStorage:
+                // Standing where it stopped, outside the base, until a magazine frees up - see
+                // UpdateWaitingForStorage.
                 break;
             case UnitState.MarchingToBase:
                 OnArrivedAtTargetBase();
@@ -506,8 +564,8 @@ public class UnitController : NetworkBehaviour
             case UnitState.WalkingToGrowthTile:
                 OnGrowthTileReached();
                 break;
-            case UnitState.WalkingToStock:
-                OnStockReached();
+            case UnitState.WalkingToMagazine:
+                OnMagazineReachedToLoad();
                 break;
             case UnitState.CarryingFoodToQueen:
                 OnQueenReachedWithFood();
@@ -532,6 +590,14 @@ public class UnitController : NetworkBehaviour
         {
             state = UnitState.MarchingToBotBase;
             SetTarget(AttackTargetBotBase.transform.position);
+            return;
+        }
+
+        // Walked out still loaded, which only happens when there was nowhere to put it - wait for
+        // room rather than wandering off to gather more.
+        if (carriedAmount > 0)
+        {
+            StartWaitingForStorage();
             return;
         }
 
@@ -599,26 +665,94 @@ public class UnitController : NetworkBehaviour
     [Server]
     private void OnBaseReached()
     {
-        // Warp from the world map into the base interior, entering through the same opening units exit from.
-        Vector3 entryPoint = HomeBase != null ? HomeBase.InteriorExitPoint : transform.position;
-        transform.position = entryPoint;
+        if (HomeBase == null)
+        {
+            StartWandering();
+            return;
+        }
 
-        state = UnitState.EnteringBase;
-        SetTarget(HomeBase != null ? HomeBase.DepositPoint(entryPoint) : entryPoint);
+        // Every magazine full - there's no point walking in, so wait it out by the door.
+        if (!HomeBase.HasStorageSpace)
+        {
+            StartWaitingForStorage();
+            return;
+        }
+
+        // Warp from the world map into the base interior, entering through the same opening units exit from.
+        transform.position = HomeBase.InteriorExitPoint;
+
+        if (!TryDeliverToMagazine())
+        {
+            // Filled up in the instant between the check above and warping in - walk back out.
+            state = UnitState.ExitingBase;
+            SetTarget(HomeBase.InteriorExitPoint);
+        }
+    }
+
+    // Heads for the nearest magazine with room for what this Gatherer is carrying. False when every
+    // magazine in the base is full.
+    [Server]
+    private bool TryDeliverToMagazine()
+    {
+        if (HomeBase == null || !HomeBase.TryFindMagazineWithSpace(transform.position, out Vector2Int magazine)) return false;
+
+        targetMagazine = magazine;
+        state = UnitState.DeliveringToMagazine;
+        SetTarget(HomeBase.TileCenter(magazine));
+        return true;
     }
 
     [Server]
-    private void OnEntryReached()
+    private void OnMagazineReachedWithLoad()
     {
-        // Reached whichever stock tile (or the Queen's spot, if this base has none) it was heading
-        // for. The count itself is one pool on the base - a stock is only the place to drop it.
-        if (HomeBase != null) HomeBase.DepositResource(carriedAmount);
+        // A magazine only takes what it has room for, so a load bigger than the space left is split
+        // across several of them - and a Gatherer that got here second may find it takes nothing.
+        int stored = HomeBase != null ? HomeBase.DepositResourceAt(targetMagazine, carriedAmount) : 0;
+        carriedAmount -= stored;
 
-        carriedAmount = 0;
-        isCarryingResource = false;
+        // Still carrying something - try the next magazine with room in it.
+        if (carriedAmount > 0 && TryDeliverToMagazine()) return;
 
+        isCarryingResource = carriedAmount > 0;
+
+        // Either empty-handed and off to gather again, or still loaded with the base full - which
+        // OnExitReached turns into a wait outside.
         state = UnitState.ExitingBase;
         SetTarget(HomeBase != null ? HomeBase.InteriorExitPoint : transform.position);
+    }
+
+    // Loiters just outside the home base with a full load until a magazine has room again. Offset by
+    // a random nudge so a queue of waiting Gatherers doesn't stack up on one pixel.
+    [Server]
+    private void StartWaitingForStorage()
+    {
+        state = UnitState.WaitingForStorage;
+        storageScanTimer = storageScanInterval;
+
+        Vector3 basePosition = HomeBase != null ? HomeBase.transform.position : transform.position;
+        Vector2 offset = Random.insideUnitCircle * storageWaitRadius;
+        SetTarget(basePosition + new Vector3(offset.x, offset.y, 0f));
+    }
+
+    [Server]
+    private void UpdateWaitingForStorage()
+    {
+        storageScanTimer -= Time.deltaTime;
+        if (storageScanTimer <= 0f)
+        {
+            storageScanTimer = storageScanInterval;
+
+            // Room at last - walk back in and deliver.
+            if (HomeBase != null && HomeBase.HasStorageSpace)
+            {
+                state = UnitState.ReturningToBase;
+                SetTarget(HomeBase.transform.position);
+                return;
+            }
+        }
+
+        // Still nowhere to put it: walk to the loitering spot, then just stand there.
+        UpdateServerMovement();
     }
 
     [Server]
@@ -722,7 +856,7 @@ public class UnitController : NetworkBehaviour
         SetTarget(BarrackPosition());
     }
 
-    // Starts a stock -> Queen round trip if there's one worth making. Returns false when there's
+    // Starts a magazine -> Queen round trip if there's one worth making. Returns false when there's
     // nothing to do, leaving the caller to decide what to do with an idle Builder - which is why
     // this doesn't fall back to wandering itself: the idle re-check calls it every feedScanInterval
     // and must not restart a wander that's already in progress.
@@ -735,19 +869,19 @@ public class UnitController : NetworkBehaviour
         // banked for every order that's been placed.
         if (!HomeBase.IsQueenAlive) return false;
         if (HomeBase.FoodShortfall <= 0) return false;
-        if (HomeBase.StoredResources <= 0) return false;
 
-        // A base whose layout gives it no stock tile has nowhere to pick up from - its Builder
-        // simply can't work.
-        if (!HomeBase.HasResourceStock) return false;
+        // Nothing in reach to pick up: every magazine empty, or a base whose layout gave it none in
+        // the first place - either way its Builder simply can't work.
+        if (!HomeBase.TryFindMagazineWithResources(transform.position, out Vector2Int magazine)) return false;
 
-        state = UnitState.WalkingToStock;
-        SetTarget(HomeBase.DepositPoint(transform.position));
+        targetMagazine = magazine;
+        state = UnitState.WalkingToMagazine;
+        SetTarget(HomeBase.TileCenter(magazine));
         return true;
     }
 
     [Server]
-    private void OnStockReached()
+    private void OnMagazineReachedToLoad()
     {
         if (HomeBase == null)
         {
@@ -771,9 +905,10 @@ public class UnitController : NetworkBehaviour
 
         isAttackingServer = false;
 
-        // Resources only actually leave storage once the load animation has played out, so another
-        // Builder may have emptied the pool in the meantime.
-        carriedAmount = HomeBase != null ? HomeBase.WithdrawForFeeding(feedCarryAmount) : 0;
+        // Resources only actually leave the magazine once the load animation has played out, so
+        // another Builder may have emptied this one in the meantime - TryStartFeedingTrip below then
+        // sends this Builder to whichever magazine still has something in it.
+        carriedAmount = HomeBase != null ? HomeBase.WithdrawForFeedingAt(targetMagazine, feedCarryAmount) : 0;
         if (carriedAmount <= 0)
         {
             if (!TryStartFeedingTrip()) StartWandering();
@@ -887,10 +1022,28 @@ public class UnitController : NetworkBehaviour
     [Server]
     private void SetTarget(Vector3 position)
     {
+        // Re-aiming at practically the same spot keeps the route already being walked. A couple of
+        // states re-issue their target every frame, and re-routing each time would both churn and
+        // throw away the progress made along it.
+        if (hasTarget && (position - targetPosition).sqrMagnitude <= RetargetThreshold * RetargetThreshold) return;
+
         targetPosition = position;
         hasTarget = true;
 
-        UpdateFacing(position);
+        BuildPath();
+        UpdateFacing(pathIndex < path.Count ? path[pathIndex] : targetPosition);
+    }
+
+    // Works out how to get to the current target. Inside a base that means a route around whatever
+    // walls the layout puts in the way; out on the world map there's nothing to route around.
+    [Server]
+    private void BuildPath()
+    {
+        path.Clear();
+        pathIndex = 0;
+
+        PlayerBase interiorBase = CurrentInteriorBase();
+        if (interiorBase != null) interiorBase.FindInteriorPath(transform.position, targetPosition, path);
     }
 
     [Server]
@@ -944,8 +1097,7 @@ public class UnitController : NetworkBehaviour
     {
         if (combatTarget == null || !combatTarget.IsAlive)
         {
-            combatTarget = null;
-            isAttackingServer = false;
+            EndCombat();
             return;
         }
 
@@ -956,14 +1108,13 @@ public class UnitController : NetworkBehaviour
             // Non-aggressive units only defend themselves - they don't chase a target that backs off.
             if (!isAggressive)
             {
-                combatTarget = null;
-                isAttackingServer = false;
+                EndCombat();
                 return;
             }
 
             isAttackingServer = false;
             isWalkingServer = true;
-            transform.position = Vector3.MoveTowards(transform.position, combatTarget.transform.position, moveSpeed * Time.deltaTime);
+            transform.position = MoveResolved(Vector3.MoveTowards(transform.position, combatTarget.transform.position, moveSpeed * Time.deltaTime));
             UpdateFacing(combatTarget.transform.position);
         }
         else
@@ -979,6 +1130,17 @@ public class UnitController : NetworkBehaviour
                 combatTarget.TakeDamage(attackDamage, this);
             }
         }
+    }
+
+    // Combat overrides whatever task a unit was doing and drags it around while it chases, so the
+    // route it was walking is re-planned from wherever the fight left it.
+    [Server]
+    private void EndCombat()
+    {
+        combatTarget = null;
+        isAttackingServer = false;
+
+        if (hasTarget) BuildPath();
     }
 
     // Called by this unit's PlayerBase while it's producing a Child, so the Queen plays her birth

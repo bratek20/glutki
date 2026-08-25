@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 100003}
   - component: {fileID: 6785451656944265198}
   m_Layer: 0
-  m_Name: ResourceStock
+  m_Name: Magazine
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -144,7 +144,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8fd1f8a6cb8f84d4597e065cfd338d25, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ResourceStock
+  m_EditorClassIdentifier: Assembly-CSharp::Magazine
   piles:
   - {fileID: 4019535969923495777}
   - {fileID: 7547326682643887873}
